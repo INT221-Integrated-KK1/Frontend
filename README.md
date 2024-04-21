@@ -1,6 +1,7 @@
 # kk-1_Integrated-project
 
-This template should help get you started developing with Vue 3 in Vite.
+This project is in integrated project subject of IT Bangmod Sophomore
+
 
 ## Recommended IDE Setup
 
