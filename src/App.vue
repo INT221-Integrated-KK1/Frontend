@@ -22,6 +22,20 @@ onMounted(async () => {
   }
 });
 
+const getStatusClass = (status) => {
+  switch (status) {
+    case 'No Status':
+      return 'bg-gray-200 text-gray-800 px-2 py-1 rounded'; // Gray button style for No Status
+    case 'To Do':
+      return 'bg-red-200 text-red-800 px-2 py-1 rounded'; // Red button style for To Do
+    case 'Doing':
+      return 'bg-yellow-200 text-yellow-800 px-2 py-1 rounded'; // Yellow button style for Doing
+    case 'Done':
+      return 'bg-green-200 text-green-800 px-2 py-1 rounded'; // Green button style for Done
+    default:
+      return 'bg-blue-200 text-blue-800 px-2 py-1 rounded'; // Default button style for other statuses
+  }
+};
 
 
 </script>
@@ -45,7 +59,7 @@ onMounted(async () => {
           <td @click="showModal = true" style="cursor: pointer;">{{ todo.taskTitle }}</td>
           <!-- Render corresponding assignee and status based on index -->
           <td>{{ todo.taskAssignees }}</td>
-          <td>{{ todo.taskStatus }}</td>
+          <td :class="getStatusClass(todo.taskStatus)">{{ todo.taskStatus }}</td>
         </tr>
       </tbody>
     </table>
