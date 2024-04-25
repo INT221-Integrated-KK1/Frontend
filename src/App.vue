@@ -41,8 +41,9 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
+  <h1 class="text-center text-3xl font-bold mt-10">IT Bangmod Kradan Kanban</h1>
   <div class="overflow-x-auto mt-10" v-if="todo">
-    <table class="table">
+    <table class="table ">
       <!-- head -->
       <thead>
         <tr class="text-xl text-black">
@@ -52,14 +53,14 @@ const getStatusClass = (status) => {
           <th>Status</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="itbkk-item">
         <!-- Loop through titles array to render table rows -->
         <tr v-for="(todo, index) in todo" :key="index">
           <th>{{ index + 1 }}</th>
-          <td @click="showModal = true" style="cursor: pointer;">{{ todo.taskTitle }}</td>
+          <td @click="showModal = true" style="cursor: pointer;" class="itbkk-title">{{ todo.taskTitle }}</td>
           <!-- Render corresponding assignee and status based on index -->
-          <td>{{ todo.taskAssignees }}</td>
-          <td :class="getStatusClass(todo.taskStatus)">{{ todo.taskStatus }}</td>
+          <td class="itbkk-assignees">{{ todo.taskAssignees }}</td>
+          <td :class="getStatusClass(todo.taskStatus)" class="itbkk-status">{{ todo.taskStatus }}</td>
         </tr>
       </tbody>
     </table>
