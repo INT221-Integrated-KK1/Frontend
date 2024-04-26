@@ -1,23 +1,19 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { getItemById } from '../libs/fetchUtils.js'; 
+import { getItemById } from '../libs/fetchUtils.js';
 
 const props = defineProps({
     showModal: Boolean,
     taskId: Number
 });
 
-const closeModal = () => {
-    showModal.value = false;
-}
-
 const task = ref(null);
 
-const url = 'http://localhost:8080/v1/tasks'; 
+const url = 'http://localhost:8080/v1/tasks';
 
 const fetchTaskDetails = async () => {
     try {
-        task.value = await getItemById(url, props.taskId); 
+        task.value = await getItemById(url, props.taskId);
     } catch (error) {
         console.error('Error fetching task details:', error);
     }
@@ -28,10 +24,8 @@ watch(() => props.showModal, (newVal) => {
         fetchTaskDetails();
     }
 });
-// //demo time to show
+
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-// const currentDate = new Date().toLocaleString("En-US", timezone);
-// const description = ref('');
 </script>
 
 <template>
@@ -42,34 +36,44 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
                 <div class="col-start-1 col-span-3">
                     <h1 class="font-bold">Title : </h1>
-                    <input class="p-2 border-solid border-2 border-grey w-full mb-3" v-model="task.taskTitle">
+                    <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 "
+                        v-model="task.taskTitle">
                 </div>
                 <hr class="col-start-1 col-span-3">
                 <div class="col-start-1 col-span-2">
                     <h1 class="font-bold">Description : </h1>
-                    <textarea rows="10" class="p-2 border-solid border-2 border-grey w-full"
-                        v-model="task.taskDescription">
+                    <textarea class="itbkk-description p-2 border-solid border-2 border-grey w-full"
+                        v-model="task.taskDescription" rows="10">
+                        {{ task.taskDescription }}
                     </textarea>
                 </div>
                 <div class="col-start-3 col-span-1">
                     <h1 class="font-bold">Assignees : </h1>
-                    <textarea rows="2" class="p-2 border-solid border-2 border-grey w-full"
+                    <textarea rows="2" class="p-2 border-solid border-2 border-grey w-full itbkk-assignees"
                         v-model="task.taskAssignees">
+                        {{ task.taskAssignees }}
                     </textarea>
                     <h1 class="font-bold">Status : </h1>
-                    <select class="p-2 border-solid border-2 border-grey w-full mb-10" v-model="task.taskStatus">
+                    <select class="p-2 border-solid border-2 border-grey w-full mb-10 itbkk-status"
+                        v-model="task.taskStatus">
                         <option value="No Status">No Status</option>
                         <option value="To Do">To Do</option>
                         <option value="Doing">Doing</option>
                         <option value="Done">Done</option>
                     </select>
-                    <h1 class="font-bold">Timezone : {{ timezone }}</h1>
-                    <h1 class="font-bold">CreatedOn : {{ task.createdOn }} </h1>
-                    <h1 class="font-bold">UpdatedOn : {{ task.updatedOn }}</h1>
+                    <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
+                    <h1 class="font-bold itbkk-created-on">CreatedOn :
+                        {{ new Date(task.createdOn).toLocaleString("en-GB", { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}
+                    </h1>
+                    <h1 class="font-bold itbkk-updated-on">UpdatedOn :
+                        {{ new Date(task.updatedOn).toLocaleString("En-US", timezone) }}
+                    </h1>
                 </div>
                 <div class="flex justify-end mt-4 col-start-3">
                     <button @click="$emit('closeModal', false)"
-                        class="bg-red-500 hover:bg-red-700 text-white btn">Close</button>
+                        class="btn bg-green-500 hover:bg-green-700 text-white btn">Save</button>
+                    <button @click="$emit('closeModal', false)"
+                        class="btn bg-red-500 hover:bg-red-700 text-white btn">Close</button>
                 </div>
             </div>
         </div>

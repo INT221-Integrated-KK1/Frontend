@@ -62,10 +62,9 @@ const getStatusClass = (status) => {
       </tr>
     </thead>
     <tbody>
-      
-      <tr v-for="(task, index) in todo" :key="index" class="itbkk-item"  v-if="todo">
-        <th>
-          </th>
+
+      <tr v-for="(task, index) in todo" :key="index" class="itbkk-item" v-if="todo">
+        <th>{{ index + 1 }}</th>
         <td @click="showModalWithId(task.taskId)" style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
         <td class="itbkk-assignees">{{ task.taskAssignees }}</td>
         <td :class="getStatusClass(task.taskStatus)" class="itbkk-status">{{ task.taskStatus }}</td>
@@ -73,6 +72,6 @@ const getStatusClass = (status) => {
     </tbody>
   </table>
 
- <TaskDetail @closeModal="closeModal" :showModal="showModal" :taskId="selectedTaskId" />
+  <TaskDetail @closeModal="closeModal" :showModal="showModal" :taskId="selectedTaskId" />
 </template>
 <style scoped></style>
