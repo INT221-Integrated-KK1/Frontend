@@ -28,7 +28,6 @@ watch(() => props.showModal, (newVal) => {
         fetchTaskDetails();
     }
 });
-
 // //demo time to show
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 // const currentDate = new Date().toLocaleString("En-US", timezone);
@@ -48,13 +47,14 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 <hr class="col-start-1 col-span-3">
                 <div class="col-start-1 col-span-2">
                     <h1 class="font-bold">Description : </h1>
-                    <textarea rows="10"
-                        class="p-2 border-solid border-2 border-grey w-full">{{ task.taskDescription }}</textarea>
+                    <textarea rows="10" class="p-2 border-solid border-2 border-grey w-full"
+                        v-model="task.taskDescription">
+                    </textarea>
                 </div>
                 <div class="col-start-3 col-span-1">
                     <h1 class="font-bold">Assignees : </h1>
-                    <textarea rows="2" class="p-2 border-solid border-2 border-grey w-full">
-                        {{ task.taskAssignees }}
+                    <textarea rows="2" class="p-2 border-solid border-2 border-grey w-full"
+                        v-model="task.taskAssignees">
                     </textarea>
                     <h1 class="font-bold">Status : </h1>
                     <select class="p-2 border-solid border-2 border-grey w-full mb-10" v-model="task.taskStatus">
@@ -63,10 +63,9 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                         <option value="Doing">Doing</option>
                         <option value="Done">Done</option>
                     </select>
-                    <p> Demo data </p>
                     <h1 class="font-bold">Timezone : {{ timezone }}</h1>
-                    <h1 class="font-bold">CreatedOn : {{ task.CreatedOn }} </h1>
-                    <h1 class="font-bold">UpdatedOn : {{ task.UpdatedOn }}</h1>
+                    <h1 class="font-bold">CreatedOn : {{ task.createdOn }} </h1>
+                    <h1 class="font-bold">UpdatedOn : {{ task.updatedOn }}</h1>
                 </div>
                 <div class="flex justify-end mt-4 col-start-3">
                     <button @click="$emit('closeModal', false)"
