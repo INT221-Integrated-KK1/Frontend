@@ -22,7 +22,8 @@ describe(`TC-PBI2-VIEW-TASK-TABLE-VIEW-2\n
   it('First item should be "Repository"',()=>{
     cy.get('.itbkk-item').eq(1).as('item')
     cy.get('@item').contains('.itbkk-title',"Repository") 
-    cy.get('@item').get('.itbkk-assignees').should('be.empty')
+    cy.get('@item').contains('.itbkk-assignees','Unassigned').as('assignees')
+    cy.get('@assignees').should('have.css','font-style','italic') 
     cy.get('@item').contains('.itbkk-status',"To Do")
   })
 
