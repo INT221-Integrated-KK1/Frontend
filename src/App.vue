@@ -13,12 +13,15 @@ const todo = ref()
 // Fetch data when the component is mounted
 onMounted(async () => {
   try {
-    const items = await getItems(url); // Fetch data
-    // Populate titles, assignees, and statuses arrays with fetched data
-    todo.value = items
-    console.log(todo.value)
+    const items = await getItems(url);
+    todo.value = items;
   } catch (error) {
     console.log(`Error fetching data: ${error}`);
+  } finally {
+    // Check if data is empty and display "No task" message
+    if (!todo.value || todo.value.length === 0) {
+      todo.value = [{ message: 'No task' }]; // Wrap "No task" message in an array to match the v-for loop
+    }
   }
 });
 
@@ -37,33 +40,37 @@ const getStatusClass = (status) => {
   }
 };
 
-
 </script>
+
+
 
 <template>
   <h1 class="text-center text-3xl font-bold mt-10">IT Bangmod Kradan Kanban</h1>
-  <div class="overflow-x-auto mt-10" v-if="todo">
-    <table class="table ">
-      <!-- head -->
-      <thead>
-        <tr class="text-xl text-black">
-          <th></th>
-          <th>Title</th>
-          <th>Assignees</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody class="itbkk-item">
-        <!-- Loop through titles array to render table rows -->
-        <tr v-for="(todo, index) in todo" :key="index">
-          <th>{{ index + 1 }}</th>
-          <td @click="showModal = true" style="cursor: pointer;" class="itbkk-title">{{ todo.taskTitle }}</td>
-          <!-- Render corresponding assignee and status based on index -->
-          <td class="itbkk-assignees">{{ todo.taskAssignees }}</td>
-          <td :class="getStatusClass(todo.taskStatus)" class="itbkk-status">{{ todo.taskStatus }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+<div class="overflow-x-auto mt-10 itbkk-item">
+  <table class="table" v-if="todo">
+    <!-- head -->
+    <thead>
+      <tr class="text-xl text-black">
+        <th></th>
+        <th>Title</th>
+        <th>Assignees</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Loop through titles array to render table rows -->
+      <tr v-for="(task, index) in todo" :key="index">
+        <th>{{ index + 1 }}</th>
+        <td @click="showModal = true" style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
+        <!-- Render corresponding assignee and status based on index -->
+        <td class="itbkk-assignees">{{ task.taskAssignees }}</td>
+        <td :class="getStatusClass(task.taskStatus)" class="itbkk-status">{{ task.taskStatus }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p v-else class="text-center">No task</p>
+</div>
+
+ 
 </template>
 <style scoped></style>
