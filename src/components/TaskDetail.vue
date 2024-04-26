@@ -9,9 +9,8 @@ const props = defineProps({
 
 const task = ref(null);
 
-const closeModal = () => {
-    emit('closeModal');
-};
+
+defineEmits(['closeModal']);
 
 const url = 'http://ip23sy2.sit.kmutt.ac.th:8080/itb-kk/v1/tasks'; 
 const fetchTaskDetails = async () => {
@@ -27,15 +26,11 @@ watch(() => props.showModal, (newVal) => {
         fetchTaskDetails();
     }
 });
-//demo modal
-// import { ref } from 'vue';
-// const { showModal } = defineProps(['showModal']);
-// defineEmits(['closeModal']);
 
-//demo time to show
+// //demo time to show
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-const currentDate = new Date().toLocaleString("En-US", timezone);
-const description = ref('');
+// const currentDate = new Date().toLocaleString("En-US", timezone);
+// const description = ref('');
 </script>
 
 <template>
