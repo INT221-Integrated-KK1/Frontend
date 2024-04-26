@@ -11,6 +11,7 @@ const task = ref(null);
 
 const url = 'http://localhost:8080/v1/tasks';
 
+
 const fetchTaskDetails = async () => {
     try {
         task.value = await getItemById(url, props.taskId);
@@ -42,15 +43,17 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 <hr class="col-start-1 col-span-3">
                 <div class="col-start-1 col-span-2">
                     <h1 class="font-bold">Description : </h1>
-                    <textarea class="itbkk-description p-2 border-solid border-2 border-grey w-full"
-                        v-model="task.taskDescription" rows="10">
-                        {{ task.taskDescription }}
+                    <textarea class="itbkk-description placeholder:italic
+                        placeholder:text-slate-400  p-2 border-solid border-2 border-grey w-full"
+                        placeholder="No Description Provided" v-model="task.taskDescription" rows="10">
+                        {{ task.taskDescription  }}
                     </textarea>
                 </div>
                 <div class="col-start-3 col-span-1">
                     <h1 class="font-bold">Assignees : </h1>
-                    <textarea rows="2" class="p-2 border-solid border-2 border-grey w-full itbkk-assignees"
-                        v-model="task.taskAssignees">
+                    <textarea rows="2" class=" placeholder:italic
+                        placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full itbkk-assignees"
+                        placeholder="Unassigned" v-model="task.taskAssignees">
                         {{ task.taskAssignees }}
                     </textarea>
                     <h1 class="font-bold">Status : </h1>
@@ -63,10 +66,10 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                     </select>
                     <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
                     <h1 class="font-bold itbkk-created-on">CreatedOn :
-                        {{ new Date(task.createdOn).toLocaleString("en-GB", { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}
+                        {{ new Date(task.createdOn).toLocaleString("en-GB", timezone) }}
                     </h1>
                     <h1 class="font-bold itbkk-updated-on">UpdatedOn :
-                        {{ new Date(task.updatedOn).toLocaleString("En-US", timezone) }}
+                        {{ new Date(task.updatedOn).toLocaleString("en-GB", { timeZone: timezone }) }}
                     </h1>
                 </div>
                 <div class="flex justify-end mt-4 col-start-3">
