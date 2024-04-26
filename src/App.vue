@@ -4,16 +4,17 @@ import { getItems } from './libs/fetchUtils'; // Import the getItems function
 import TaskDetail from './components/TaskDetail.vue';
 
 const showModal = ref(false);
+const selectedTaskId = ref();
+
 const closeModal = () => {
   showModal.value = false;
   selectedTaskId.value = null;
 }
-const selectedTaskId = ref(null);
+
 const showModalWithId = (taskId) => {
   selectedTaskId.value = taskId;
   showModal.value = true;
 };
-
 
 const url = 'http://localhost:8080/v1/tasks'; // Replace this with your actual URL
 
@@ -47,8 +48,6 @@ const getStatusClass = (status) => {
 
 </script>
 
-
-
 <template>
   <h1 class="text-center text-3xl font-bold mt-10">IT Bangmod Kradan Kanban</h1>
 
@@ -65,14 +64,15 @@ const getStatusClass = (status) => {
     <tbody>
       
       <tr v-for="(task, index) in todo" :key="index" class="itbkk-item"  v-if="todo">
-        <th>{{ index + 1 }}</th>
-        <td @click="showModalWithId(todo.id)" style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
-        
+        <th>
+          </th>
+        <td @click="showModalWithId(task.taskId)" style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
         <td class="itbkk-assignees">{{ task.taskAssignees }}</td>
         <td :class="getStatusClass(task.taskStatus)" class="itbkk-status">{{ task.taskStatus }}</td>
       </tr>
     </tbody>
   </table>
+
  <TaskDetail @closeModal="closeModal" :showModal="showModal" :taskId="selectedTaskId" />
 </template>
 <style scoped></style>

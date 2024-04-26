@@ -7,12 +7,14 @@ const props = defineProps({
     taskId: Number
 });
 
+const closeModal = () => {
+    showModal.value = false;
+}
+
 const task = ref(null);
 
+const url = 'http://localhost:8080/v1/tasks'; 
 
-defineEmits(['closeModal']);
-
-const url = 'http://ip23sy2.sit.kmutt.ac.th:8080/itb-kk/v1/tasks'; 
 const fetchTaskDetails = async () => {
     try {
         task.value = await getItemById(url, props.taskId); 
@@ -46,13 +48,12 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 <hr class="col-start-1 col-span-3">
                 <div class="col-start-1 col-span-2">
                     <h1 class="font-bold">Description : </h1>
-                    <textarea rows="10" placeholder="No description provided"
-                        class="p-2 border-solid border-2 border-grey w-full"
-                        :class="description === '' ? 'italic text-gray-500' : 'not-italic text-black'">{{ task.taskDescription }}</textarea>
+                    <textarea rows="10"
+                        class="p-2 border-solid border-2 border-grey w-full">{{ task.taskDescription }}</textarea>
                 </div>
                 <div class="col-start-3 col-span-1">
                     <h1 class="font-bold">Assignees : </h1>
-                    <textarea placeholder="assignees name" rows="2" class=" border-solid border-2 border-grey w-full mb-3">
+                    <textarea rows="2" class="p-2 border-solid border-2 border-grey w-full">
                         {{ task.taskAssignees }}
                     </textarea>
                     <h1 class="font-bold">Status : </h1>
