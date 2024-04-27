@@ -39,8 +39,6 @@ const getStatusClass = (status) => {
     }
 };
 
-
-
 </script>
 
 <template>
@@ -59,10 +57,11 @@ const getStatusClass = (status) => {
         <tbody>
             <tr v-for="(task, index) in todo" :key="index" class="itbkk-item" v-if="todo">
                 <th class=""> {{ task.taskId }}</th>
-                <router-link :to="{ name: 'taskdetail', params: { taskId: task.taskId } }">
-                <td style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
-                
+                <router-link 
+                    :to="{ name: 'taskdetail', params: { taskId: task.taskId } }">
+                    <td style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
                 </router-link>
+           
                 <!-- <td @click="showModalWithId(task.taskId)" style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td> -->
                 <td class="itbkk-assignees" :class="task.taskAssignees === null ? EmptyStyle : ''">{{ task.taskAssignees
                 === null
