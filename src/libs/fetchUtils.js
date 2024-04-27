@@ -9,14 +9,26 @@ async function getItems(url) {
 }
 
 // ลบ url ออก เอาแค่ Id
+// async function getItemById(url, id) {
+//   try {
+//     const data = await fetch(`${url}/${id}`) // response stream
+//     const item = await data.json()
+//     return item
+//   } catch (error) {
+//     console.log(`error: ${error}`)
+//     if (data.status === 404) return undefined
+//   }
+// }
+
 async function getItemById(url, id) {
   try {
-    const data = await fetch(`${url}/${id}`) // response stream
-    const item = await data.json()
-    return item
+    const data = await fetch(`${url}/${id}`);
+    const item = await data.json();
+    return item;
   } catch (error) {
-    console.log(`error: ${error}`)
-    if (data.status === 404) return undefined
+    console.log(`error: ${error}`);
+    if (error.status === 404) return undefined;
+  
   }
 }
 
