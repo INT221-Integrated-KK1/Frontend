@@ -17,7 +17,7 @@ const router = createRouter({
       component: TaskTable,
     },
     {
-      path: "/task/:id",
+      path: "/task/:taskId",
       name: "taskdetail",
       component: TaskDetail,
     },

@@ -1,35 +1,23 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getItems } from '../libs/fetchUtils.js'
-import TaskDetail from '../components/TaskDetail.vue';
-import { RouterLink } from 'vue-router'
-import { param } from 'cypress/types/jquery';
-
-// const showModal = ref(false);
-// const selectedTaskId = ref();
-
-// const closeModal = () => {
-//     showModal.value = false;
-//     selectedTaskId.value = null;
-//     router.push('/task');
-// }
-
-// const showModalWithId = (taskId) => {
-//     selectedTaskId.value = taskId;
-//     showModal.value = true;
-//     router.push(`/task/${taskId}`);
-// };
 
 const url = 'http://localhost:8080/v1/tasks'; // Replace this with your actual URL
 
 // Define variables to store fetched data
 const todo = ref()
 
+const id = defineProps({
+    taskId: Number
+});
+
+const EmptyStyle = 'italic text-slate-400';
+
 // Fetch data when the component is mounted
 onMounted(async () => {
     try {
         const items = await getItems(url);
-        console.log(import.meta.env.BASE_TASK_URL);
+        console.log(items);
         todo.value = items;
     } catch (error) {
         console.log(`Error fetching data: ${error}`);
@@ -51,7 +39,7 @@ const getStatusClass = (status) => {
     }
 };
 
-const EmptyStyle = 'italic text-slate-400';
+
 
 </script>
 
@@ -70,10 +58,10 @@ const EmptyStyle = 'italic text-slate-400';
         </thead>
         <tbody>
             <tr v-for="(task, index) in todo" :key="index" class="itbkk-item" v-if="todo">
-                <!-- <th>{{ index + 1 }}</th> -->
-                <th>{{ task.taskId }}</th>
-                <router-link :to="{ name: 'taskdetail', params: { taskId: taskId } }">
-                    <td  style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
+                <th class=""> {{ task.taskId }}</th>
+                <router-link :to="{ name: 'taskdetail', params: { taskId: task.taskId } }">
+                <td style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
+                
                 </router-link>
                 <!-- <td @click="showModalWithId(task.taskId)" style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td> -->
                 <td class="itbkk-assignees" :class="task.taskAssignees === null ? EmptyStyle : ''">{{ task.taskAssignees
