@@ -1,15 +1,29 @@
 <script setup>
-import { ref, watch } from 'vue';
-import { getItemById } from '../libs/fetchUtils.js';
+import { ref, watch, onMounted } from 'vue';
+import { getItemById, getItems } from '../libs/fetchUtils.js';
+import { useRoute } from "vue-router"
+const { params } = useRoute()
+// const props = defineProps({
+//     taskId: Number
+// });
 
-const props = defineProps({
-    showModal: Boolean,
-    taskId: Number
-});
-
-const task = ref(null);
 
 const url = 'http://localhost:8080/v1/tasks';
+const id = params.taskId
+
+
+console.log(id) 
+const task = ref(null);
+onMounted(async () => {
+    console.log(id)
+
+    const task = await getItems(url);
+    console.log(task)
+})
+
+const showModal = ref(false);
+
+
 
 
 const EmptyStyle = 'italic text-slate-400';
@@ -18,17 +32,17 @@ const EmptyDescriptionText = 'No Description Provided';
 
 const fetchTaskDetails = async () => {
     try {
-        task.value = await getItemById(url, props.taskId);
+        task.value = await getItemById(url, id);
     } catch (error) {
         console.error('Error fetching task details:', error);
     }
 };
 
-watch(() => props.showModal, (newVal) => {
-    if (newVal) {
-        fetchTaskDetails();
-    }
-});
+// watch(() => props.showModal, (newVal) => {
+//     if (newVal) {
+//         fetchTaskDetails();
+//     }
+// });
 
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -38,7 +52,7 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     <!-- demo button modal -->
     <div v-if="showModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
-            <div v-if="task" class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
+            <div v-if="taskId" class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
 
                 <div class="col-start-1 col-span-3">
                     <h1 class="font-bold">Title : </h1>
@@ -58,7 +72,7 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                     <h1 class="font-bold">Assignees : </h1>
                     <textarea rows="2" class=" placeholder:italic
                         placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full itbkk-assignees"
-                        :class="task.taskAssignees === null ? EmptyStyle : ''" 
+                        :class="task.taskAssignees === null ? EmptyStyle : ''"
                         :value="task.taskAssignees === null ? EmptyAssigneeText : task.taskAssignees">
                     </textarea>
                     <h1 class="font-bold">Status : </h1>
