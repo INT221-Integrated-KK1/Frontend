@@ -12,6 +12,10 @@ const task = ref(null);
 const url = 'http://localhost:8080/v1/tasks';
 
 
+const EmptyStyle = 'italic text-slate-400';
+const EmptyAssigneeText = 'Unassigned';
+const EmptyDescriptionText = 'No Description Provided';
+
 const fetchTaskDetails = async () => {
     try {
         task.value = await getItemById(url, props.taskId);
@@ -27,6 +31,7 @@ watch(() => props.showModal, (newVal) => {
 });
 
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 </script>
 
 <template>
@@ -44,17 +49,17 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 <div class="col-start-1 col-span-2">
                     <h1 class="font-bold">Description : </h1>
                     <textarea class="itbkk-description placeholder:italic
-                        placeholder:text-slate-400  p-2 border-solid border-2 border-grey w-full"
-                        placeholder="No Description Provided" v-model="task.taskDescription" rows="10">
-                        {{ task.taskDescription  }}
+                        placeholder:text-slate-400  p-2 border-solid border-2 border-grey w-full" rows="10"
+                        :class="task.taskDescription === null ? EmptyStyle : ''"
+                        :value="task.taskDescription === null ? EmptyDescriptionText : task.taskDescription">
                     </textarea>
                 </div>
                 <div class="col-start-3 col-span-1">
                     <h1 class="font-bold">Assignees : </h1>
                     <textarea rows="2" class=" placeholder:italic
                         placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full itbkk-assignees"
-                        placeholder="Unassigned" v-model="task.taskAssignees">
-                        {{ task.taskAssignees }}
+                        :class="task.taskAssignees === null ? EmptyStyle : ''" 
+                        :value="task.taskAssignees === null ? EmptyAssigneeText : task.taskAssignees">
                     </textarea>
                     <h1 class="font-bold">Status : </h1>
                     <select class="p-2 border-solid border-2 border-grey w-full mb-10 itbkk-status"
@@ -66,7 +71,7 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                     </select>
                     <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
                     <h1 class="font-bold itbkk-created-on">CreatedOn :
-                        {{ new Date(task.createdOn).toLocaleString("en-GB", timezone) }}
+                        {{ new Date(task.createdOn).toLocaleString("en-GB", { timeZone: timezone }) }}
                     </h1>
                     <h1 class="font-bold itbkk-updated-on">UpdatedOn :
                         {{ new Date(task.updatedOn).toLocaleString("en-GB", { timeZone: timezone }) }}

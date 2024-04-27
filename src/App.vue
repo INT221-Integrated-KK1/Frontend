@@ -25,6 +25,7 @@ const todo = ref()
 onMounted(async () => {
   try {
     const items = await getItems(url);
+    console.log(import.meta.env.BASE_TASK_URL);
     todo.value = items;
   } catch (error) {
     console.log(`Error fetching data: ${error}`);
@@ -46,6 +47,8 @@ const getStatusClass = (status) => {
   }
 };
 
+const EmptyStyle = 'italic text-slate-400';
+
 </script>
 
 <template>
@@ -66,7 +69,8 @@ const getStatusClass = (status) => {
       <tr v-for="(task, index) in todo" :key="index" class="itbkk-item" v-if="todo">
         <th>{{ index + 1 }}</th>
         <td @click="showModalWithId(task.taskId)" style="cursor: pointer;" class="itbkk-title">{{ task.taskTitle }}</td>
-        <td class="itbkk-assignees">{{ task.taskAssignees }}</td>
+        <td class="itbkk-assignees" :class="task.taskAssignees === null ? EmptyStyle : ''">{{ task.taskAssignees === null
+          ? "Unassigned" : task.taskAssignees }}</td>
         <td :class="getStatusClass(task.taskStatus)" class="itbkk-status">{{ task.taskStatus }}</td>
       </tr>
     </tbody>
