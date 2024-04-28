@@ -1,3 +1,5 @@
+import router from '../router/index.js'
+
 async function getItems(url) {
   try {
     const data = await fetch(url)
@@ -23,12 +25,22 @@ async function getItems(url) {
 async function getItemById(url, id) {
   try {
     const data = await fetch(`${url}/${id}`);
-    const item = await data.json();
-    return item;
+    if (data.ok) {
+      const item = await data.json();
+      return item;
+    } else {
+      // 404 error
+      if (data.status === 404) {
+        window.alert('The requested task does not exist');
+        router.push('/task');
+      }
+      // other errors
+      console.error(`Error fetching task details: ${data.status}`);
+      return undefined;
+    }
   } catch (error) {
-    console.log(`error: ${error}`);
-    if (error.status === 404) return undefined;
-  
+    console.error(`Error fetching task details: ${error}`);
+    return undefined;
   }
 }
 

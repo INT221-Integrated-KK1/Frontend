@@ -24,8 +24,6 @@ onMounted(async () => {
   }
 });
 
-
-
 const EmptyStyle = "italic text-slate-400";
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided"
@@ -39,14 +37,15 @@ const taskStatus = getTaskProp('taskStatus');
 const createdOn = computed(() => formatToLocalTime(task.value?.createdOn))
 const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn))
 
-const isValidTaskId = () => {
-  return id === taskId;
-};
+// const isValidTaskId = () => {
+//   return task.value !== null && task.value.taskId !== null && id === task.value.taskId;
+// };
 
-if (isValidTaskId() === false) {
-  window.alert('Invalid taskId: ' + id + '    taskId: ' + taskId);
-  window.history.back();
-}
+
+// if (isValidTaskId() === false) {
+//   window.alert('Invalid taskId: ' + id + '    taskId: ' + id);
+//   window.history.back();
+// }
 
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const formatToLocalTime = (dateTimeString) => {
