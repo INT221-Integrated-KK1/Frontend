@@ -1,17 +1,30 @@
 import { createRouter, createWebHistory } from "vue-router";
 import App from "@/App.vue";
+import NotFound from "../views/NotFound.vue";
+import TaskTable from "../views/TaskTable.vue";
+import TaskDetail from "../components/TaskDetail.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
-      redirect: "/task", // Redirect to '/task' when accessing the root path
+      redirect: "/task",
     },
     {
       path: "/task",
       name: "task",
-      component: App,
+      component: TaskTable,
+    },
+    {
+      path: "/task/:taskId",
+      name: "taskdetail",
+      component: TaskDetail,
+    },
+    {
+      path: "/:notfoundpath(.*)",
+      name: "NotFound",
+      component: NotFound,
     },
   ],
 });
