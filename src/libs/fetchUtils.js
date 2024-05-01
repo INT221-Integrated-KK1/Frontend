@@ -9,19 +9,6 @@ async function getItems(url) {
     console.log(`error: ${error}`)
   }
 }
-
-// ลบ url ออก เอาแค่ Id
-// async function getItemById(url, id) {
-//   try {
-//     const data = await fetch(`${url}/${id}`) // response stream
-//     const item = await data.json()
-//     return item
-//   } catch (error) {
-//     console.log(`error: ${error}`)
-//     if (data.status === 404) return undefined
-//   }
-// }
-
 async function getItemById(url, id) {
   try {
     const data = await fetch(`${url}/${id}`);
