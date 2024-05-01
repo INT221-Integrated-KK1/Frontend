@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getItems } from '../libs/fetchUtils.js'
+import EditTaskModal from './EditTaskModal.vue'; // Import your EditTaskModal component
+
 
 
 // Define variables to store fetched data
@@ -69,7 +71,9 @@ const getStatusClass = (status) => {
                     <td class="itbkk-button-action text-black text-xl">
                         <span class="cursor-pointer" @click="task.showDetailModal = !task.showDetailModal">⋮</span>
                         <div v-if="task.showDetailModal" class="absolute bg-white rounded shadow text-sm">
-                            <button class="itbkk-button-edit block w-full p-2 hover:bg-gray-200 ">Edit</button>
+                            <router-link :to="{ name: 'editTaskModal', params: { taskId: task.taskId } }">
+                                <button class="itbkk-button-edit block w-full p-2 hover:bg-gray-200" >Edit</button> 
+                            </router-link>                                                       
                             <button class="itbkk-button-delete block w-full p-2 hover:bg-gray-200">Delete</button>
                         </div>
                     </td>
