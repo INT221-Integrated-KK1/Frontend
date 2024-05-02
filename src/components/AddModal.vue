@@ -22,10 +22,10 @@ const time = new Date().toLocaleString('en-GB', {
 });
 
 const AddTask = async () => {
-    if (taskTitle.value === '') {
-        alert('Please enter a title');
-        return;
-    } else {
+    // if (taskTitle.value === '') {
+    //     alert('Please enter a title');
+    //     return;
+    // } else {
         const newItem = {
             taskTitle: taskTitle.value,
             taskDescription: taskDescription.value,
@@ -36,13 +36,14 @@ const AddTask = async () => {
             const items = await addItem(import.meta.env.VITE_BASE_TASK_URL, newItem);
             console.log(items);
             console.log(newItem);
-            router.go();
+            // router.go();
+
             // Add the new item to the existing list without refreshing
             // tasks.value.push(newItem);
         } catch (error) {
             console.log(`Error fetching data: ${error}`);
         }
-    }
+    // }
 
 };
 

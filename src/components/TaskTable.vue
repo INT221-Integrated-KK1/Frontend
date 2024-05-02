@@ -1,11 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { getItems } from '../libs/fetchUtils.js'
 import { TaskStore } from '@/stores/task';
 
 
 // Define variables to store fetched data
-const todo = ref()
+const todo = ref([])
 const showDetailModal = ref(false);
 
 const id = defineProps({
@@ -17,9 +17,10 @@ const EmptyStyle = 'italic text-slate-400 font-semibold';
 // Fetch data when the component is mounted
 onMounted(async () => {
     try {
-        const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-        console.log(items);
-        todo.value = items;
+        // const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+        // todo.value = items;
+        todo.value = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+        // console.log(items);
     } catch (error) {
         console.log(`Error fetching data: ${error}`);
     }
