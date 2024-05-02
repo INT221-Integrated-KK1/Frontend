@@ -40,9 +40,6 @@ const getStatusClass = (status) => {
     }
 };
 
-if (todo.value.length > 0) {
-    // TaskStore.setTasks(todo.value);
-}
 
 </script>
 <template>
