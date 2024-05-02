@@ -91,11 +91,19 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ updatedOn }}</h1>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
+          <RouterLink :to="{name: 'task'}">
+            <button class="btn bg-green-500 hover:bg-green-700 text-white mx-5">
+              Save
+            </button>
+
+          </RouterLink>
+        
           <RouterLink :to="{ name: 'task' }">
             <button class="btn bg-red-500 hover:bg-red-700 text-white">
               Close
             </button>
           </RouterLink>
+          
         </div>
       </div>
     </div>

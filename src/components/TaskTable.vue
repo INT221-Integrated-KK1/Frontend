@@ -73,7 +73,7 @@ const getStatusClass = (status) => {
                         <div v-if="task.showDetailModal" class="absolute bg-white rounded shadow text-sm">
                             <router-link :to="{ name: 'editTaskModal', params: { taskId: task.taskId } }">
                                 <button class="itbkk-button-edit block w-full p-2 hover:bg-gray-200" >Edit</button> 
-                            </router-link>                                                       
+                            </router-link>                                                                          
                             <button class="itbkk-button-delete block w-full p-2 hover:bg-gray-200">Delete</button>
                         </div>
                     </td>
