@@ -11,7 +11,7 @@ class TaskManagement {
     setTasks(tasks = []) {
         this.tasks.length = 0;
         tasks.forEach((task) => {
-            task.status = this.convertStatus(task.status);
+            task.taskStatus = this.convertStatus(task.taskStatus);
             this.tasks.push(task);
         });
     }
@@ -21,8 +21,8 @@ class TaskManagement {
         const convertStatus = capitalizedStatus.replace(/_/g, " ");
         return convertStatus;
     }
-    getTaskById() {
-        return this.tasks
+    getTaskById(id) {
+        return this.tasks.find((task) => task.id === id)
     }
 }
 export { TaskManagement }

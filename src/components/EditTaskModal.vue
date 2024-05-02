@@ -1,44 +1,64 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { getItemById } from "../libs/fetchUtils.js";
-import { useRoute } from "vue-router";
+import { ref, onMounted, computed,reactive, watch} from "vue";
+import { getItemById , editItem  } from "../libs/fetchUtils.js";
+import { useRoute , useRouter} from "vue-router";
 const { params } = useRoute();
+const emit = defineEmits('yohoo')
 
+const router = useRouter(); // ใช้ useRouter() เพื่อเข้าถึง router
+const taskDetails = ref();
 const id = params.taskId;
-console.log(id);
+
 
 const task = ref(null);
+const isLoaded = ref(false);
 const timezoneOffset = new Date().getTimezoneOffset() * 60000
-console.log(task);
+
+const props1 = defineProps({
+  taskDetailsza: Object
+});
 
 onMounted(async () => {
   try {
     task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-    console.log(task);
+    isLoaded.value = true;
 
   } catch (error) {
     console.error("Error fetching task details:", error)
   }
 });
 
+
+
+
 const EmptyStyle = "italic text-slate-400";
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided"
+const props = reactive(props1.taskDetailsza);
+console.log(props.updatedOn);
+const getTaskProp  = computed(() => {
+return {taskTitle : props.taskTitle,
+  taskDescription : props.taskDescription,
+  taskAssignees : props.taskAssignees,
+  taskStatus : props.taskStatus,
+  createdOn : props.createdOn,
+  updatedOn : props.updatedOn
+}
+});
 
-const getTaskProp = (propName) => computed(() => task.value ? task.value[propName] : "");
-const taskId = getTaskProp('taskId');
-const taskTitle = getTaskProp('taskTitle');
-const taskDescription = getTaskProp('taskDescription');
-const taskAssignees = getTaskProp('taskAssignees');
-const taskStatus = getTaskProp('taskStatus');
-const createdOn = computed(() => formatToLocalTime(task.value?.createdOn))
-const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn))
+// const taskId = reactive(getTaskProp('taskId'));
+// const taskTitle = reactive(getTaskProp('taskTitle'));
+// const taskDescription = reactive(getTaskProp('taskDescription'));
+// const taskAssignees = reactive(getTaskProp('taskAssignees'));
+// const taskStatus = reactive(getTaskProp('taskStatus'));
+// const createdOn = computed(() => formatToLocalTime(task.value?.createdOn))
+// const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn))
+
 
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const formatToLocalTime = (dateTimeString) => {
   const dateTime = new Date(dateTimeString)
   const localDate = new Date(dateTime.getTime());
-  console.log("localDate : " + localDate);
   return localDate.toLocaleString('en-GB', {
     day: '2-digit',
     month: '2-digit',
@@ -50,68 +70,88 @@ const formatToLocalTime = (dateTimeString) => {
   });
 };
 
+
+
+const saveChanges = async () => {
+  const editedTask = { taskId: id,
+    taskTitle: getTaskProp.value.taskTitle,
+    taskDescription: getTaskProp.value.taskDescription,
+    taskAssignees: getTaskProp.value.taskAssignees,
+    taskStatus: getTaskProp.value.taskStatus
+  };
+  emit('yohoo',editedTask)
+  try {
+    console.log(id);
+    // Check the values in editedTask before sending to the API
+    console.log("Edited task:", editedTask);
+
+    // Send the data to the API
+    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+    
+    // Redirect to the task view page after saving changes
+    router.push({ name: 'task' }); // Assuming you have a route named 'task' to view the task details
+
+  } catch (error) {
+    console.error("Error editing task:", error);
+  }
+
+};
+
 </script>
 
 <template>
 
-  <div class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="isLoaded" class="text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class=" col-start-1 col-span-3">
-          <h1 class="font-bold text-2xl py-2 mb-2">Task Details {{ taskId }}</h1>
+          <h1 class="font-bold text-2xl py-2 mb-2">Task Details {{ getTaskProp.taskId }}</h1>
           <h1 class="font-bold mt-2">Title :</h1>
-          <div class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-text="taskTitle">
-          </div>
+          <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-model="getTaskProp.taskTitle">
+          </input>
         </div>
         <hr class="col-start-1 col-span-3" />
         <div class="col-start-1 col-span-2">
           <h1 class="font-bold">Description :</h1>
-          <div
-            class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
-            :class="taskDescription === null ? EmptyStyle : ''">
-            {{ taskDescription === null ? EmptyDescriptionText : taskDescription }}
-          </div>
+          <textarea  class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
+            :class="getTaskProp.taskDescription === null ? EmptyStyle : ''" >
+            {{ getTaskProp.taskDescription === null ? EmptyDescriptionText : getTaskProp.taskDescription }}
+          </textarea>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
-          <div
+          <textarea
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="taskAssignees === null ? EmptyStyle : ''">
-            {{ taskAssignees === null ? EmptyAssigneeText : taskAssignees }}
-          </div>
+            :class="getTaskProp.taskAssignees === null ? EmptyStyle : ''">
+            {{ getTaskProp.taskAssignees === null ? EmptyAssigneeText : getTaskProp.taskAssignees }}
+          </textarea>
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskStatus">
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="getTaskProp.taskStatus" >
             <option value="No Status">No Status</option>
             <option value="To Do">To Do</option>
             <option value="Doing">Doing</option>
             <option value="Done">Done</option>
           </select>
-          <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
-          <h1 class="font-bold itbkk-created-on">Created On: {{ createdOn }}</h1>
-          <h1 class="font-bold itbkk-updated-on">Updated On: {{ updatedOn }}</h1>
+          <h1 class="font-bold itbkk-timezone">Timezone : {{ getTaskProp.timezone }}</h1>
+          <h1 class="font-bold itbkk-created-on">Created On: {{ getTaskProp.createdOn }}</h1>
+          <h1 class="font-bold itbkk-updated-on">Updated On: {{ getTaskProp.updatedOn }}</h1>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
-          <RouterLink :to="{name: 'task'}">
-            <button class="btn bg-green-500 hover:bg-green-700 text-white mx-5">
+          <RouterLink :to="{ name: 'task' }">
+            <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges">
               Save
             </button>
-
           </RouterLink>
-        
           <RouterLink :to="{ name: 'task' }">
             <button class="btn bg-red-500 hover:bg-red-700 text-white">
               Close
             </button>
           </RouterLink>
-          
         </div>
       </div>
     </div>
   </div>
-  <button
-    class="fixed bottom-4 right-4 p-4 px-6 text-xl bg-green-500 text-white rounded-full shadow-xl hover:bg-green-600">
-    +
-  </button>
+
 </template>
 
 <style scoped></style>

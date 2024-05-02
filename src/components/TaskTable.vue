@@ -1,13 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getItems } from '../libs/fetchUtils.js'
+import { ref, onMounted, reactive } from 'vue';
+import { getItems,getItemById } from '../libs/fetchUtils.js'
 import EditTaskModal from './EditTaskModal.vue'; // Import your EditTaskModal component
+import {TaskManagement} from '../libs/TaskManagement.js'
 
-
-
+const taskmanager =(new TaskManagement())
 // Define variables to store fetched data
 const todo = ref()
-const showDetailModal = ref(false);
+const taskDetails = ref({});
+const showEditModal = ref(false);
+const openEditModal = () => {
+    showEditModal.value = true;
+};
+
 
 const id = defineProps({
     taskId: Number
@@ -17,14 +22,46 @@ const EmptyStyle = 'italic text-slate-400 font-semibold';
 
 // Fetch data when the component is mounted
 onMounted(async () => {
-    try {
         const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-        console.log(items);
         todo.value = items;
-    } catch (error) {
-        console.log(`Error fetching data: ${error}`);
-    }
+    taskmanager.setTasks(items)
+        console.log(taskmanager.getTask());
 });
+async function editHandler(id) {
+    const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL,id)
+    if (items) {
+        taskDetails.value = items;
+        showEditModal.value = true;
+        console.log(items);
+    }
+
+}
+function yohooHandler(obj) {
+   const task = taskmanager.getTaskById();
+   task.taskTitle = obj.taskTitle;
+    task.taskDescription = obj.taskDescription;
+    task.taskAssignees = obj.taskAssignees;
+    task.taskStatus = obj.taskStatus;
+}
+
+// async function editHandler(taskId) {
+//     try {
+//         // ดึงข้อมูลของงานที่ถูกแก้ไขจากเซิร์ฟเวอร์
+//         const updatedTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, taskId);
+//         console.log(updatedTask);
+
+//         // ค้นหา index ของงานที่ถูกแก้ไขใน todo
+//         const index = todo.value.findIndex(task => task.taskId === taskId);
+
+//         if (index !== -1) {
+//             // ทำการอัพเดทข้อมูลของงานที่ถูกแก้ไขใน todo
+//             todo.value[index] = updatedTask;
+//         }
+//     } catch (error) {
+//         console.error(`Error updating task ${taskId}:`, error);
+//     }
+// }
+
 
 const getStatusClass = (status) => {
     switch (status) {
@@ -43,6 +80,9 @@ const getStatusClass = (status) => {
 
 </script>
 <template>
+    <Teleport to="body">
+        <EditTaskModal v-if="showEditModal" @close="showEditModal = false" :taskDetailsza="taskDetails" @yohoo="yohooHandler"/>
+    </Teleport>
     <div class="flex justify-center items-center">
         <table class=" overflow-x-auto  mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
             <!-- head -->
@@ -72,7 +112,7 @@ const getStatusClass = (status) => {
                         <span class="cursor-pointer" @click="task.showDetailModal = !task.showDetailModal">⋮</span>
                         <div v-if="task.showDetailModal" class="absolute bg-white rounded shadow text-sm">
                             <router-link :to="{ name: 'editTaskModal', params: { taskId: task.taskId } }">
-                                <button class="itbkk-button-edit block w-full p-2 hover:bg-gray-200" >Edit</button> 
+                                <button class="itbkk-button-edit block w-full p-2 hover:bg-gray-200" @click="editHandler(task.taskId)" >Edit</button> 
                             </router-link>                                                                          
                             <button class="itbkk-button-delete block w-full p-2 hover:bg-gray-200">Delete</button>
                         </div>
@@ -81,6 +121,8 @@ const getStatusClass = (status) => {
             </tbody>
         </table>
     </div>
+
+    
     
 
 
