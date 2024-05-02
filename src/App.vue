@@ -9,9 +9,12 @@ import TaskTable from '../src/components/TaskTable.vue';
     <TaskTable />
   </div>
   <div class="fixed bottom-2 right-2">
-    <button class="itbkk-button-add p-4 px-6 text-lg bg-green-500 text-white hover:bg-green-600 rounded-full">
-      +
-    </button>
+    <router-link :to="{ name: 'addtask'}">
+      <button class="itbkk-button-add p-4 px-6 text-lg bg-green-500 text-white hover:bg-green-600 rounded-full">
+        +
+      </button>
+    </router-link>
+
   </div>
 </template>
 

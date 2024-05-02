@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getItems } from '../libs/fetchUtils.js'
+import { TaskStore } from '@/stores/task';
 
 
 // Define variables to store fetched data
@@ -39,6 +40,10 @@ const getStatusClass = (status) => {
     }
 };
 
+if (todo.value.length > 0) {
+    // TaskStore.setTasks(todo.value);
+}
+
 </script>
 <template>
     <div class="flex justify-center items-center">
@@ -60,10 +65,11 @@ const getStatusClass = (status) => {
                     <router-link :to="{ name: 'taskdetail', params: { taskId: task.taskId } }">
                         <td style="cursor: pointer; word-break" class="itbkk-title">{{ task.taskTitle }}</td>
                     </router-link>
-                    <td class="itbkk-assignees" :class="task.taskAssignees === null ? EmptyStyle : ''">{{
+                    <td class="itbkk-assignees"
+                        :class="task.taskAssignees === null || task.taskAssignees === '' ? EmptyStyle : ''">{{
                         task.taskAssignees
-                        === null
-                        ? "Unassigned" : task.taskAssignees }}</td>
+                            === null || task.taskAssignees === ''
+                            ? "Unassigned" : task.taskAssignees }}</td>
                     <td :class="getStatusClass(task.taskStatus)" class="itbkk-status text-center">{{
                         task.taskStatus }}</td>
                     <td class="itbkk-button-action text-black text-xl">
@@ -76,9 +82,8 @@ const getStatusClass = (status) => {
                 </tr>
             </tbody>
         </table>
-    </div>
-    
 
+    </div>
 
 
 
