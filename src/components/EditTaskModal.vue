@@ -1,13 +1,13 @@
 <script setup>
-import { ref, onMounted, computed,reactive, watch} from "vue";
-import { getItemById , editItem  } from "../libs/fetchUtils.js";
-import { useRoute , useRouter} from "vue-router";
+import { ref, onMounted, computed ,  reactive , watch } from "vue";
+import { getItemById, editItem } from "../libs/fetchUtils.js";
+import { useRoute, useRouter } from "vue-router";
 const { params } = useRoute();
-const emit = defineEmits('yohoo')
+const emit = defineEmits('yohoo' , 'close' , 'saveChanges')
 
-const router = useRouter(); // ใช้ useRouter() เพื่อเข้าถึง router
-const taskDetails = ref();
-const id = params.taskId;
+
+
+const id = Number(params.taskId);
 
 
 const task = ref(null);
@@ -35,16 +35,22 @@ const EmptyStyle = "italic text-slate-400";
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided"
 const props = reactive(props1.taskDetailsza);
-console.log(props.updatedOn);
-const getTaskProp  = computed(() => {
-return {taskTitle : props.taskTitle,
-  taskDescription : props.taskDescription,
-  taskAssignees : props.taskAssignees,
-  taskStatus : props.taskStatus,
-  createdOn : props.createdOn,
-  updatedOn : props.updatedOn
-}
+console.log(props1.taskDetailsza);
+
+
+
+const getTaskProp = computed(() => {
+  return {
+    taskTitle: props.taskTitle,
+    taskDescription: props.taskDescription,
+    taskAssignees: props.taskAssignees,
+    taskStatus: props.taskStatus,
+    createdOn: props.createdOn,
+    updatedOn: props.updatedOn
+  }
 });
+
+
 
 // const taskId = reactive(getTaskProp('taskId'));
 // const taskTitle = reactive(getTaskProp('taskTitle'));
@@ -71,32 +77,6 @@ const formatToLocalTime = (dateTimeString) => {
 };
 
 
-
-const saveChanges = async () => {
-  const editedTask = { taskId: id,
-    taskTitle: getTaskProp.value.taskTitle,
-    taskDescription: getTaskProp.value.taskDescription,
-    taskAssignees: getTaskProp.value.taskAssignees,
-    taskStatus: getTaskProp.value.taskStatus
-  };
-  emit('yohoo',editedTask)
-  try {
-    console.log(id);
-    // Check the values in editedTask before sending to the API
-    console.log("Edited task:", editedTask);
-
-    // Send the data to the API
-    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
-    
-    // Redirect to the task view page after saving changes
-    router.push({ name: 'task' }); // Assuming you have a route named 'task' to view the task details
-
-  } catch (error) {
-    console.error("Error editing task:", error);
-  }
-
-};
-
 </script>
 
 <template>
@@ -107,14 +87,16 @@ const saveChanges = async () => {
         <div class=" col-start-1 col-span-3">
           <h1 class="font-bold text-2xl py-2 mb-2">Task Details {{ getTaskProp.taskId }}</h1>
           <h1 class="font-bold mt-2">Title :</h1>
-          <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-model="getTaskProp.taskTitle">
+          <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
+            v-model="getTaskProp.taskTitle">
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
         <div class="col-start-1 col-span-2">
           <h1 class="font-bold">Description :</h1>
-          <textarea  class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
-            :class="getTaskProp.taskDescription === null ? EmptyStyle : ''" >
+          <textarea
+            class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
+            :class="getTaskProp.taskDescription === null ? EmptyStyle : ''">
             {{ getTaskProp.taskDescription === null ? EmptyDescriptionText : getTaskProp.taskDescription }}
           </textarea>
         </div>
@@ -126,7 +108,8 @@ const saveChanges = async () => {
             {{ getTaskProp.taskAssignees === null ? EmptyAssigneeText : getTaskProp.taskAssignees }}
           </textarea>
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="getTaskProp.taskStatus" >
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
+            v-model="getTaskProp.taskStatus">
             <option value="No Status">No Status</option>
             <option value="To Do">To Do</option>
             <option value="Doing">Doing</option>
@@ -137,16 +120,13 @@ const saveChanges = async () => {
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ getTaskProp.updatedOn }}</h1>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
-          <RouterLink :to="{ name: 'task' }">
-            <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges">
-              Save
-            </button>
-          </RouterLink>
-          <RouterLink :to="{ name: 'task' }">
-            <button class="btn bg-red-500 hover:bg-red-700 text-white">
-              Close
-            </button>
-          </RouterLink>
+          <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="$emit('saveChanges', getTaskProp , id)">
+            Save
+          </button>
+          <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+            Close
+          </button>
+
         </div>
       </div>
     </div>
