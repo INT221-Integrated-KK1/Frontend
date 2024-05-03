@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 // import App from "../App.vue";
 // import TaskTable from "../components/TaskTable.vue";
 import TaskDetail from "../components/TaskDetail.vue";
+import EditTaskModal from "@/components/EditTaskModal.vue";
 
 
 const router = createRouter({
@@ -26,6 +27,13 @@ const router = createRouter({
     //   name: "NotFound",
     //   component: NotFound,
     // },
+
+    {
+      path: "/task/:taskId/edit",
+      name: "editTaskModal",
+      component: EditTaskModal,
+    },
+
   ],
 });
 
