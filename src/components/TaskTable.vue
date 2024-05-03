@@ -1,11 +1,8 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
-import { getItems } from '../libs/fetchUtils.js'
-import { TaskStore } from '@/stores/task';
-
-
-// Define variables to store fetched data
-const todo = ref([])
+import { ref, onMounted, watch } from 'vue';
+import { getItems } from '../libs/fetchUtils.js';
+import { TaskManagement } from '../libs/TaskManagement.js'; // Assuming you have a TaskManagement class
+import AddModal from './AddModal.vue';
 const showDetailModal = ref(false);
 
 const id = defineProps({
@@ -13,14 +10,24 @@ const id = defineProps({
 });
 
 const EmptyStyle = 'italic text-slate-400 font-semibold';
+const taskmanager = (new TaskManagement())
 
 // Fetch data when the component is mounted
+const todo = ref([]);
+
+
+const handleTaskAdded = (addedTasks) => {
+    taskmanager.addTask(addedTasks); 
+    todo.value = taskmanager.getTask();
+    console.log('Received new tasks:', addedTasks);
+};
+
 onMounted(async () => {
     try {
-        // const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-        // todo.value = items;
-        todo.value = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-        // console.log(items);
+        const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+        todo.value = items;
+        taskmanager.setTasks(items)
+        console.log("task management " + taskmanager.getTask());
     } catch (error) {
         console.log(`Error fetching data: ${error}`);
     }
@@ -41,12 +48,11 @@ const getStatusClass = (status) => {
     }
 };
 
-
 </script>
+
 <template>
     <div class="flex justify-center items-center">
-        <table class=" overflow-x-auto  mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
-            <!-- head -->
+        <table class="overflow-x-auto mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
             <thead class="text-xl text-black border-slate-600 bg-orange-200 ">
                 <tr class="">
                     <th class="w-[20px]"></th>
@@ -81,10 +87,13 @@ const getStatusClass = (status) => {
             </tbody>
         </table>
 
+        <AddModal @taskAdded="handleTaskAdded" />
+        <!-- <router-link :to="{ name: 'addtask' }">
+            <button
+                class="itbkk-button-add right-3 bottom-3 p-4 px-6 text-lg fixed bg-green-500 text-white hover:bg-green-600 rounded-full">
+                +
+            </button>
+        </router-link>  -->
     </div>
-
-
-
-
 </template>
 <style scoped></style>
