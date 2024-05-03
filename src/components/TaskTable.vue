@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref, onMounted, watch , reactive} from 'vue';
+import { ref, onMounted, watch, reactive } from 'vue';
 import { getItems, getItemById, editItem } from '../libs/fetchUtils.js';
 import { TaskManagement } from '../libs/TaskManagement.js'; // Assuming you have a TaskManagement class
 import AddModal from './AddModal.vue';
@@ -27,14 +27,10 @@ const id = defineProps({
 });
 
 const EmptyStyle = 'italic text-slate-400 font-semibold';
-const taskmanager = (new TaskManagement())
-
-// Fetch data when the component is mounted
-const todo = ref([]);
 
 
 const handleTaskAdded = (addedTasks) => {
-    taskmanager.addTask(addedTasks); 
+    taskmanager.addTask(addedTasks);
     todo.value = taskmanager.getTask();
     console.log('Received new tasks:', addedTasks);
 };
@@ -150,9 +146,9 @@ const getStatusClass = (status) => {
                     </router-link>
                     <td class="itbkk-assignees"
                         :class="task.taskAssignees === null || task.taskAssignees === '' ? EmptyStyle : ''">{{
-                        task.taskAssignees
-                            === null || task.taskAssignees === ''
-                            ? "Unassigned" : task.taskAssignees }}</td>
+            task.taskAssignees
+                === null || task.taskAssignees === ''
+                ? "Unassigned" : task.taskAssignees }}</td>
 
                     <td :class="getStatusClass(task.taskStatus)" class="itbkk-status text-center">{{
             task.taskStatus }}</td>
@@ -175,13 +171,12 @@ const getStatusClass = (status) => {
 
 
 
-        <AddModal @taskAdded="handleTaskAdded" />
-        <!-- <router-link :to="{ name: 'addtask' }">
+    <AddModal @taskAdded="handleTaskAdded" />
+    <!-- <router-link :to="{ name: 'addtask' }">
             <button
                 class="itbkk-button-add right-3 bottom-3 p-4 px-6 text-lg fixed bg-green-500 text-white hover:bg-green-600 rounded-full">
                 +
             </button>
         </router-link>  -->
-    </div>
 </template>
 <style scoped></style>

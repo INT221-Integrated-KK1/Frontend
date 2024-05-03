@@ -70,15 +70,15 @@ const formatToLocalTime = (dateTimeString) => {
           <textarea
             class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
             :class="taskDescription === null || taskDescription === '' ? EmptyStyle : ''" v-model="taskDescription">
-            {{ taskDescription === null || taskDescription === '' ? EmptyDescriptionText : taskDescription }}
+        
           </textarea>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
           <textarea
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="taskAssignees === null || taskAssignees === '' ? EmptyStyle : ''">
-            {{ taskAssignees === null || taskAssignees === '' ? EmptyAssigneeText : taskAssignees }}
+            :class="taskAssignees === null || taskAssignees === '' ? EmptyStyle : ''" v-model="taskAssignees">
+       
           </textarea>
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskStatus">
