@@ -135,6 +135,7 @@ const getStatusClass = (status) => {
                     <th class="font-bold">Assignees</th>
                     <th class="font-bold">Status</th>
                     <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -152,16 +153,12 @@ const getStatusClass = (status) => {
 
                     <td :class="getStatusClass(task.taskStatus)" class="itbkk-status text-center">{{
             task.taskStatus }}</td>
-                    <td class="itbkk-button-action text-black text-xl">
-                        <span class="cursor-pointer" @click="task.showDetailModal = !task.showDetailModal">⋮</span>
-                        <div v-if="task.showDetailModal" class="absolute bg-white rounded shadow text-sm">
-                            <router-link :to="{ name: 'editTaskModal', params: { taskId: task.taskId } }">
-                                <button class="itbkk-button-edit block w-full p-2 hover:bg-gray-200"
-                                    @click="editHandler(task.taskId)">Edit</button>
-                            </router-link>
-                            <button class="itbkk-button-delete block w-full p-2 hover:bg-gray-200">Delete</button>
-                        </div>
+                   <td>
+                        <router-link :to="{ name: 'editTaskModal', params: { taskId: task.taskId } }">
+                            <span class="itbkk-button-edit block w-full p-2" @click="editHandler(task.taskId)">✏️</span>
+                        </router-link>
                     </td>
+                    <td>🗑️</td>
                 </tr>
             </tbody>
         </table>
