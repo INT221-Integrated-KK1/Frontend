@@ -8,7 +8,6 @@ const id = params.taskId;
 console.log(id);
 
 const task = ref(null);
-const timezoneOffset = new Date().getTimezoneOffset() * 60000
 console.log(task);
 
 onMounted(async () => {
@@ -34,6 +33,8 @@ const taskStatus = getTaskProp('taskStatus');
 const createdOn = computed(() => formatToLocalTime(task.value?.createdOn))
 const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn))
 
+
+const timezoneOffset = new Date().getTimezoneOffset() * 60000
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const formatToLocalTime = (dateTimeString) => {
   const dateTime = new Date(dateTimeString)
@@ -60,27 +61,27 @@ const formatToLocalTime = (dateTimeString) => {
         <div class=" col-start-1 col-span-3">
           <h1 class="font-bold text-2xl py-2 mb-2">Task Details {{ taskId }}</h1>
           <h1 class="font-bold mt-2">Title :</h1>
-          <div class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-text="taskTitle">
-          </div>
+          <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-model="taskTitle">
+          </input>
         </div>
         <hr class="col-start-1 col-span-3" />
         <div class="col-start-1 col-span-2">
           <h1 class="font-bold">Description :</h1>
-          <div
+          <textarea
             class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
-            :class="taskDescription === null ? EmptyStyle : ''">
-            {{ taskDescription === null ? EmptyDescriptionText : taskDescription }}
-          </div>
+            :class="taskDescription === null || taskDescription === '' ? EmptyStyle : ''" v-model="taskDescription">
+        
+          </textarea>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
-          <div
+          <textarea
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="taskAssignees === null ? EmptyStyle : ''">
-            {{ taskAssignees === null ? EmptyAssigneeText : taskAssignees }}
-          </div>
+            :class="taskAssignees === null || taskAssignees === '' ? EmptyStyle : ''" v-model="taskAssignees">
+       
+          </textarea>
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskStatus" disabled>
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskStatus">
             <option value="No Status">No Status</option>
             <option value="To Do">To Do</option>
             <option value="Doing">Doing</option>
@@ -100,10 +101,7 @@ const formatToLocalTime = (dateTimeString) => {
       </div>
     </div>
   </div>
-  <button
-    class="fixed bottom-4 right-4 p-4 px-6 text-xl bg-green-500 text-white rounded-full shadow-xl hover:bg-green-600">
-    +
-  </button>
+
 </template>
 
 <style scoped></style>

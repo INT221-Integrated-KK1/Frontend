@@ -1,31 +1,25 @@
 import { reactive } from "vue";
 
 class TaskManagement {
-
-    constructor() {
-        this.tasks = []
-    }
-    getTask() {
-        return this.tasks
-    }
-    setTasks(tasks = []) {
+  constructor() {
+    this.tasks = reactive([]);
+  }
+  getTask() {
+    return this.tasks;
+  }
+ setTasks(tasks = []) {
         this.tasks.length = 0;
         tasks.forEach((task) => {
             // task.taskStatus = this.convertStatus(task.taskStatus);
             this.tasks.push(task);
         });
     }
-    
-    // convertStatus(status) {
-    //     const lowerLetter = status.toLowerCase()
-    //     const capitalizedStatus = lowerLetter.charAt(0).toUpperCase() + lowerLetter.slice(1);
-    //     const convertStatus = capitalizedStatus.replace(/_/g, " ");
-    //     console.log(convertStatus);
-    //     return convertStatus;
-        
-    // }
 
-    getTaskById(id) {
+  addTask(task) {
+    this.tasks.push(task);
+  }
+
+  getTaskById(id) {
         return this.tasks.find((task) => task.taskId === id)
     }
 
@@ -38,5 +32,6 @@ class TaskManagement {
         }
         console.log(this.tasks);
     }
+
 }
-export { TaskManagement }
+export { TaskManagement };

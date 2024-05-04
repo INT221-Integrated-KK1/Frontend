@@ -1,8 +1,12 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
-import { getItems, getItemById, editItem } from '../libs/fetchUtils.js'
+
+import { ref, onMounted, watch, reactive } from 'vue';
+import { getItems, getItemById, editItem } from '../libs/fetchUtils.js';
+import { TaskManagement } from '../libs/TaskManagement.js'; // Assuming you have a TaskManagement class
+import AddModal from './AddModal.vue';
+const showDetailModal = ref(false);
 import EditTaskModal from './EditTaskModal.vue'; // Import your EditTaskModal component
-import { TaskManagement } from '../libs/TaskManagement.js'
+
 
 const taskmanager = ref(new TaskManagement())
 // Define variables to store fetched data
@@ -18,15 +22,21 @@ const closeModal = () => {
 }
 
 
-
 const id = defineProps({
     taskId: Number
 });
 
 const EmptyStyle = 'italic text-slate-400 font-semibold';
 
-// Fetch data when the component is mounted
+
+const handleTaskAdded = (addedTasks) => {
+    taskmanager.addTask(addedTasks);
+    todo.value = taskmanager.getTask();
+    console.log('Received new tasks:', addedTasks);
+};
+
 onMounted(async () => {
+
     const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
     todo.value = items;
     taskmanager.value.setTasks(items)
@@ -64,7 +74,6 @@ const saveChanges = async (getTaskProp, id) => {
 
     try {
         console.log(id);
-
         // Send the data to the API
         await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
         taskmanager.value.editTask(id, editedTask)
@@ -111,14 +120,14 @@ const getStatusClass = (status) => {
 };
 
 </script>
+
 <template>
     <Teleport to="body">
         <EditTaskModal v-if="showEditModal" @close="closeModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
             @saveChanges="saveChanges" />
     </Teleport>
     <div class="flex justify-center items-center">
-        <table class=" overflow-x-auto  mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
-            <!-- head -->
+        <table class="overflow-x-auto mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
             <thead class="text-xl text-black border-slate-600 bg-orange-200 ">
                 <tr class="">
                     <th class="w-[20px]"></th>
@@ -135,10 +144,12 @@ const getStatusClass = (status) => {
                     <router-link :to="{ name: 'taskdetail', params: { taskId: task.taskId } }">
                         <td style="cursor: pointer; word-break" class="itbkk-title">{{ task.taskTitle }}</td>
                     </router-link>
-                    <td class="itbkk-assignees" :class="task.taskAssignees === null ? EmptyStyle : ''">{{
+                    <td class="itbkk-assignees"
+                        :class="task.taskAssignees === null || task.taskAssignees === '' ? EmptyStyle : ''">{{
             task.taskAssignees
-                === null
+                === null || task.taskAssignees === ''
                 ? "Unassigned" : task.taskAssignees }}</td>
+
                     <td :class="getStatusClass(task.taskStatus)" class="itbkk-status text-center">{{
             task.taskStatus }}</td>
                     <td class="itbkk-button-action text-black text-xl">
@@ -154,14 +165,18 @@ const getStatusClass = (status) => {
                 </tr>
             </tbody>
         </table>
+
     </div>
 
 
 
 
-
-
-
-
+    <AddModal @taskAdded="handleTaskAdded" />
+    <!-- <router-link :to="{ name: 'addtask' }">
+            <button
+                class="itbkk-button-add right-3 bottom-3 p-4 px-6 text-lg fixed bg-green-500 text-white hover:bg-green-600 rounded-full">
+                +
+            </button>
+        </router-link>  -->
 </template>
 <style scoped></style>
