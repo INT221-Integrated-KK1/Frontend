@@ -6,6 +6,7 @@ import { TaskManagement } from '../libs/TaskManagement.js'; // Assuming you have
 import AddModal from './AddModal.vue';
 const showDetailModal = ref(false);
 import EditTaskModal from './EditTaskModal.vue'; // Import your EditTaskModal component
+import DeleteModal from './DeleteModal.vue'; 
 
 
 const taskmanager = new TaskManagement()
@@ -43,6 +44,12 @@ const handleTaskAdded = (addedTasks) => {
     taskmanager.addTask(addedTasks);
     todo.value = taskmanager.getTask();
     console.log('Received new tasks:', addedTasks);
+};
+
+const handleTaskDeleted = (deletedTaskId) => {
+    taskmanager.deleteTask(deletedTaskId);
+    todo.value = taskmanager.getTask();
+    console.log('Deleted task:', deletedTaskId);
 };
 
 
@@ -106,11 +113,15 @@ const getStatusClass = (status) => {
     }
 };
 const showNewTaskAdded = ref(false);
+const showDeletedTask = ref(false);
 const taskCount = ref(0);
 watch(() => todo.value, (newValue, oldValue) => {
-    if (newValue.length > oldValue.length) {
+    if (newValue.length > oldValue.length && oldValue.length !== 0) {
         console.log(newValue.length, oldValue.length);
         showNewTaskAdded.value = true;
+        taskCount.value = newValue.length;
+    } else if (newValue.length < oldValue.length) {
+        showDeletedTask.value = true;
         taskCount.value = newValue.length;
     }
 });
@@ -122,6 +133,13 @@ watch(() => todo.value, (newValue, oldValue) => {
         <div class="  flex justify-center p-4">
             <h4 class="text-2xl font-bold mr-4">The task has been successfully added!</h4>
             <button @click="showNewTaskAdded = false"
+                class="px-4 py-2 bg-gray-500 text-white rounded focus:outline-none hover:bg-gray-700 transition duration-200 ease-in-out">Close</button>
+        </div>
+    </div>
+    <div v-if="showDeletedTask" class="bg-red-300 rounded-md mt-10">
+        <div class="  flex justify-center p-4">
+            <h4 class="text-2xl font-bold mr-4">The task has been successfully delete!</h4>
+            <button @click="showDeletedTask = false"
                 class="px-4 py-2 bg-gray-500 text-white rounded focus:outline-none hover:bg-gray-700 transition duration-200 ease-in-out">Close</button>
         </div>
     </div>
@@ -140,6 +158,7 @@ watch(() => todo.value, (newValue, oldValue) => {
                     <th class="font-bold">Assignees</th>
                     <th class="font-bold">Status</th>
                     <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -151,21 +170,20 @@ watch(() => todo.value, (newValue, oldValue) => {
                     </router-link>
                     <td class="itbkk-assignees"
                         :class="task.taskAssignees === null || task.taskAssignees === '' ? EmptyStyle : ''">{{
-        task.taskAssignees
-            === null || task.taskAssignees === ''
-            ? "Unassigned" : task.taskAssignees }}</td>
-
+                        task.taskAssignees
+                        === null || task.taskAssignees === ''
+                        ? "Unassigned" : task.taskAssignees }}</td>
                     <td :class="getStatusClass(task.taskStatus)" class="itbkk-status text-center">{{
-        task.taskStatus }}</td>
-                    <td class="itbkk-button-action text-black text-xl">
-                        <span class="cursor-pointer" @click="task.showDetailModal = !task.showDetailModal">⋮</span>
-                        <div v-if="task.showDetailModal" class="absolute bg-white rounded shadow text-sm">
-                            <router-link :to="{ name: 'editTaskModal', params: { taskId: task.taskId } }">
-                                <button class="itbkk-button-edit block w-full p-2 hover:bg-gray-200"
-                                    @click="editHandler(task.taskId)">Edit</button>
-                            </router-link>
-                            <button class="itbkk-button-delete block w-full p-2 hover:bg-gray-200">Delete</button>
-                        </div>
+                        task.taskStatus }}</td>
+                    <td>
+                        <router-link :to="{ name: 'editTaskModal', params: { taskId: task.taskId } }">
+                            <span class="itbkk-button-edit block w-full p-2" @click="editHandler(task.taskId)">✏️</span>
+                        </router-link>
+                    </td>
+                    <td>
+                        <router-link :to="{ name: 'deleteTask', params: { taskId: task.taskId } }" @taskDeleted="handleTaskDeleted">
+                            <span class="itbkk-button-delete block w-full p-2">🗑️</span>
+                        </router-link>
                     </td>
                 </tr>
             </tbody>
@@ -174,7 +192,7 @@ watch(() => todo.value, (newValue, oldValue) => {
     </div>
 
     <router-link :to="{ name: 'addtask' }">
-        <AddModal  @taskAdded="handleTaskAdded" />
+        <AddModal @taskAdded="handleTaskAdded" />
         <!-- <AddModal  /> -->
     </router-link>
 

@@ -40,16 +40,16 @@ async function deleteItemById(url, id) {
     })
     return res.status
   } catch (error) {
-    console.log(`error: ${error}`)
+    console.log(`error: ${error}`);
   }
 }
 
 async function addItem(url, newItem) {
   try {
     const res = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'content-type': 'application/json'
+        "content-type": "application/json",
       },
       body: JSON.stringify({
         ...newItem
@@ -58,25 +58,25 @@ async function addItem(url, newItem) {
     const addedItem = await res.json()
     return addedItem
   } catch (error) {
-    console.log(`error: ${error}`)
+    console.log(`error: ${error}`);
   }
 }
 
 async function editItem(url, id, editItem) {
   try {
     const res = await fetch(`${url}/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'content-type': 'application/json'
+        "content-type": "application/json",
       },
       body: JSON.stringify({
-        ...editItem
-      })
-    })
-    const editedItem = await res.json()
-    return editedItem
+        ...editItem,
+      }),
+    });
+    const editedItem = await res.json();
+    return editedItem;
   } catch (error) {
-    console.log(`error: ${error}`)
+    console.log(`error: ${error}`);
   }
 }
-export { getItems, getItemById, deleteItemById, addItem, editItem }
+export { getItems, getItemById, deleteItemById, addItem, editItem };

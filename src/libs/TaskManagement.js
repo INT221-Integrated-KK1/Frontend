@@ -19,6 +19,11 @@ class TaskManagement {
     this.tasks.push(task);
   }
 
+  deleteTask(taskId) {
+    const index = this.tasks.findIndex((e) => e.taskId === Number(taskId));
+    this.tasks.splice(index, 1);
+  }
+
   getTaskById(id) {
         return this.tasks.find((task) => task.taskId === id)
     }
