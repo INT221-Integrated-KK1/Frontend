@@ -8,6 +8,9 @@ const taskTitle = ref('');
 const taskDescription = ref(null);
 const taskAssignees = ref(null);
 const taskStatus = ref('No Status');
+const now = ref(new Date());
+const CreatedOn = ref(new Date().toISOString());
+const UpdatedOn = ref(new Date().toISOString());
 
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const time = new Date().toLocaleString('en-GB', {
@@ -25,11 +28,16 @@ const AddTask = async () => {
     if (taskTitle.value.length === 0) {
         alert('Please fill in the title');
     } else {
+
+
+
         const newItem = {
             taskTitle: taskTitle.value,
             taskDescription: taskDescription.value,
             taskAssignees: taskAssignees.value,
-            taskStatus: taskStatus.value
+            taskStatus: taskStatus.value,
+            createdOn: CreatedOn.value,
+            updatedOn: UpdatedOn.value
         };
 
         try {
@@ -43,6 +51,7 @@ const AddTask = async () => {
             taskDescription.value = '';
             taskAssignees.value = '';
             taskStatus.value = 'No Status';
+
             showModal.value = false;
         } catch (error) {
             console.log(`Error fetching data: ${error}`);
@@ -90,8 +99,8 @@ const showModal = ref(false);
                         <option value="Done">Done</option>
                     </select>
                     <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
-                    <h1 class="font-bold itbkk-created-on">Created On: {{ time }}</h1>
-                    <h1 class="font-bold itbkk-updated-on">Updated On: {{ time }}</h1>
+                    <h1 class="font-bold itbkk-created-on">Created On: {{ CreatedOn }}</h1>
+                    <h1 class="font-bold itbkk-updated-on">Updated On: {{ UpdatedOn }}</h1>
                 </div>
                 <div class="flex justify-end mt-4 col-start-3">
 
