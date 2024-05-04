@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { addItem } from '../libs/fetchUtils.js';
-import router from '@/router';
+// import router from '@/router';
 
 
 const taskTitle = ref('');
@@ -17,11 +17,10 @@ const time = new Date().toLocaleString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false
+    hour12: false // Use 24-hour time format
 });
 
 const emit = defineEmits(['taskAdded']);
-
 const AddTask = async () => {
     if (taskTitle.value.length === 0) {
         alert('Please fill in the title');
@@ -37,22 +36,22 @@ const AddTask = async () => {
             const items = await addItem(import.meta.env.VITE_BASE_TASK_URL, newItem);
             console.log(items);
             // Emit the 'taskAdded' event with the items
-            
             emit('taskAdded', items)
             console.log('Emitting taskAdded event:', items);
-            
+
             taskTitle.value = '';
             taskDescription.value = '';
             taskAssignees.value = '';
             taskStatus.value = 'No Status';
             showModal.value = false;
-            router.push({ name: 'task' });
         } catch (error) {
             console.log(`Error fetching data: ${error}`);
         }
     }
 };
+
 const showModal = ref(false);
+
 </script>
 
 <template>
@@ -95,14 +94,18 @@ const showModal = ref(false);
                     <h1 class="font-bold itbkk-updated-on">Updated On: {{ time }}</h1>
                 </div>
                 <div class="flex justify-end mt-4 col-start-3">
-                    <button class="btn bg-green-500 hover:bg-green-700 text-white" @click.prevent="AddTask"
-                        :disabled="taskTitle === '' || taskTitle === ' '" >
-                        Save
-                    </button>
 
-                    <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="showModal = false">
-                        Close
-                    </button>
+                    <router-link to="/task">
+                        <button class="btn bg-green-500 hover:bg-green-700 text-white" @click="AddTask"
+                            :disabled="taskTitle === '' || taskTitle === ' '">
+                            Save
+                        </button>
+                    </router-link>
+                    <router-link to="/task">
+                        <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="showModal = false">
+                            Close
+                        </button>
+                    </router-link>
 
                 </div>
             </div>

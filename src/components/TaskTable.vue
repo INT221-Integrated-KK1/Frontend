@@ -8,11 +8,12 @@ const showDetailModal = ref(false);
 import EditTaskModal from './EditTaskModal.vue'; // Import your EditTaskModal component
 
 
-const taskmanager = ref(new TaskManagement())
+const taskmanager = new TaskManagement()
 // Define variables to store fetched data
-const todo = ref()
+const todo = ref([])
 const taskDetails = ref({});
 const showEditModal = ref(false);
+
 const openEditModal = () => {
     showEditModal.value = true;
 };
@@ -29,19 +30,23 @@ const id = defineProps({
 const EmptyStyle = 'italic text-slate-400 font-semibold';
 
 
+onMounted(async () => {
+    const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+    todo.value = items;
+    taskmanager.setTasks(items)
+    console.log('Received tasks:', items);
+});
+
+
+
 const handleTaskAdded = (addedTasks) => {
     taskmanager.addTask(addedTasks);
     todo.value = taskmanager.getTask();
     console.log('Received new tasks:', addedTasks);
 };
 
-onMounted(async () => {
 
-    const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-    todo.value = items;
-    taskmanager.value.setTasks(items)
-    console.log(taskmanager.value.getTask());
-});
+
 async function editHandler(id) {
     const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id)
     if (items) {
@@ -83,26 +88,8 @@ const saveChanges = async (getTaskProp, id) => {
     } catch (error) {
         console.error("Error editing task:", error);
     }
+
 };
-
-// async function editHandler(taskId) {
-//     try {
-//         // ดึงข้อมูลของงานที่ถูกแก้ไขจากเซิร์ฟเวอร์
-//         const updatedTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, taskId);
-//         console.log(updatedTask);
-
-//         // ค้นหา index ของงานที่ถูกแก้ไขใน todo
-//         const index = todo.value.findIndex(task => task.taskId === taskId);
-
-//         if (index !== -1) {
-//             // ทำการอัพเดทข้อมูลของงานที่ถูกแก้ไขใน todo
-//             todo.value[index] = updatedTask;
-//         }
-//     } catch (error) {
-//         console.error(`Error updating task ${taskId}:`, error);
-//     }
-// }
-
 
 const getStatusClass = (status) => {
     switch (status) {
@@ -118,10 +105,28 @@ const getStatusClass = (status) => {
             return 'bg-gray-200 text-gray-800 rounded'; // สไตล์ปุ่มเริ่มต้นสำหรับสถานะอื่น ๆ
     }
 };
-
+const showNewTaskAdded = ref(false);
+const taskCount = ref(0);
+watch(() => todo.value, (newValue, oldValue) => {
+    if (newValue.length > oldValue.length) {
+        console.log(newValue.length, oldValue.length);
+        showNewTaskAdded.value = true;
+        taskCount.value = newValue.length;
+    }
+});
 </script>
 
 <template>
+
+    <div v-if="showNewTaskAdded" class="bg-green-300 rounded-md mt-10">
+        <div class="  flex justify-center p-4">
+            <h4 class="text-2xl font-bold mr-4">The task has been successfully added!</h4>
+            <button @click="showNewTaskAdded = false"
+                class="px-4 py-2 bg-gray-500 text-white rounded focus:outline-none hover:bg-gray-700 transition duration-200 ease-in-out">Close</button>
+        </div>
+    </div>
+
+
     <Teleport to="body">
         <EditTaskModal v-if="showEditModal" @close="closeModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
             @saveChanges="saveChanges" />
@@ -146,12 +151,12 @@ const getStatusClass = (status) => {
                     </router-link>
                     <td class="itbkk-assignees"
                         :class="task.taskAssignees === null || task.taskAssignees === '' ? EmptyStyle : ''">{{
-            task.taskAssignees
-                === null || task.taskAssignees === ''
-                ? "Unassigned" : task.taskAssignees }}</td>
+        task.taskAssignees
+            === null || task.taskAssignees === ''
+            ? "Unassigned" : task.taskAssignees }}</td>
 
                     <td :class="getStatusClass(task.taskStatus)" class="itbkk-status text-center">{{
-            task.taskStatus }}</td>
+        task.taskStatus }}</td>
                     <td class="itbkk-button-action text-black text-xl">
                         <span class="cursor-pointer" @click="task.showDetailModal = !task.showDetailModal">⋮</span>
                         <div v-if="task.showDetailModal" class="absolute bg-white rounded shadow text-sm">
@@ -168,15 +173,11 @@ const getStatusClass = (status) => {
 
     </div>
 
+    <router-link :to="{ name: 'addtask' }">
+        <AddModal  @taskAdded="handleTaskAdded" />
+        <!-- <AddModal  /> -->
+    </router-link>
 
 
-
-    <AddModal @taskAdded="handleTaskAdded" />
-    <!-- <router-link :to="{ name: 'addtask' }">
-            <button
-                class="itbkk-button-add right-3 bottom-3 p-4 px-6 text-lg fixed bg-green-500 text-white hover:bg-green-600 rounded-full">
-                +
-            </button>
-        </router-link>  -->
 </template>
 <style scoped></style>

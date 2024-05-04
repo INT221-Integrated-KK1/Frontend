@@ -25,7 +25,7 @@ const router = createRouter({
     {
       path: "/task/add",
       name: "addtask",
-      component: AddModal,
+      // component: AddModal,
     },
 
     // {
