@@ -81,14 +81,14 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold">Assignees :</h1>
           <div
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full break-words"
-            :class="taskAssignees === null ? EmptyStyle : ''"
+            :class="assignees === null ? EmptyStyle : ''" 
           >
-            {{ taskAssignees === null ? EmptyAssigneeText : taskAssignees }}
+            {{ assignees === null ? EmptyAssigneeText : assignees }}
           </div>
           <h1 class="font-bold">Status :</h1>
           <select
             class="p-2 border-solid border-2 border-grey w-full mb-10 itbkk-status"
-            v-model="taskStatus"
+            v-model="status"
             disabled
           >
             <option value="No Status">No Status</option>
