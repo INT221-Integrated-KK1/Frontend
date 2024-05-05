@@ -28,7 +28,7 @@ class TaskManagement {
         return this.tasks.find((task) => task.id === id)
     }
 
-    editTask(id, updateTaks) {
+  editTask(id, updateTaks) {
         const index = this.tasks.findIndex((e) => e.id === Number(id))
       
         this.tasks[index] = {

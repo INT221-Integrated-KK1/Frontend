@@ -7,7 +7,7 @@ const showDetailModal = ref(false);
 import EditTaskModal from "./EditTaskModal.vue"; // Import your EditTaskModal component
 import DeleteModal from "./DeleteModal.vue";
 
-const taskmanager = new TaskManagement();
+const taskmanager = ref(new TaskManagement());
 // Define variables to store fetched data
 const todo = ref([]);
 const taskDetails = ref({});
@@ -31,7 +31,7 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
 onMounted(async () => {
   const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
   todo.value = items;
-  taskmanager.setTasks(items);
+  taskmanager.value.setTasks(items);
   console.log("Received tasks:", items);
 });
 
@@ -101,8 +101,10 @@ const saveChanges = async (getTaskProp, id) => {
   try {
     console.log(id);
     // Send the data to the API
-    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
-    taskmanager.value.editTask(id, editedTask);
+    console.log(editedTask);
+    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);    
+    console.log(taskmanager.value); // undefined
+    taskmanager.value.editTask(id, editedTask);    
     console.log(taskmanager.value.getTask());
     closeModal();
   } catch (error) {
