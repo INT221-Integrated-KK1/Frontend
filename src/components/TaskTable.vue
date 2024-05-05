@@ -43,22 +43,32 @@ const showDeleted = ref(false);
 const showDeletedError = ref(false);
 
 const handleTaskAdded = (addedTasks) => {
-    if (addedTasks.id !== 0) {
-        showNewTaskAdded.value = true;
-        addedTasksTitle.value = addedTasks.title;
-        taskmanager.addTask(addedTasks);
-        todo.value = taskmanager.getTask();
-    } else {
-        showNewTaskError.value = true;
-    }
+  console.log(addedTasks);
+
+  if (addedTasks.id !== 0) {
+    showNewTaskAdded.value = true;
+    addedTasksTitle.value = addedTasks.title;
+    taskmanager.value.addTask(addedTasks);
+    todo.value = taskmanager.getTask();
+
+  } else {
+    showNewTaskError.value = true;
+  }
 };
 
 const handleTaskDeleted = (deletedid) => {
-//   taskmanager.deleteTask(deletedid);
-//   todo.value = taskmanager.getTask();
-//   console.log("Deleted task:", deletedid);
-  showDeleted.value = true;
+  console.log(deletedid);
+  taskmanager.value.deleteTask(deletedid);
+  todo.value = taskmanager.value.getTask();
+  console.log("Deleted task:", deletedid);
+  showDeleted.value = false;
+  
 };
+
+const showDeleteModals = () => {
+  showDeleteModal.value = true;
+};
+
 
 async function editHandler(id) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
@@ -69,14 +79,16 @@ async function editHandler(id) {
   }
 }
 
-async function deleteHandler(id) {
-  const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-  if (items) {
-    taskDetails.value = items;
-    showDeleteModal.value = true;
-    console.log(items);
-  } else showDeleteModal.value = false;
-}
+// async function deleteHandler(id) {
+//   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+//   if (items) {
+//     taskDetails.value = items;
+//     showDeleteModal.value = true;
+//     console.log(items);
+//   } else showDeleteModal.value = false;
+// }
+
+
 function yohooHandler(obj) {
   const task = taskmanager.value.getTaskById();
   task.title = obj.title;
@@ -87,28 +99,36 @@ function yohooHandler(obj) {
   task.updatedOn = obj.updatedOn;
 }
 
-const saveChanges = async (getTaskProp, id) => {
-  console.log(getTaskProp);
-  const editedTask = {
-    id: id,
-    title: getTaskProp.title,
-    description: getTaskProp.description,
-    assignees: getTaskProp.assignees,
-    status: getTaskProp.status,
-  };
+const showUpdated = ref(false);
+const updatedTaskTitle = ref("");
+const showUpdatedError = ref(false);
 
-  try {
-    console.log(id);
-    // Send the data to the API
-    console.log(editedTask);
-    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);    
-    console.log(taskmanager.value); // undefined
-    taskmanager.value.editTask(id, editedTask);    
-    console.log(taskmanager.value.getTask());
-    closeModal();
-  } catch (error) {
-    console.error("Error editing task:", error);
-  }
+const saveChanges = async (getTaskProp, id) => {
+    console.log(getTaskProp);
+    const editedTask = {
+        id: id,
+        title: getTaskProp.title,
+        description: getTaskProp.description,
+        assignees: getTaskProp.assignees,
+        status: getTaskProp.status,
+    };
+    updatedTaskTitle.value = getTaskProp.title;
+    try {
+        console.log(id);
+        // Send the data to the API
+        console.log(editedTask);
+        await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+        console.log(taskmanager.value); // undefined
+        taskmanager.value.editTask(id, editedTask);
+        console.log(taskmanager.value.getTask());
+        closeModal();
+
+
+        showUpdated.value = true;
+    } catch (error) {
+        console.error("Error editing task:", error);
+        showUpdatedError.value = true;
+    }
 };
 
 const getStatusClass = (status) => {
@@ -130,10 +150,7 @@ const getStatusClass = (status) => {
 <template>
   <!-- add task alert -->
   <div class="flex justify-center items-center">
-    <div
-      v-if="showNewTaskAdded"
-      class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500"
-    >
+    <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
       <div class="p-4">
         <div class="flex justify-between mb-3">
           <h1 class="text-2xl font-bold">Success</h1>
@@ -147,10 +164,7 @@ const getStatusClass = (status) => {
   </div>
 
   <div class="flex justify-center items-center">
-    <div
-      v-if="showNewTaskError"
-      class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500"
-    >
+    <div v-if="showNewTaskError" class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
       <div class="p-4">
         <div class="flex justify-between mb-3">
           <h1 class="text-2xl font-bold">Error</h1>
@@ -165,10 +179,7 @@ const getStatusClass = (status) => {
 
   <!-- delete task alert -->
   <div class="flex justify-center items-center">
-    <div
-      v-if="showDeleted"
-      class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500"
-    >
+    <div v-if="showDeleted" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
       <div class="p-4">
         <div class="flex justify-between mb-3">
           <h1 class="text-2xl font-bold">Success</h1>
@@ -180,10 +191,7 @@ const getStatusClass = (status) => {
   </div>
 
   <div class="flex justify-center items-center">
-    <div
-      v-if="showDeletedError"
-      class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500"
-    >
+    <div v-if="showDeletedError" class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
       <div class="p-4">
         <div class="flex justify-between mb-3">
           <h1 class="text-2xl font-bold">Error</h1>
@@ -223,57 +231,46 @@ const getStatusClass = (status) => {
     </div>
   </div> -->
 
-  <!-- edit task alert -->
+ <!-- edit task alert -->
 
-  <!-- <div class="flex justify-center items-center">
-    <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Success</h1>
-          <button @click="" class="px-4 py-2rounded">✖</button>
+ <div v-if="showUpdated" class="flex justify-center items-center">
+        <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Success</h1>
+                    <button @click="showUpdated = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">The task "{{ updatedTaskTitle }}" is updated successfully</p>
+            </div>
         </div>
-        <p class="itbkk-message text-lg font-bold">The task "" is updated successfully</p>
-      </div>
     </div>
-  </div>
 
-  <div class="flex justify-center items-center">
-    <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Error</h1>
-          <button @click="" class="px-4 py-2rounded">✖</button>
+    <div v-if="showUpdatedError" class="flex justify-center items-center">
+        <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Error</h1>
+                    <button @click="showUpdatedError = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">
+                    An error occurred updated the task ""
+                </p>
+            </div>
         </div>
-        <p class="itbkk-message text-lg font-bold">
-          An error occurred updated the task ""
-        </p>
-      </div>
     </div>
-  </div> -->
 
   <Teleport to="body">
-    <EditTaskModal
-      v-if="showEditModal"
-      @close="closeModal"
-      :taskDetailsza="taskDetails"
-      @yohoo="yohooHandler"
-      @saveChanges="saveChanges"
-    />
+    <EditTaskModal v-if="showEditModal" @close="closeModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
+      @saveChanges="saveChanges" />
   </Teleport>
   <Teleport to="body">
-    <DeleteModal
-      v-if="showDeleteModal"
-      @close="showDeleteModal = false"
-      @taskDeleted="handleTaskDeleted"
-    />
+    <DeleteModal v-if="showDeleteModal" @close="showDeleteModal = false" @taskDeleted="handleTaskDeleted"  />
   </Teleport>
   <div class="flex justify-center items-center">
-    <table
-      class="overflow-x-auto mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md"
-    >
+    <table class="overflow-x-auto mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
       <thead class="text-xl text-black border-slate-600 bg-orange-200">
         <tr class="">
-          <th class="w-[20px]"></th>
+          <!-- <th class="w-[20px]"></th> -->
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
           <th class="font-bold">Status</th>
@@ -282,47 +279,33 @@ const getStatusClass = (status) => {
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="(task, index) in taskmanager.getTask()"
-          :key="index"
-          class="itbkk-item border-slate-600 borderrounded-e-2xl bg-yellow-50"
-          v-if="todo"
-        >
-          <th class="font-semibold text-center">{{ task.id }}</th>
+        <tr v-for="(task, index) in taskmanager.getTask()" :key="index"
+          class="itbkk-item border-slate-600 borderrounded-e-2xl bg-yellow-50" v-if="todo">
+          <!-- <th class="font-semibold text-center">{{ task.id }}</th> -->
           <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
             <td style="cursor: pointer; word-break" class="itbkk-title">
               {{ task.title }}
             </td>
           </router-link>
-          <td
-            class="itbkk-assignees"
-            :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''"
-          >
+          <td class="itbkk-assignees" :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
             {{
-              task.assignees === null || task.assignees === ""
-                ? "Unassigned"
-                : task.assignees
-            }}
+      task.assignees === null || task.assignees === ""
+        ? "Unassigned"
+        : task.assignees
+    }}
           </td>
           <td :class="getStatusClass(task.status)" class="itbkk-status text-center">
             {{ task.status }}
           </td>
           <td>
             <router-link :to="{ name: 'editTaskModal', params: { id: task.id } }">
-              <span
-                class="itbkk-button-edit block w-[10px] p-2 text-center"
-                @click="editHandler(task.id)"
-                >✏️</span
-              >
+              <span class="itbkk-button-edit block w-[10px] p-2 text-center" @click="editHandler(task.id)">✏️</span>
             </router-link>
           </td>
           <td>
             <router-link :to="{ name: 'deleteTask', params: { id: task.id } }">
-              <span
-                class="itbkk-button-delete block w-[10px] p-2 text-center"
-                @click="handleTaskDeleted"
-                >🗑️</span
-              >
+              <span class="itbkk-button-delete block w-[10px] p-2 text-center"
+                @click="showDeleteModals">🗑️</span>
             </router-link>
           </td>
         </tr>

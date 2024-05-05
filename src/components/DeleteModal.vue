@@ -3,12 +3,13 @@ import { onMounted, ref } from "vue";
 import { getItemById, deleteItemById } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { TaskManagement } from "../libs/TaskManagement.js";
+
 
 const { params } = useRoute();
 const showModal = ref(false);
 
 const id = Number(params.id);
+console.log(id);
 const task = ref(null);
 const title = ref("");
 const emit = defineEmits(["taskDeleted"]);
@@ -16,6 +17,7 @@ const emit = defineEmits(["taskDeleted"]);
 onMounted(async () => {
   try {
     task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+    console.log(task.value);
     title.value = task.value.title;
   } catch (error) {
     console.error("Error fetching task details:", error);
@@ -34,12 +36,13 @@ onMounted(async () => {
 //     console.error("Error deleting task:", error);
 //   }
 // };
-const deleteTask = async () => {
+const deleteTask = async (deleteid) => {
   try {
-    await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-    taskmanager.deleteTask(deletedid);
+    console.log(deleteid);
+    console.log(id);
+    await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);    
     //todo.value = taskmanager.getTask();
-    console.log("Deleted task:", deletedid);
+    console.log("Deleted task:", deleteid);
     emit("taskDeleted", id);
     showModal.value = false;
     router.push("/task");
@@ -71,7 +74,7 @@ const deleteTask = async () => {
               <router-link to="/task">
                 <button
                   class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                  @click="deleteTask"
+                  @click="deleteTask(task.value.id)"
                 >
                   Confirm
                 </button>

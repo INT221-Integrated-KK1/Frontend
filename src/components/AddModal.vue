@@ -28,15 +28,15 @@ const AddTask = async () => {
       const items = await addItem(import.meta.env.VITE_BASE_TASK_URL, newItem);
       console.log(items);
       // Emit the 'taskAdded' event with the items
-      emit("taskAdded", items);
+      
       console.log("Emitting taskAdded event:", items);
 
       title.value = "";
       description.value = "";
       assignees.value = "";
       status.value = "No Status";
-
       showModal.value = false;
+      emit("taskAdded", items);
     } catch (error) {
       console.log(`Error fetching data: ${error}`);
     }
