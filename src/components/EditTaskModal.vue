@@ -39,9 +39,9 @@ console.log(props1.taskDetailsza);
 const getTaskProp = computed(() => {
   return {
     title: props.title,
-    description: props.taskDescription,
+    description: props.description,
     assignees: props.assignees,
-    status: props.taskStatus,
+    status: props.status,
     createdOn: props.createdOn,
     updatedOn: props.updatedOn
   }
@@ -93,7 +93,7 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold">Description :</h1>
           <textarea
             class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
-            :class="{ EmptyStyle: getTaskProp.taskDescription === '' }" v-model="getTaskProp.taskDescription"
+            :class="{ EmptyStyle: getTaskProp.description === '' }" v-model="getTaskProp.description"
             :placeholder="EmptyDescriptionText" />
         </div>
         <div class="col-start-3 col-span-1">
@@ -104,7 +104,7 @@ const formatToLocalTime = (dateTimeString) => {
             :placeholder="EmptyAssigneeText" />
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="getTaskProp.taskStatus">
+            v-model="getTaskProp.status">
             <option value="No Status">No Status</option>
             <option value="To Do">To Do</option>
             <option value="Doing">Doing</option>
