@@ -61,7 +61,7 @@ const handleTaskDeleted = (deletedid) => {
   taskmanager.value.deleteTask(deletedid);
   todo.value = taskmanager.value.getTask();
   console.log("Deleted task:", deletedid);
-  showDeleted.value = false;
+  showDeleteModal.value = false;
   
 };
 
