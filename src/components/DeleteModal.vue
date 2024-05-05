@@ -4,11 +4,10 @@ import { getItemById, deleteItemById } from "../libs/fetchUtils.js";
 import { useRoute, useRouter } from "vue-router";
 import router from "@/router";
 
-const { params } = useRoute();
+const route = useRoute();
 const showModal = ref(false);
 
-const id = Number(params.id);
-console.log(id);
+const id = Number(route.params.id);
 const task = ref(null);
 const title = ref("");
 const emit = defineEmits(["taskDeleted"]);
@@ -22,6 +21,7 @@ onMounted(async () => {
     number.value = task.value.id;
     console.log(task.value);
     title.value = task.value.title;
+    console.log(route.params.id)
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -41,8 +41,6 @@ onMounted(async () => {
 // };
 const deleteTask = async (deleteid) => {
   try {
-    console.log(deleteid);
-    console.log(id);
     await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
     // todo.value = taskmanager.getTask();
     console.log("Deleted task:", deleteid);
@@ -77,7 +75,7 @@ const deleteTask = async (deleteid) => {
 
             <div class="text-right">
               <!-- <router-link to="/task"> -->
-              <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3" @click="deleteTask(number)">
+              <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3" @click="deleteTask(route.params.id)">
                 Confirm
               </button>
               <!-- </router-link> -->
