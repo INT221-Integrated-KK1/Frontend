@@ -8,20 +8,9 @@ const taskTitle = ref('');
 const taskDescription = ref(null);
 const taskAssignees = ref(null);
 const taskStatus = ref('No Status');
-const now = ref(new Date());
 const CreatedOn = ref(new Date().toISOString());
 const UpdatedOn = ref(new Date().toISOString());
 
-const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-const time = new Date().toLocaleString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false // Use 24-hour time format
-});
 
 const emit = defineEmits(['taskAdded']);
 const AddTask = async () => {
@@ -98,14 +87,11 @@ const showModal = ref(false);
                         <option value="Doing">Doing</option>
                         <option value="Done">Done</option>
                     </select>
-                    <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
-                    <h1 class="font-bold itbkk-created-on">Created On: {{ CreatedOn }}</h1>
-                    <h1 class="font-bold itbkk-updated-on">Updated On: {{ UpdatedOn }}</h1>
                 </div>
                 <div class="flex justify-end mt-4 col-start-3">
 
                     <router-link to="/task">
-                        <button class="btn bg-green-500 hover:bg-green-700 text-white" @click="AddTask"
+                        <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="AddTask"
                             :disabled="taskTitle === '' || taskTitle === ' '">
                             Save
                         </button>

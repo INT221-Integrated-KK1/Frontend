@@ -6,7 +6,7 @@ import { TaskManagement } from '../libs/TaskManagement.js'; // Assuming you have
 import AddModal from './AddModal.vue';
 const showDetailModal = ref(false);
 import EditTaskModal from './EditTaskModal.vue'; // Import your EditTaskModal component
-import DeleteModal from './DeleteModal.vue'; 
+import DeleteModal from './DeleteModal.vue';
 
 
 const taskmanager = new TaskManagement()
@@ -14,6 +14,7 @@ const taskmanager = new TaskManagement()
 const todo = ref([])
 const taskDetails = ref({});
 const showEditModal = ref(false);
+const showDeleteModal = ref(false);
 
 const openEditModal = () => {
     showEditModal.value = true;
@@ -38,12 +39,20 @@ onMounted(async () => {
     console.log('Received tasks:', items);
 });
 
-
+const addedTasksTitle = ref('');
+const showNewTaskAdded = ref(false);
+const showNewTaskError = ref(false);
 
 const handleTaskAdded = (addedTasks) => {
-    taskmanager.addTask(addedTasks);
-    todo.value = taskmanager.getTask();
-    console.log('Received new tasks:', addedTasks);
+    if (addedTasks.taskId === 0 && addedTasks.taskTitle !== '') {
+        addedTasks.taskId = todo.value[todo.value.length - 1].taskId + 1;
+        showNewTaskAdded.value = true;
+        addedTasksTitle.value = addedTasks.taskTitle;
+        taskmanager.addTask(addedTasks);
+        todo.value = taskmanager.getTask();
+    } else {
+        showNewTaskError.value = true;
+    }
 };
 
 const handleTaskDeleted = (deletedTaskId) => {
@@ -59,6 +68,16 @@ async function editHandler(id) {
     if (items) {
         taskDetails.value = items;
         showEditModal.value = true;
+        console.log(items);
+    }
+
+}
+
+async function deleteHandler(id) {
+    const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id)
+    if (items) {
+        taskDetails.value = items;
+        showDeleteModal.value = true;
         console.log(items);
     }
 
@@ -112,35 +131,88 @@ const getStatusClass = (status) => {
             return 'bg-gray-200 text-gray-800 rounded'; // สไตล์ปุ่มเริ่มต้นสำหรับสถานะอื่น ๆ
     }
 };
-const showNewTaskAdded = ref(false);
-const showDeletedTask = ref(false);
-const taskCount = ref(0);
-watch(() => todo.value, (newValue, oldValue) => {
-    if (newValue.length > oldValue.length && oldValue.length !== 0) {
-        console.log(newValue.length, oldValue.length);
-        showNewTaskAdded.value = true;
-        taskCount.value = newValue.length;
-    } else if (newValue.length < oldValue.length) {
-        showDeletedTask.value = true;
-        taskCount.value = newValue.length;
-    }
-});
+
 </script>
 
 <template>
 
-    <div v-if="showNewTaskAdded" class="bg-green-300 rounded-md mt-10">
-        <div class="  flex justify-center p-4">
-            <h4 class="text-2xl font-bold mr-4">The task has been successfully added!</h4>
-            <button @click="showNewTaskAdded = false"
-                class="px-4 py-2 bg-gray-500 text-white rounded focus:outline-none hover:bg-gray-700 transition duration-200 ease-in-out">Close</button>
+    <!-- add task alert -->
+    <div class="flex justify-center items-center">
+        <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+            <div class="p-4 ">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold "> Success </h1>
+                    <button @click="showNewTaskAdded = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">The task "{{ addedTasksTitle }}" is added successfully</p>
+            </div>
         </div>
     </div>
-    <div v-if="showDeletedTask" class="bg-red-300 rounded-md mt-10">
-        <div class="  flex justify-center p-4">
-            <h4 class="text-2xl font-bold mr-4">The task has been successfully delete!</h4>
-            <button @click="showDeletedTask = false"
-                class="px-4 py-2 bg-gray-500 text-white rounded focus:outline-none hover:bg-gray-700 transition duration-200 ease-in-out">Close</button>
+
+    <div class="flex justify-center items-center">
+        <div v-if="showNewTaskError" class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+            <div class="p-4 ">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold "> Error </h1>
+                    <button @click="showNewTaskError = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">An error occurred adding the new task
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- delete task alert -->
+
+    <div class="flex justify-center items-center">
+        <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+            <div class="p-4 ">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold "> Success </h1>
+                    <button @click="" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">The task "" is deleted successfully</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center items-center">
+        <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+            <div class="p-4 ">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold "> Error </h1>
+                    <button @click="" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">An error occurred deleting the task ""
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- edit task alert -->
+
+    <div class="flex justify-center items-center">
+        <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+            <div class="p-4 ">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold "> Success </h1>
+                    <button @click="" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">The task "" is updated successfully</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center items-center">
+        <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+            <div class="p-4 ">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold "> Error </h1>
+                    <button @click="" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">An error occurred updated the task ""
+                </p>
+            </div>
         </div>
     </div>
 
@@ -148,6 +220,9 @@ watch(() => todo.value, (newValue, oldValue) => {
     <Teleport to="body">
         <EditTaskModal v-if="showEditModal" @close="closeModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
             @saveChanges="saveChanges" />
+    </Teleport>
+    <Teleport to="body">
+        <DeleteModal v-if="showDeleteModal" @close="showDeleteModal = false" @taskDeleted="handleTaskDeleted" />
     </Teleport>
     <div class="flex justify-center items-center">
         <table class="overflow-x-auto mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
@@ -177,12 +252,13 @@ watch(() => todo.value, (newValue, oldValue) => {
                         task.taskStatus }}</td>
                     <td>
                         <router-link :to="{ name: 'editTaskModal', params: { taskId: task.taskId } }">
-                            <span class="itbkk-button-edit block w-full p-2" @click="editHandler(task.taskId)">✏️</span>
+                            <span class="itbkk-button-edit block w-[10px] p-2 text-center"
+                                @click="editHandler(task.taskId)">✏️</span>
                         </router-link>
                     </td>
                     <td>
-                        <router-link :to="{ name: 'deleteTask', params: { taskId: task.taskId } }" @taskDeleted="handleTaskDeleted">
-                            <span class="itbkk-button-delete block w-full p-2">🗑️</span>
+                        <router-link :to="{ name: 'deleteTask', params: { taskId: task.taskId } }">
+                            <span class="itbkk-button-delete block w-[10px] p-2 text-center">🗑️</span>
                         </router-link>
                     </td>
                 </tr>
