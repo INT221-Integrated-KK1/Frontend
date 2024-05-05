@@ -1,9 +1,8 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { getItemById, deleteItemById } from "../libs/fetchUtils.js";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import router from "@/router";
-
 
 const { params } = useRoute();
 const showModal = ref(false);
@@ -14,9 +13,13 @@ const task = ref(null);
 const title = ref("");
 const emit = defineEmits(["taskDeleted"]);
 
+const number = ref(0);
+
+
 onMounted(async () => {
   try {
     task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+    number.value = task.value.id;
     console.log(task.value);
     title.value = task.value.title;
   } catch (error) {
@@ -40,8 +43,8 @@ const deleteTask = async (deleteid) => {
   try {
     console.log(deleteid);
     console.log(id);
-    await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);    
-    //todo.value = taskmanager.getTask();
+    await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
+    // todo.value = taskmanager.getTask();
     console.log("Deleted task:", deleteid);
     emit("taskDeleted", id);
     showModal.value = false;
@@ -56,6 +59,8 @@ const deleteTask = async (deleteid) => {
     // }
   }
 };
+
+
 </script>
 
 <template>
@@ -71,19 +76,13 @@ const deleteTask = async (deleteid) => {
             </p>
 
             <div class="text-right">
+              <!-- <router-link to="/task"> -->
+              <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3" @click="deleteTask(number)">
+                Confirm
+              </button>
+              <!-- </router-link> -->
               <router-link to="/task">
-                <button
-                  class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                  @click="deleteTask(task.value.id)"
-                >
-                  Confirm
-                </button>
-              </router-link>
-              <router-link to="/task">
-                <button
-                  class="btn bg-red-500 hover:bg-red-700 text-white"
-                  @click="showModal = false"
-                >
+                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="showModal = false">
                   Cancel
                 </button>
               </router-link>
