@@ -7,7 +7,7 @@ const emit = defineEmits('yohoo', 'close', 'saveChanges')
 
 
 
-const id = Number(params.taskId);
+const id = Number(params.id);
 
 
 const task = ref(null);
@@ -28,9 +28,6 @@ onMounted(async () => {
   }
 });
 
-
-
-
 const EmptyStyle = "italic text-slate-400";
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided"
@@ -41,10 +38,10 @@ console.log(props1.taskDetailsza);
 
 const getTaskProp = computed(() => {
   return {
-    taskTitle: props.taskTitle,
-    taskDescription: props.taskDescription,
-    taskAssignees: props.taskAssignees,
-    taskStatus: props.taskStatus,
+    title: props.title,
+    description: props.description,
+    assignees: props.assignees,
+    status: props.status,
     createdOn: props.createdOn,
     updatedOn: props.updatedOn
   }
@@ -52,10 +49,10 @@ const getTaskProp = computed(() => {
 
 
 
-// const taskId = reactive(getTaskProp('taskId'));
-// const taskTitle = reactive(getTaskProp('taskTitle'));
+// const id = reactive(getTaskProp('id'));
+// const title = reactive(getTaskProp('title'));
 // const taskDescription = reactive(getTaskProp('taskDescription'));
-// const taskAssignees = reactive(getTaskProp('taskAssignees'));
+// const assignees = reactive(getTaskProp('assignees'));
 // const taskStatus = reactive(getTaskProp('taskStatus'));
 // const createdOn = computed(() => formatToLocalTime(task.value?.createdOn))
 // const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn))
@@ -85,10 +82,10 @@ const formatToLocalTime = (dateTimeString) => {
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class=" col-start-1 col-span-3">
-          <h1 class="font-bold text-2xl py-2 mb-2">Task Details {{ getTaskProp.taskId }}</h1>
+          <h1 class="font-bold text-2xl py-2 mb-2">Edit Task </h1>
           <h1 class="font-bold mt-2">Title :</h1>
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-            v-model="getTaskProp.taskTitle">
+            v-model="getTaskProp.title">
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -96,39 +93,26 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold">Description :</h1>
           <textarea
             class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
-            :class="getTaskProp.taskDescription === null ? EmptyStyle : ''" v-model="getTaskProp.taskDescription" />
-
-          <!-- <textarea
-            class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
-            :class="getTaskProp.taskDescription === null ? EmptyStyle : ''">
-            {{ getTaskProp.taskDescription === null ? EmptyDescriptionText : getTaskProp.taskDescription }}
-          </textarea> -->
+            :class="{ EmptyStyle: getTaskProp.description === '' }" v-model="getTaskProp.description"
+            :placeholder="EmptyDescriptionText" />
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
           <textarea
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="getTaskProp.taskAssignees === null ? EmptyStyle : ''" v-model="getTaskProp.taskAssignees" />
-
-          <!-- <textarea
-            class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="getTaskProp.taskAssignees === null ? EmptyStyle : ''">
-            {{ getTaskProp.taskAssignees === null ? EmptyAssigneeText : getTaskProp.taskAssignees }}
-          </textarea> -->
+            :class="{ EmptyStyle: getTaskProp.assignees === ''}" v-model="getTaskProp.assignees"
+            :placeholder="EmptyAssigneeText" />
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="getTaskProp.taskStatus">
-            <option value="No Status">No Status</option>
-            <option value="To Do">To Do</option>
-            <option value="Doing">Doing</option>
-            <option value="Done">Done</option>
+            v-model="getTaskProp.status">
+            <option value="NO_STATUS">NO_STATUS</option>
+            <option value="TO_DO">TO_DO</option>
+            <option value="DOING">DOING</option>
+            <option value="DONE">DONE</option>
           </select>
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
           <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(getTaskProp.createdOn) }}</h1>
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(getTaskProp.updatedOn) }}</h1>
-          <!-- <h1 class="font-bold itbkk-timezone">Timezone : {{ getTaskProp.timezone }}</h1>
-          <h1 class="font-bold itbkk-created-on">Created On: {{ getTaskProp.createdOn }}</h1>
-          <h1 class="font-bold itbkk-updated-on">Updated On: {{ getTaskProp.updatedOn }}</h1> -->
         </div>
         <div class="flex justify-end mt-4 col-start-3">
           <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3"
