@@ -7,7 +7,7 @@ const emit = defineEmits('yohoo', 'close', 'saveChanges')
 
 
 
-const id = Number(params.taskId);
+const id = Number(params.id);
 
 
 const task = ref(null);
@@ -38,10 +38,10 @@ console.log(props1.taskDetailsza);
 
 const getTaskProp = computed(() => {
   return {
-    taskTitle: props.taskTitle,
-    taskDescription: props.taskDescription,
-    taskAssignees: props.taskAssignees,
-    taskStatus: props.taskStatus,
+    title: props.title,
+    description: props.taskDescription,
+    assignees: props.assignees,
+    status: props.taskStatus,
     createdOn: props.createdOn,
     updatedOn: props.updatedOn
   }
@@ -49,10 +49,10 @@ const getTaskProp = computed(() => {
 
 
 
-// const taskId = reactive(getTaskProp('taskId'));
-// const taskTitle = reactive(getTaskProp('taskTitle'));
+// const id = reactive(getTaskProp('id'));
+// const title = reactive(getTaskProp('title'));
 // const taskDescription = reactive(getTaskProp('taskDescription'));
-// const taskAssignees = reactive(getTaskProp('taskAssignees'));
+// const assignees = reactive(getTaskProp('assignees'));
 // const taskStatus = reactive(getTaskProp('taskStatus'));
 // const createdOn = computed(() => formatToLocalTime(task.value?.createdOn))
 // const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn))
@@ -85,7 +85,7 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold text-2xl py-2 mb-2">Edit Task </h1>
           <h1 class="font-bold mt-2">Title :</h1>
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-            v-model="getTaskProp.taskTitle">
+            v-model="getTaskProp.title">
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -100,7 +100,7 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold">Assignees :</h1>
           <textarea
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="{ EmptyStyle: getTaskProp.taskAssignees === ''}" v-model="getTaskProp.taskAssignees"
+            :class="{ EmptyStyle: getTaskProp.assignees === ''}" v-model="getTaskProp.assignees"
             :placeholder="EmptyAssigneeText" />
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"

@@ -18,7 +18,7 @@ async function getItemById(url, id) {
     } else {
       // 404 error
       if (data.status === 404) {
-        window.alert('The requested task does not exist');
+        //window.alert('The requested task does not exist');
         router.push('/task');
       }
       // other errors
@@ -32,8 +32,6 @@ async function getItemById(url, id) {
 }
 
 async function deleteItemById(url, id) {
-  // console.log(`${url}/${id}`)
-
   try {
     const res = await fetch(`${url}/${id}`, {
       method: 'DELETE'

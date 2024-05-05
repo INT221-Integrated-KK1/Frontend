@@ -18,7 +18,7 @@ const router = createRouter({
       name: "task",
     },
     {
-      path: "/task/:taskId",
+      path: "/task/:id",
       name: "taskdetail",
       component: TaskDetail,
     },
@@ -27,7 +27,7 @@ const router = createRouter({
       name: "addtask",
     },
     {
-      path: "/task/:taskId/delete",
+      path: "/task/:id/delete",
       name: "deleteTask",
       component: DeleteModal,
     },
@@ -39,7 +39,7 @@ const router = createRouter({
     // },
 
     {
-      path: "/task/:taskId/edit",
+      path: "/task/:id/edit",
       name: "editTaskModal",
       component: EditTaskModal,
     },
