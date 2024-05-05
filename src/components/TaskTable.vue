@@ -43,15 +43,14 @@ const showDeleted = ref(false);
 const showDeletedError = ref(false);
 
 const handleTaskAdded = (addedTasks) => {
-  if (addedTasks.id === 0 && addedTasks.title !== "") {
-    addedTasks.id = todo.value[todo.value.length - 1].id + 1;
-    showNewTaskAdded.value = true;
-    addedTasksTitle.value = addedTasks.title;
-    taskmanager.addTask(addedTasks);
-    todo.value = taskmanager.getTask();
-  } else {
-    showNewTaskError.value = true;
-  }
+    if (addedTasks.id !== 0) {
+        showNewTaskAdded.value = true;
+        addedTasksTitle.value = addedTasks.title;
+        taskmanager.addTask(addedTasks);
+        todo.value = taskmanager.getTask();
+    } else {
+        showNewTaskError.value = true;
+    }
 };
 
 const handleTaskDeleted = (deletedid) => {
