@@ -10,7 +10,8 @@ const showModal = ref(false);
 const id = Number(route.params.id);
 const task = ref(null);
 const title = ref("");
-const emit = defineEmits(["taskDeleted"]);
+
+const emit = defineEmits(["taskDeleted", "close"]);
 
 const number = ref(0);
 
@@ -21,49 +22,33 @@ onMounted(async () => {
     number.value = task.value.id;
     console.log(task.value);
     title.value = task.value.title;
+    
     console.log(route.params.id)
+    console.log(title.value);
+    console.log(task.value.title);
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
 });
 
-// const deleteTask = async () => {
-//   try {
-//     await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-//     console.log("Task deleted:", id);
-//     emit("taskDeleted", id);
-//     showModal.value = false;
-//     router.push("/task");
-//   } catch (error) {
-//     showModal.value = false;
-//     console.error("Error deleting task:", error);
-//   }
-// };
 const deleteTask = async (deleteid) => {
   try {
+  
     await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
-    // todo.value = taskmanager.getTask();
     console.log("Deleted task:", deleteid);
-    emit("taskDeleted", id);
+
     showModal.value = false;
-    router.push("/task");
+     emit("taskDeleted", deleteid);
   } catch (error) {
-    // if (error.response && error.response.status === 404) {
-    //   showModal.value = false;
-    //   console.error("Task not found:", id);
-    // } else {
-    //   showModal.value = false;
-    //   console.error("Error deleting task:", error);
-    // }
+      console.error("Error deleting task:", error);
   }
 };
-
 
 </script>
 
 <template>
   <div>
-    <div class="text-black fixed z-10 inset-0 overflow-y-auto">
+    <div v-if="title" class="text-black fixed z-10 inset-0 overflow-y-auto">
       <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
         <div class="bg-white w-1/2 p-6 rounded shadow-lg">
           <div class="">
@@ -74,13 +59,14 @@ const deleteTask = async (deleteid) => {
             </p>
 
             <div class="text-right">
-              <!-- <router-link to="/task"> -->
-              <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3" @click="deleteTask(route.params.id)">
-                Confirm
-              </button>
-              <!-- </router-link> -->
               <router-link to="/task">
-                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="showModal = false">
+                <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
+                  @click="deleteTask(route.params.id)">
+                  Confirm
+                </button>
+              </router-link>
+              <router-link to="/task">
+                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
                   Cancel
                 </button>
               </router-link>
