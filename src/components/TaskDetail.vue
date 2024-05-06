@@ -4,7 +4,7 @@ import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 const { params } = useRoute();
 
-const url = "http://localhost:8080/v1/tasks";
+// const url = "http://localhost:8080/v1/tasks";
 const Id = params.id;
 console.log(Id);
 
@@ -14,7 +14,7 @@ console.log(task);
 
 onMounted(async () => {
   try {
-    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, Id);
     console.log(task);
   } catch (error) {
     console.error("Error fetching task details:", error);
@@ -91,10 +91,10 @@ const formatToLocalTime = (dateTimeString) => {
             v-model="status"
             disabled
           >
-            <option value="No Status">No Status</option>
-            <option value="To Do">To Do</option>
-            <option value="Doing">Doing</option>
-            <option value="Done">Done</option>
+            <option value="NO_STATUS">NO_STATUS</option>
+            <option value="TO_DO">TO_DO</option>
+            <option value="DOING">DOING</option>
+            <option value="DONE">DONE</option>
           </select>
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
           <h1 class="font-bold itbkk-created-on">Created On: {{ createdOn }}</h1>
