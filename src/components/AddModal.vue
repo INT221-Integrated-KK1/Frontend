@@ -88,10 +88,10 @@ const showModal = ref(false);
             class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
             v-model="status"
           >
-            <option value="No Status" selected>No Status</option>
-            <option value="To Do">To Do</option>
-            <option value="Doing">Doing</option>
-            <option value="Done">Done</option>
+            <option value="NO_STATUS" selected>No Status</option>
+            <option value="TO_DO">To Do</option>
+            <option value="DOING">Doing</option>
+            <option value="DONE">Done</option>
           </select>
         </div>
         <div class="flex justify-end mt-4 col-start-3">

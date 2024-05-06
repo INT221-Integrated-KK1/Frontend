@@ -91,10 +91,10 @@ const formatToLocalTime = (dateTimeString) => {
             v-model="status"
             disabled
           >
-            <option value="NO_STATUS">NO_STATUS</option>
-            <option value="TO_DO">TO_DO</option>
-            <option value="DOING">DOING</option>
-            <option value="DONE">DONE</option>
+            <option value="NO_STATUS">No Status</option>
+            <option value="TO_DO">To Do</option>
+            <option value="DOING">Doing</option>
+            <option value="DONE">Done</option>
           </select>
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
           <h1 class="font-bold itbkk-created-on">Created On: {{ createdOn }}</h1>

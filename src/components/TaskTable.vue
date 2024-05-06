@@ -1,3 +1,126 @@
+<script setup>
+import { ref, onMounted } from "vue";
+import { getItems, getItemById, editItem } from "../libs/fetchUtils.js";
+import { TaskManagement } from "../libs/TaskManagement.js";
+import AddModal from "./AddModal.vue";
+import EditTaskModal from "./EditTaskModal.vue";
+import DeleteModal from "./DeleteModal.vue";
+
+const taskmanager = ref(new TaskManagement());
+const todo = ref([]);
+const taskDetails = ref({});
+const showEditModal = ref(false);
+const showDeleteModal = ref(false);
+const addedTasksTitle = ref("");
+const showNewTaskAdded = ref(false);
+const showNewTaskError = ref(false);
+const showDeleted = ref(false);
+const showDeletedError = ref(false);
+const showUpdated = ref(false);
+const updatedTaskTitle = ref("");
+const showUpdatedError = ref(false);
+const EmptyStyle = "italic text-slate-400 font-semibold";
+
+onMounted(async () => {
+  const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+  todo.value = items;
+  taskmanager.value.setTasks(items);
+  console.log("Received tasks:", items);
+});
+
+const openEditModal = () => {
+  showEditModal.value = true;
+};
+
+const closeModal = () => {
+  showEditModal.value = false;
+};
+
+const handleTaskAdded = (addedTasks) => {
+  if (addedTasks.id !== 0) {
+    showNewTaskAdded.value = true;
+    addedTasksTitle.value = addedTasks.title;
+    taskmanager.value.addTask(addedTasks);
+    todo.value = taskmanager.getTask();
+  } else {
+    showNewTaskError.value = true;
+  }
+};
+
+const handleTaskDeleted = (deletedid) => {
+  taskmanager.value.deleteTask(deletedid);
+  todo.value = taskmanager.value.getTask();
+  showDeleteModal.value = false;
+};
+
+const showDeleteModals = () => {
+  showDeleteModal.value = true;
+};
+
+async function editHandler(id) {
+  const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+  if (items) {
+    taskDetails.value = items;
+    showEditModal.value = true;
+    console.log(items);
+  }
+}
+
+function yohooHandler(obj) {
+  const task = taskmanager.value.getTaskById();
+  task.title = obj.title;
+  task.description = obj.description;
+  task.assignees = obj.assignees;
+  task.status = obj.status;
+  task.createOn = obj.createOn;
+  task.updatedOn = obj.updatedOn;
+}
+
+const saveChanges = async (getTaskProp, id) => {
+  const editedTask = {
+    id: id,
+    title: getTaskProp.title,
+    description: getTaskProp.description,
+    assignees: getTaskProp.assignees,
+    status: getTaskProp.status,
+  };
+  updatedTaskTitle.value = getTaskProp.title;
+  try {
+    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+    taskmanager.value.editTask(id, editedTask);
+    closeModal();
+    showUpdated.value = true;
+  } catch (error) {
+    console.error("Error editing task:", error);
+    showUpdatedError.value = true;
+  }
+};
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case "No Status":
+      return { class: "bg-gray-200 text-gray-800 rounded", label: formatStatus(status)};
+    case "To Do":
+      return { class: "bg-red-200 text-red-800 rounded", label: formatStatus(status) };
+    case "DOING":
+      return { class: "bg-yellow-200 text-yellow-800 rounded", label: formatStatus(status) };
+    case "DONE":
+      return { class: "bg-green-200 text-green-800 rounded", label: formatStatus(status) };
+    default:
+      return { class: "bg-gray-200 text-gray-800 rounded", label: formatStatus(status) };
+  }
+};
+
+const formatStatus = (status) => {
+  const parts = status.split("_");
+  for (let i = 0; i < parts.length; i++) {
+    parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1).toLowerCase();
+  }
+  return parts.join(" ");
+};
+
+</script>
+
 <template>
   <!-- add task alert -->
   <div class="flex justify-center items-center">
@@ -170,126 +293,6 @@
   </router-link>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
-import { getItems, getItemById, editItem } from "../libs/fetchUtils.js";
-import { TaskManagement } from "../libs/TaskManagement.js";
-import AddModal from "./AddModal.vue";
-import EditTaskModal from "./EditTaskModal.vue";
-import DeleteModal from "./DeleteModal.vue";
 
-const taskmanager = ref(new TaskManagement());
-const todo = ref([]);
-const taskDetails = ref({});
-const showEditModal = ref(false);
-const showDeleteModal = ref(false);
-const addedTasksTitle = ref("");
-const showNewTaskAdded = ref(false);
-const showNewTaskError = ref(false);
-const showDeleted = ref(false);
-const showDeletedError = ref(false);
-const showUpdated = ref(false);
-const updatedTaskTitle = ref("");
-const showUpdatedError = ref(false);
-const EmptyStyle = "italic text-slate-400 font-semibold";
-
-onMounted(async () => {
-  const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-  todo.value = items;
-  taskmanager.value.setTasks(items);
-  console.log("Received tasks:", items);
-});
-
-const openEditModal = () => {
-  showEditModal.value = true;
-};
-
-const closeModal = () => {
-  showEditModal.value = false;
-};
-
-const handleTaskAdded = (addedTasks) => {
-  if (addedTasks.id !== 0) {
-    showNewTaskAdded.value = true;
-    addedTasksTitle.value = addedTasks.title;
-    taskmanager.value.addTask(addedTasks);
-    todo.value = taskmanager.getTask();
-  } else {
-    showNewTaskError.value = true;
-  }
-};
-
-const handleTaskDeleted = (deletedid) => {
-  taskmanager.value.deleteTask(deletedid);
-  todo.value = taskmanager.value.getTask();
-  showDeleteModal.value = false;
-};
-
-const showDeleteModals = () => {
-  showDeleteModal.value = true;
-};
-
-async function editHandler(id) {
-  const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-  if (items) {
-    taskDetails.value = items;
-    showEditModal.value = true;
-    console.log(items);
-  }
-}
-
-function yohooHandler(obj) {
-  const task = taskmanager.value.getTaskById();
-  task.title = obj.title;
-  task.description = obj.description;
-  task.assignees = obj.assignees;
-  task.status = obj.status;
-  task.createOn = obj.createOn;
-  task.updatedOn = obj.updatedOn;
-}
-
-const saveChanges = async (getTaskProp, id) => {
-  const editedTask = {
-    id: id,
-    title: getTaskProp.title,
-    description: getTaskProp.description,
-    assignees: getTaskProp.assignees,
-    status: getTaskProp.status,
-  };
-  updatedTaskTitle.value = getTaskProp.title;
-  try {
-    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
-    taskmanager.value.editTask(id, editedTask);
-    closeModal();
-    showUpdated.value = true;
-  } catch (error) {
-    console.error("Error editing task:", error);
-    showUpdatedError.value = true;
-  }
-};
-
-const getStatusClass = (status) => {
-  switch (status) {
-    case "NO_STATUS":
-      return { class: "bg-gray-200 text-gray-800 rounded", label: formatStatus(status)};
-    case "TO_DO":
-      return { class: "bg-red-200 text-red-800 rounded", label: formatStatus(status) };
-    case "DOING":
-      return { class: "bg-yellow-200 text-yellow-800 rounded", label: formatStatus(status) };
-    case "DONE":
-      return { class: "bg-green-200 text-green-800 rounded", label: formatStatus(status) };
-    default:
-      return { class: "bg-gray-200 text-gray-800 rounded", label: formatStatus(status) };
-  }
-};
-
-const formatStatus = (status) => {
-  const parts = status.split("_");
-  for (let i = 0; i < parts.length; i++) {
-    parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1).toLowerCase();
-  }
-  return parts.join(" ");
-};
-</script>
 
 <style scoped></style>
