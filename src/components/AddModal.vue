@@ -75,11 +75,16 @@ const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-
           <textarea class="itbkk-assignees p-2 border-solid border-2 border-grey w-full break-words"
             placeholder="Assignees here" v-model="assignees" />
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status">
-            <option value="No Status" selected>No Status</option>
-            <option value="To Do">To Do</option>
-            <option value="Doing">Doing</option>
-            <option value="Done">Done</option>
+
+          <select
+            class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
+            v-model="status"
+          >
+            <option value="NO_STATUS" selected>No Status</option>
+            <option value="TO_DO">To Do</option>
+            <option value="DOING">Doing</option>
+            <option value="DONE">Done</option>
+
           </select>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
