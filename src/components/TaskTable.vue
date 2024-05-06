@@ -5,6 +5,7 @@ import { TaskManagement } from "../libs/TaskManagement.js";
 import AddModal from "./AddModal.vue";
 import EditTaskModal from "./EditTaskModal.vue";
 import DeleteModal from "./DeleteModal.vue";
+import DeleteModal2 from "./DeleteModal.vue";
 
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
@@ -51,10 +52,23 @@ const handleTaskDeleted = (deletedid) => {
   taskmanager.value.deleteTask(deletedid);
   todo.value = taskmanager.value.getTask();
   showDeleteModal.value = false;
+  showDeleted.value = true;
 };
 
-const showDeleteModals = () => {
-  showDeleteModal.value = true;
+
+async function showConfirmModals(task) {
+  console.log("Before async:", showDeleteModal.value); // Check initial state
+
+  const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, task.id);
+  console.log(task.id);
+  showDeleteModal.value = true; // Set reactive variable
+  console.log("After async:", showDeleteModal.value); // Check updated state
+  console.log(items);
+}
+
+const handleClose = () => {
+  // Handle closing the modal in the parent component
+  showDeleteModal.value = false; // Hide the modal
 };
 
 async function editHandler(id) {
@@ -116,6 +130,7 @@ const formatStatus = (status) => {
   for (let i = 0; i < parts.length; i++) {
     parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1).toLowerCase();
   }
+
   return parts.join(" ");
 };
 
@@ -233,13 +248,12 @@ const formatStatus = (status) => {
     </div>
   </div>
 
+
   <Teleport to="body">
     <EditTaskModal v-if="showEditModal" @close="closeModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
       @saveChanges="saveChanges" />
   </Teleport>
-  <Teleport to="body">
-    <DeleteModal v-if="showDeleteModal" @close="showDeleteModal = false" @taskDeleted="handleTaskDeleted" />
-  </Teleport>
+
   <div class="flex justify-center items-center">
     <table class="overflow-x-auto mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
       <thead class="text-xl text-black border-slate-600 bg-orange-200">
@@ -268,25 +282,31 @@ const formatStatus = (status) => {
         : task.assignees
     }}
           </td>
+
           <td :class="getStatusClass(task.status).class" class="itbkk-status text-center">
             {{ getStatusClass(task.status).label }}
           </td>
-          <td>
+          <td class="itbkk-button-action">
             <router-link :to="{ name: 'editTaskModal', params: { id: task.id } }">
               <span class="itbkk-button-edit block w-[10px] p-2 text-center" @click="editHandler(task.id)">✏️</span>
             </router-link>
           </td>
           <td>
             <router-link :to="{ name: 'deleteTask', params: { id: task.id } }">
-              <span class="itbkk-button-delete block w-[10px] p-2 text-center"
-                @click="showDeleteModals">🗑️</span>
+              <span class="itbkk-button-delete block w-[10px] p-2 text-center" @click="showConfirmModals(task)"
+                :id="task.id">🗑️️</span>
+
             </router-link>
           </td>
+
         </tr>
       </tbody>
     </table>
   </div>
 
+  <Teleport to="body">
+    <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted" />
+  </Teleport>
   <router-link :to="{ name: 'addtask' }">
     <AddModal @taskAdded="handleTaskAdded" />
     <!-- <AddModal  /> -->
