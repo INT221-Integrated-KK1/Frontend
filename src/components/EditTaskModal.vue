@@ -105,10 +105,10 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
             v-model="getTaskProp.status">
-            <option value="NO_STATUS">NO_STATUS</option>
-            <option value="TO_DO">TO_DO</option>
-            <option value="DOING">DOING</option>
-            <option value="DONE">DONE</option>
+            <option value="NO_STATUS">No Status</option>
+            <option value="TO_DO">To Do</option>
+            <option value="DOING">Doing</option>
+            <option value="DONE">Done</option>
           </select>
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
           <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(getTaskProp.createdOn) }}</h1>
