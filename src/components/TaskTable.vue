@@ -55,15 +55,19 @@ const handleTaskDeleted = (deletedid) => {
   showDeleted.value = true;
 };
 
+const handleTaskDeletedNotfound = () => {
+  console.log("Received task not found: ");
+  showDeletedError.value = true;
+};
+
 
 async function showConfirmModals(task) {
-  console.log("Before async:", showDeleteModal.value); // Check initial state
-
+  // console.log("Before async:", showDeleteModal.value); // Check initial state
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, task.id);
-  console.log(task.id);
+  // console.log(task.id);
   showDeleteModal.value = true; // Set reactive variable
-  console.log("After async:", showDeleteModal.value); // Check updated state
-  console.log(items);
+  // console.log("After async:", showDeleteModal.value); // Check updated state
+  // console.log(items);
 }
 
 const handleClose = () => {
@@ -112,9 +116,9 @@ const saveChanges = async (getTaskProp, id) => {
 
 const getStatusClass = (status) => {
   switch (status) {
-    case "No Status":
-      return { class: "bg-gray-200 text-gray-800 rounded", label: formatStatus(status)};
-    case "To Do":
+    case "NO_STATUS":
+      return { class: "bg-gray-200 text-gray-800 rounded", label: formatStatus(status) };
+    case "TO_DO":
       return { class: "bg-red-200 text-red-800 rounded", label: formatStatus(status) };
     case "DOING":
       return { class: "bg-yellow-200 text-yellow-800 rounded", label: formatStatus(status) };
@@ -193,32 +197,6 @@ const formatStatus = (status) => {
     </div>
   </div>
 
-
-  <!-- <div class="flex justify-center items-center">
-    <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Success</h1>
-          <button @click="" class="px-4 py-2rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold">The task has been deleted</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="flex justify-center items-center">
-    <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Error</h1>
-          <button @click="" class="px-4 py-2rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold">
-          An error occurred, the task does not exist
-        </p>
-      </div>
-    </div>
-  </div> -->
 
   <!-- edit task alert -->
 
@@ -305,7 +283,8 @@ const formatStatus = (status) => {
   </div>
 
   <Teleport to="body">
-    <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted" />
+    <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
+      @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
   <router-link :to="{ name: 'addtask' }">
     <AddModal @taskAdded="handleTaskAdded" />

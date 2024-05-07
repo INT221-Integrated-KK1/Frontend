@@ -11,7 +11,7 @@ const id = Number(route.params.id);
 const task = ref(null);
 const title = ref("");
 
-const emit = defineEmits(["taskDeleted", "close"]);
+const emit = defineEmits(["taskDeleted", "close", "taskNotfound"]);
 
 const number = ref(0);
 
@@ -22,25 +22,26 @@ onMounted(async () => {
     number.value = task.value.id;
     console.log(task.value);
     title.value = task.value.title;
-    
+
     console.log(route.params.id)
     console.log(title.value);
     console.log(task.value.title);
   } catch (error) {
     console.error("Error fetching task details:", error);
+    emit("taskNotfound");
   }
 });
 
 const deleteTask = async (deleteid) => {
   try {
-  
+
     await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
     console.log("Deleted task:", deleteid);
 
     showModal.value = false;
-     emit("taskDeleted", deleteid);
+    emit("taskDeleted", deleteid);
   } catch (error) {
-      console.error("Error deleting task:", error);
+    console.error("Error deleting task:", error);
   }
 };
 
