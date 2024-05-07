@@ -12,11 +12,9 @@ const UpdatedOn = ref(new Date().toISOString());
 
 const emit = defineEmits(["taskAdded"]);
 const AddTask = async () => {
-  if (title.value.length === 0) {
-    alert("Please fill in the title");
-  } else {
+    const trimTitle = ref(title.value.trim());
     const newItem = {
-      title: title.value,
+      title: trimTitle.value,
       description: description.value,
       assignees: assignees.value,
       status: status.value,
@@ -40,18 +38,20 @@ const AddTask = async () => {
     } catch (error) {
       console.log(`Error fetching data: ${error}`);
     }
-  }
+  
 };
 
 const showModal = ref(false);
 const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 disabled";
+
+const checkWhiteSpace = (title) => {
+  return /^\s*$/.test(title);
+};
 </script>
 
 <template>
-  <button
-    @click="showModal = true"
-    class="itbkk-button-add right-3 bottom-3 p-4 px-6 text-lg fixed bg-green-500 text-white hover:bg-green-600 rounded-full"
-  >
+  <button @click="showModal = true"
+    class="itbkk-button-add right-3 bottom-3 p-4 px-6 text-lg fixed bg-green-500 text-white hover:bg-green-600 rounded-full">
     +
   </button>
 
@@ -62,7 +62,7 @@ const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-
           <h1 class="font-bold text-2xl py-2 mb-2">Add new task</h1>
           <h1 class="font-bold mt-2">Title : <span class="text-red-600">*</span></h1>
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-            placeholder="Title name here" v-model.trim="title" required />
+            placeholder="Title name here" v-model="title" required />
         </div>
         <hr class="col-start-1 col-span-3" />
         <div class="col-start-1 col-span-2">
@@ -76,14 +76,11 @@ const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-
             placeholder="Assignees here" v-model="assignees" />
           <h1 class="font-bold pt-3">Status :</h1>
 
-          <select
-            class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="status"
-          >
-            <option value="NO_STATUS" selected>No Status</option>
-            <option value="TO_DO">To Do</option>
-            <option value="DOING">Doing</option>
-            <option value="DONE">Done</option>
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status">
+            <option value="No Status" selected>No Status</option>
+            <option value="To Do">To Do</option>
+            <option value="Doing">Doing</option>
+            <option value="Done">Done</option>
 
           </select>
         </div>
@@ -91,7 +88,7 @@ const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-
           <router-link to="/task">
             <button @click="AddTask"
               :class="title === '' || title === ' ' ? disabled : 'itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 '"
-              :disabled=" title === '' || title === ' ' ">
+              :disabled="checkWhiteSpace(title)">
               Save
             </button>
           </router-link>
