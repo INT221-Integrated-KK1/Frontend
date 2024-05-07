@@ -5,7 +5,7 @@ import { TaskManagement } from "../libs/TaskManagement.js";
 import AddModal from "./AddModal.vue";
 import EditTaskModal from "./EditTaskModal.vue";
 import DeleteModal from "./DeleteModal.vue";
-import DeleteModal2 from "./DeleteModal.vue";
+
 
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
@@ -81,7 +81,12 @@ async function editHandler(id) {
     taskDetails.value = items;
     showEditModal.value = true;
     console.log(items);
+  }else{
+    showUpdatedError.value = true;
   }
+  
+
+
 }
 
 function yohooHandler(obj) {
@@ -108,9 +113,10 @@ const saveChanges = async (getTaskProp, id) => {
     taskmanager.value.editTask(id, editedTask);
     closeModal();
     showUpdated.value = true;
-  } catch (error) {
-    console.error("Error editing task:", error);
-    showUpdatedError.value = true;
+  } catch (error) {    
+      // Other error
+      console.error("Error editing task:", error);
+      showUpdatedError.value = true;  
   }
 };
 
@@ -217,14 +223,15 @@ const formatStatus = (status) => {
       <div class="p-4">
         <div class="flex justify-between mb-3">
           <h1 class="text-2xl font-bold">Error</h1>
-          <button @click="showUpdatedError = false" class="px-4 py-2rounded">✖</button>
+          <button @click="showUpdatedError = false" class="px-4 py-2 rounded">✖</button>
         </div>
         <p class="itbkk-message text-lg font-bold">
-          An error occurred updated the task ""
+          An error has occurred, the task does not exist
         </p>
       </div>
     </div>
   </div>
+
 
 
   <Teleport to="body">
