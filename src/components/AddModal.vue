@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import { addItem } from "../libs/fetchUtils.js";
-// import router from '@/router';
 
 const title = ref("");
 const description = ref(null);
@@ -9,13 +8,32 @@ const assignees = ref(null);
 const status = ref("No Status");
 const CreatedOn = ref(new Date().toISOString());
 const UpdatedOn = ref(new Date().toISOString());
+const showModal = ref(false);
+const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 disabled";
 
 const emit = defineEmits(["taskAdded"]);
+const checkWhiteSpace = (title) => {
+  return /^\s*$/.test(title);
+};
+
 const AddTask = async () => {
-    const trimTitle = ref(title.value.trim());
+  
+  //Trim Title and Description
+  const trimTitle = ref(title.value.trim());
+  const trimDescription = ref(description.value.trim());
+
+  // Validate Length
+  if (trimTitle.value.length > 100) {
+    window.alert("Title cannot contain more than 100 characters");
+  } if (description.value.length > 500) {
+    window.alert("Description cannot contain more than 500 characters");
+  } if (assignees.value.length > 30) {
+    window.alert("Assignees cannot contain more than 100 characters");
+  } else {
+
     const newItem = {
       title: trimTitle.value,
-      description: description.value,
+      description: trimDescription.value,
       assignees: assignees.value,
       status: status.value,
       createdOn: CreatedOn.value,
@@ -25,9 +43,6 @@ const AddTask = async () => {
     try {
       const items = await addItem(import.meta.env.VITE_BASE_TASK_URL, newItem);
       console.log(items);
-      // Emit the 'taskAdded' event with the items
-      
-      console.log("Emitting taskAdded event:", items);
 
       title.value = "";
       description.value = "";
@@ -38,15 +53,9 @@ const AddTask = async () => {
     } catch (error) {
       console.log(`Error fetching data: ${error}`);
     }
-  
+  }
 };
 
-const showModal = ref(false);
-const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 disabled";
-
-const checkWhiteSpace = (title) => {
-  return /^\s*$/.test(title);
-};
 </script>
 
 <template>
@@ -73,7 +82,7 @@ const checkWhiteSpace = (title) => {
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
           <textarea class="itbkk-assignees p-2 border-solid border-2 border-grey w-full break-words"
-            placeholder="Assignees here" v-model="assignees" />
+            placeholder="Assignees here" v-model.trim="assignees" />
           <h1 class="font-bold pt-3">Status :</h1>
 
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status">
