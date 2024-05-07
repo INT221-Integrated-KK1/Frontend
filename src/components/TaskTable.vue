@@ -102,12 +102,12 @@ function yohooHandler(obj) {
 const saveChanges = async (getTaskProp, id) => {
   const editedTask = {
     id: id,
-    title: getTaskProp.title,
-    description: getTaskProp.description,
+    title: getTaskProp.title.trim(),
+    description: getTaskProp.description.trim(),
     assignees: getTaskProp.assignees,
     status: getTaskProp.status,
   };
-  updatedTaskTitle.value = getTaskProp.title;
+  updatedTaskTitle.value = getTaskProp.title.trim();
   try {
     await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
     taskmanager.value.editTask(id, editedTask);
