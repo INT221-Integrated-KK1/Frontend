@@ -29,13 +29,7 @@ onMounted(async () => {
   console.log("Received tasks:", items);
 });
 
-const openEditModal = () => {
-  showEditModal.value = true;
-};
-
-const closeModal = () => {
-  showEditModal.value = false;
-};
+// add handler
 
 const handleTaskAdded = (addedTasks) => {
   if (addedTasks.id !== 0) {
@@ -48,6 +42,16 @@ const handleTaskAdded = (addedTasks) => {
   }
 };
 
+//delete handler
+
+const showConfirmModals = () => {
+  showDeleteModal.value = true;
+}
+
+const closeConfirmModals = () => {
+  showDeleteModal.value = false;
+};
+
 const handleTaskDeleted = (deletedid) => {
   taskmanager.value.deleteTask(deletedid);
   todo.value = taskmanager.value.getTask();
@@ -56,37 +60,25 @@ const handleTaskDeleted = (deletedid) => {
 };
 
 const handleTaskDeletedNotfound = () => {
-  console.log("Received task not found: ");
   showDeletedError.value = true;
 };
 
 
-async function showConfirmModals(task) {
-  // console.log("Before async:", showDeleteModal.value); // Check initial state
-  const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, task.id);
-  // console.log(task.id);
-  showDeleteModal.value = true; // Set reactive variable
-  // console.log("After async:", showDeleteModal.value); // Check updated state
-  // console.log(items);
-}
+// edit handler
 
-const handleClose = () => {
-  // Handle closing the modal in the parent component
-  showDeleteModal.value = false; // Hide the modal
+const closeEditModal = () => {
+  showEditModal.value = false;
 };
 
 async function editHandler(id) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-  if (items) {
+  if (items !== null || undefined) {
     taskDetails.value = items;
     showEditModal.value = true;
     console.log(items);
   }else{
     showUpdatedError.value = true;
   }
-  
-
-
 }
 
 function yohooHandler(obj) {
@@ -112,6 +104,7 @@ const saveChanges = async (getTaskProp, id) => {
     const response = await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
     console.log("Response:", response);
     taskmanager.value.editTask(id, editedTask);
+
     closeModal();
     if (response.status === 200) {
       console.log("Task updated successfully");
@@ -121,12 +114,15 @@ const saveChanges = async (getTaskProp, id) => {
       console.log("Task not updated");
     }
 
+
   } catch (error) {    
       // Other error
       console.error("Error editing task:", error);
       showUpdatedError.value = true;  
   }
 };
+
+// status handler
 
 const getStatusClass = (status) => {
   switch (status) {
@@ -243,7 +239,7 @@ const formatStatus = (status) => {
 
 
   <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
       @saveChanges="saveChanges" />
   </Teleport>
 
@@ -251,7 +247,7 @@ const formatStatus = (status) => {
     <table class="overflow-x-auto mt-10 table w-3/4 border-collapse border-hidden rounded-3xl text-md">
       <thead class="text-xl text-black border-slate-600 bg-orange-200">
         <tr class="">
-          <!-- <th class="w-[20px]"></th> -->
+          <th class="w-[20px]"></th>
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
           <th class="font-bold">Status</th>
@@ -262,7 +258,7 @@ const formatStatus = (status) => {
       <tbody>
         <tr v-for="(task, index) in taskmanager.getTask()" :key="index"
           class="itbkk-item border-slate-600 borderrounded-e-2xl bg-yellow-50" v-if="todo">
-          <!-- <th class="font-semibold text-center">{{ task.id }}</th> -->
+          <th class="font-semibold text-center">{{ index + 1 }}</th>
           <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
             <td style="cursor: pointer; word-break" class="itbkk-title">
               {{ task.title }}
@@ -270,10 +266,10 @@ const formatStatus = (status) => {
           </router-link>
           <td class="itbkk-assignees" :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
             {{
-      task.assignees === null || task.assignees === ""
-        ? "Unassigned"
-        : task.assignees
-    }}
+            task.assignees === null || task.assignees === ""
+            ? "Unassigned"
+            : task.assignees
+            }}
           </td>
 
           <td :class="getStatusClass(task.status).class" class="itbkk-status text-center">
@@ -286,7 +282,7 @@ const formatStatus = (status) => {
           </td>
           <td>
             <router-link :to="{ name: 'deleteTask', params: { id: task.id } }">
-              <span class="itbkk-button-delete block w-[10px] p-2 text-center" @click="showConfirmModals(task)"
+              <span class="itbkk-button-delete block w-[10px] p-2 text-center" @click="showConfirmModals"
                 :id="task.id">🗑️️</span>
 
             </router-link>
@@ -298,7 +294,7 @@ const formatStatus = (status) => {
   </div>
 
   <Teleport to="body">
-    <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
+    <DeleteModal v-if="showDeleteModal == true" @close="closeConfirmModals" @taskDeleted="handleTaskDeleted"
       @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
   <router-link :to="{ name: 'addtask' }">

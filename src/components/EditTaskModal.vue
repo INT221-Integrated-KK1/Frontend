@@ -80,11 +80,10 @@ const saveChanges = () => {
           <h1 class="font-bold">Assignees :</h1>
           <textarea
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="{ EmptyStyle: taskProp.assignees === ''}" v-model="taskProp.assignees"
+            :class="{ EmptyStyle: taskProp.assignees === '' }" v-model="taskProp.assignees"
             :placeholder="EmptyAssigneeText"></textarea>
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="taskProp.status">
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskProp.status">
             <option value="NO STATUS">No Status</option>
             <option value="TO DO">To Do</option>
             <option value="DOING">Doing</option>
@@ -95,8 +94,8 @@ const saveChanges = () => {
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(taskProp.updatedOn) }}</h1>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
-          <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3"
-            @click="saveChanges" :disabled="!isFormModified">
+          <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges"
+            :disabled="!isFormModified">
             Save
           </button>
           <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">

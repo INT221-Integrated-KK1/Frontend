@@ -1,20 +1,15 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { getItemById, deleteItemById } from "../libs/fetchUtils.js";
-import { useRoute, useRouter } from "vue-router";
-import router from "@/router";
+import { useRoute } from "vue-router";
 
 const route = useRoute();
+const number = ref(0);
 const showModal = ref(false);
-
 const id = Number(route.params.id);
 const task = ref(null);
 const title = ref("");
-
 const emit = defineEmits(["taskDeleted", "close", "taskNotfound"]);
-
-const number = ref(0);
-
 
 onMounted(async () => {
   try {
