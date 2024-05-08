@@ -20,16 +20,16 @@ const AddTask = async () => {
   
   //Trim Title and Description
   const trimTitle = ref(title.value.trim());
-  const trimDescription = ref(description.value.trim());
+  const trimDescription = ref(description.value?.trim());
 
-  // Validate Length
-  if (trimTitle.value.length > 100) {
-    window.alert("Title cannot contain more than 100 characters");
-  } if (description.value.length > 500) {
-    window.alert("Description cannot contain more than 500 characters");
-  } if (assignees.value.length > 30) {
-    window.alert("Assignees cannot contain more than 100 characters");
-  } else {
+  // // Validate Length
+  // if (trimTitle.value.length > 100) {
+  //   window.alert("Title cannot contain more than 100 characters");
+  // } if (description.value.length > 500) {
+  //   window.alert("Description cannot contain more than 500 characters");
+  // } if (assignees.value.length > 30) {
+  //   window.alert("Assignees cannot contain more than 100 characters");
+  // } else {
 
     const newItem = {
       title: trimTitle.value,
@@ -54,7 +54,7 @@ const AddTask = async () => {
       console.log(`Error fetching data: ${error}`);
     }
   }
-};
+// };
 
 </script>
 
