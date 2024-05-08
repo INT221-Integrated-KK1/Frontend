@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { addItem } from "../libs/fetchUtils.js";
 
 const title = ref("");
-const description = ref(null);
+const description = ref("");
 const assignees = ref(null);
 const status = ref("No Status");
 const CreatedOn = ref(new Date().toISOString());
@@ -23,13 +23,13 @@ const AddTask = async () => {
   const trimDescription = ref(description.value.trim());
 
   // Validate Length
-  if (trimTitle.value.length > 100) {
-    window.alert("Title cannot contain more than 100 characters");
-  } if (description.value.length > 500) {
-    window.alert("Description cannot contain more than 500 characters");
-  } if (assignees.value.length > 30) {
-    window.alert("Assignees cannot contain more than 100 characters");
-  } else {
+  // if (trimTitle.value.length > 100) {
+  //   window.alert("Title cannot contain more than 100 characters");
+  // } if (trimDescription.value.length > 500) {
+  //   window.alert("Description cannot contain more than 500 characters");
+  // } if (assignees.value.length > 30) {
+  //   window.alert("Assignees cannot contain more than 100 characters");
+  // } else {
 
     const newItem = {
       title: trimTitle.value,
@@ -53,7 +53,7 @@ const AddTask = async () => {
     } catch (error) {
       console.log(`Error fetching data: ${error}`);
     }
-  }
+  // }
 };
 
 </script>
