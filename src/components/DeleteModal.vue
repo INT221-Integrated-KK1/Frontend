@@ -67,7 +67,7 @@ const deleteTask = async (deleteid) => {
                 </button>
               </router-link>
               <router-link to="/task">
-                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit  ('close')">
                   Cancel
                 </button>
               </router-link>

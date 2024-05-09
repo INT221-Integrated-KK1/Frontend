@@ -3,7 +3,7 @@ import { ref, onMounted, computed, reactive, watch } from "vue";
 import { getItemById, editItem } from "../libs/fetchUtils.js";
 import { useRoute, useRouter } from "vue-router";
 const { params } = useRoute();
-const emit = defineEmits('yohoo', 'close', 'saveChanges')
+const emit = defineEmits(['yohoo', 'close', 'saveChanges'])
 
 
 
@@ -100,11 +100,10 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold">Assignees :</h1>
           <textarea
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="{ EmptyStyle: getTaskProp.assignees === ''}" v-model="getTaskProp.assignees"
+            :class="{ EmptyStyle: getTaskProp.assignees === '' }" v-model="getTaskProp.assignees"
             :placeholder="EmptyAssigneeText" />
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="getTaskProp.status">
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="getTaskProp.status">
             <option value="NO STATUS">No Status</option>
             <option value="TO DO">To Do</option>
             <option value="DOING">Doing</option>
@@ -119,9 +118,11 @@ const formatToLocalTime = (dateTimeString) => {
             @click="$emit('saveChanges', getTaskProp, id)">
             Save
           </button>
-          <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
-            Close
-          </button>
+          <router-link to="/task">
+            <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+              Close
+            </button>
+          </router-link>
 
         </div>
       </div>

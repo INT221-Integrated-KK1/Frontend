@@ -6,6 +6,7 @@ import AddModal from "./AddModal.vue";
 import EditTaskModal from "./EditTaskModal.vue";
 import DeleteModal from "./DeleteModal.vue";
 import DeleteModal2 from "./DeleteModal.vue";
+import TaskDetail from "./TaskDetail.vue";
 
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
@@ -42,7 +43,7 @@ const handleTaskAdded = (addedTasks) => {
     showNewTaskAdded.value = true;
     addedTasksTitle.value = addedTasks.title;
     taskmanager.value.addTask(addedTasks);
-    todo.value = taskmanager.getTask();
+    todo.value = taskmanager.value.getTask();
   } else {
     showNewTaskError.value = true;
   }
@@ -141,6 +142,12 @@ const formatStatus = (status) => {
 </script>
 
 <template>
+
+  <div class="flex justify-end mr-52">
+    <RouterLink :to="{ name: 'status' }">
+      <div class="btn ">manage status</div>
+    </RouterLink>
+  </div>
   <!-- add task alert -->
   <div class="flex justify-center items-center">
     <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
@@ -248,17 +255,17 @@ const formatStatus = (status) => {
         <tr v-for="(task, index) in taskmanager.getTask()" :key="index"
           class="itbkk-item border-slate-600 borderrounded-e-2xl bg-yellow-50" v-if="todo">
           <!-- <th class="font-semibold text-center">{{ task.id }}</th> -->
-          <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
+          <router-link :to="{ name: 'taskDetail', params: { id: task.id } }">
             <td style="cursor: pointer; word-break" class="itbkk-title">
               {{ task.title }}
             </td>
           </router-link>
           <td class="itbkk-assignees" :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
             {{
-      task.assignees === null || task.assignees === ""
-        ? "Unassigned"
-        : task.assignees
-    }}
+            task.assignees === null || task.assignees === ""
+            ? "Unassigned"
+            : task.assignees
+            }}
           </td>
 
           <td :class="getStatusClass(task.status).class" class="itbkk-status text-center">
@@ -286,6 +293,7 @@ const formatStatus = (status) => {
     <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
       @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
+ 
   <router-link :to="{ name: 'addtask' }">
     <AddModal @taskAdded="handleTaskAdded" />
     <!-- <AddModal  /> -->
