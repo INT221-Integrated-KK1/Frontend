@@ -71,7 +71,8 @@ async function editItem(url, id, editItem) {
         ...editItem,
       }),
     });
-    return res.status
+    const editedItem = await res.json();
+    return editedItem;
   } catch (error) {
     console.log(`error: ${error}`);
   }

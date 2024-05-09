@@ -20,7 +20,7 @@ const AddTask = async () => {
   
   //Trim Title and Description
   const trimTitle = ref(title.value.trim());
-  const trimDescription = ref(description.value?.trim());
+  const trimDescription = ref(description.value.trim());
 
 
   // Validate Length

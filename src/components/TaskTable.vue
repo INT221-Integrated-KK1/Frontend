@@ -101,20 +101,11 @@ const saveChanges = async (getTaskProp, id) => {
   };
   updatedTaskTitle.value = getTaskProp.title.trim();
   try {
-    const response = await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
-    console.log("Response:", response);
+    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
     taskmanager.value.editTask(id, editedTask);
 
     closeModal();
-    if (response.status === 200) {
-      console.log("Task updated successfully");
-      showUpdated.value = true;
-    } else {
-      showUpdatedError.value = true;
-      console.log("Task not updated");
-    }
-
-
+    showUpdated.value = true;
   } catch (error) {    
       // Other error
       console.error("Error editing task:", error);
