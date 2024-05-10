@@ -27,25 +27,15 @@ onMounted(async () => {
   todo.value = items;
   taskmanager.value.setTasks(items);
   console.log("Received tasks:", items);
-
-
-  setTimeout(() => {
-    showNewTaskAdded.value = false;
-    showNewTaskError.value = false;
-    showDeleted.value = false;
-    showDeletedError.value = false;
-    showUpdated.value = false;
-    showUpdatedError.value = false;
-  }, 3000);
-
 });
 
 // add handler
 
 const handleTaskAdded = (addedTasks) => {
   if (addedTasks.id !== 0) {
+    showNewTaskAdded.value = true;
     setTimeout(() => {
-      showNewTaskAdded.value = true;
+      showNewTaskAdded.value = false;
     }, 3000);
     addedTasksTitle.value = addedTasks.title;
     taskmanager.value.addTask(addedTasks);
@@ -64,20 +54,26 @@ async function showConfirmModals(task) {
   console.log(items);
 }
 
-const closeConfirmModals = () => {
-  showDeleteModal.value = false;
-};
+// const closeConfirmModals = () => {
+//   showDeleteModal.value = false;
+// };
 
 const handleTaskDeleted = (deletedid) => {
   taskmanager.value.deleteTask(deletedid);
   todo.value = taskmanager.value.getTask();
   showDeleteModal.value = false;
   showDeleted.value = true;
+  setTimeout(() => {
+    showDeleted.value = false;
+  }, 3000);
 };
 
 const handleTaskDeletedNotfound = () => {
   console.log("Received task not found: ");
   showDeletedError.value = true;
+  setTimeout(() => {
+    showDeletedError.value = false;
+  }, 3000);
 };
 
 // edit handler
@@ -115,19 +111,37 @@ const saveChanges = async (getTaskProp, id) => {
     assignees: getTaskProp.assignees,
     status: getTaskProp.status,
   };
-  updatedTaskTitle.value = getTaskProp.title.trim();
-  try {
-    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
-    taskmanager.value.editTask(id, editedTask);
 
+  updatedTaskTitle.value = getTaskProp.title.trim();
+
+  const existingTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+  if (!existingTask) {
     closeEditModal();
-    showUpdated.value = true;
-  } catch (error) {
-    // Other error
-    console.error("Error editing task:", error);
     showUpdatedError.value = true;
+    setTimeout(() => {
+      showUpdatedError.value = false;
+    }, 3000);
+  } else {
+    try {
+      await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+      taskmanager.value.editTask(id, editedTask);
+
+      closeEditModal();
+      showUpdated.value = true;
+      setTimeout(() => {
+        showUpdated.value = false;
+      }, 3000);
+    }
+    catch (error) {
+      console.error("Error editing task:", error);
+      showUpdatedError.value = true;
+      setTimeout(() => {
+        showUpdatedError.value = false;
+      }, 3000);
+    }
   }
-};
+}
+
 
 // status handler
 
