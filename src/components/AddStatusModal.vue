@@ -1,6 +1,31 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { addItem, getItems } from "../libs/fetchUtils.js";
 const showModal = ref(false);
+
+
+const statusName = ref("");
+const statusDescription = ref("");
+const emit = defineEmits(["statusAdded"]);
+
+const AddStatus = async () => {
+    const newItem = {
+        statusName: statusName.value,
+        statusDescription: statusDescription.value
+    };
+    try {
+        const items = await addItem(import.meta.env.VITE_BASE_STATUS_URL, newItem);
+        console.log(items);
+        console.log(newItem);
+        statusName.value = "";
+        statusDescription.value = "";
+        showModal.value = false;
+        emit("statusAdded", items);
+    } catch (error) {
+        console.log(`Error fetching data: ${error}`);
+    }
+};
+
 
 </script>
  
@@ -20,17 +45,17 @@ const showModal = ref(false);
 
                     <h1 class="font-bold mt-2">Name : <span class="text-red-600">*</span></h1>
                     <input class="itbkk-status-name p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        placeholder="Name here" />
+                        placeholder="Name here" v-model="statusName" />
                     <h1 class="font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        rows="4" placeholder="Description here" />
+                        rows="4" placeholder="Description here" v-model="statusDescription" />
                 </div>
                 <hr class="col-start-1 col-span-3" />
 
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
-                        <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 '>
+                        <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3' @click="AddStatus">
                             Save
                         </button>
                     </router-link>

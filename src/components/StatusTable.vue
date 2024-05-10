@@ -7,6 +7,11 @@ import AddStatusModal from "@/components/AddStatusModal.vue";
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
 
+const handleStatusAdded = (items) => {
+    statusmanager.value.addStatus(items);
+    todo.value = statusmanager.value.getStatus();
+};
+
 onMounted(async () => {
     try {
         const items = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
@@ -50,9 +55,9 @@ const actionBtn = `<button class="btn mr-5 h-12">edit</button>
             </tbody>
         </table>
     </div>
-    
+
     <router-link :to="{ name: 'addstatus' }">
-        <AddStatusModal />
+        <AddStatusModal @statusAdded="handleStatusAdded" />
     </router-link>
 </template>
 
