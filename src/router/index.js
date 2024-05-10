@@ -44,6 +44,12 @@ const router = createRouter({
       path: "/status/manage",
       name: "status",
       component: () => import("../components/StatusTable.vue"),
+      children: [
+        {
+          path: "/status/add",
+          name: "addstatus",
+        }
+      ],
     }
     // {
     //   path: "/task/:id",

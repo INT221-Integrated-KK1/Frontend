@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import { getItems } from "@/libs/fetchUtils";
+import AddStatusModal from "@/components/AddStatusModal.vue";
 
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
@@ -49,6 +50,10 @@ const actionBtn = `<button class="btn mr-5 h-12">edit</button>
             </tbody>
         </table>
     </div>
+    
+    <router-link :to="{ name: 'addstatus' }">
+        <AddStatusModal />
+    </router-link>
 </template>
 
 <style scoped></style>
