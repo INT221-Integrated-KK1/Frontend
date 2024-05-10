@@ -5,6 +5,7 @@ import AddModal from "../components/AddModal.vue";
 // import TaskTable from "../components/TaskTable.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteModal from "../components/DeleteModal.vue";
+import StatusTable from "../components/StatusTable.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,7 +17,7 @@ const router = createRouter({
     {
       path: "/task",
       name: "task",
-      // component: () => import("../components/TaskTable.vue"),
+      component: () => import("../components/TaskTable.vue"),
       children: [
         {
           path: "/task/:id",
