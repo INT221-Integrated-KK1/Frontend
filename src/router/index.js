@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 // import App from "../App.vue";
 import TaskDetail from "../components/TaskDetail.vue";
-import AddModal from "../components/AddModal.vue";
+// import AddModal from "../components/AddModal.vue";
 // import TaskTable from "../components/TaskTable.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteModal from "../components/DeleteModal.vue";
@@ -41,7 +41,7 @@ const router = createRouter({
       ],
     },
     {
-      path: "/statuses/manage",
+      path: "/status/manage",
       name: "status",
       component: () => import("../components/StatusTable.vue"),
     }
