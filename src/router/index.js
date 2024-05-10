@@ -16,33 +16,54 @@ const router = createRouter({
     {
       path: "/task",
       name: "task",
+      // component: () => import("../components/TaskTable.vue"),
+      children: [
+        {
+          path: "/task/:id",
+          name: "taskdetail",
+          component: TaskDetail,
+        },
+        {
+          path: "/task/add",
+          name: "addtask",
+        },
+        {
+          path: "/task/:id/delete",
+          name: "deleteTask",
+          component: DeleteModal,
+        },
+        {
+          path: "/task/:id/edit",
+          name: "editTaskModal",
+          component: EditTaskModal,
+        },
+      ],
     },
     {
-      path: "/task/:id",
-      name: "taskdetail",
-      component: TaskDetail,
-    },
-    {
-      path: "/task/add",
-      name: "addtask",
-    },
-    {
-      path: "/task/:id/delete",
-      name: "deleteTask",
-      component: DeleteModal,
-    },
-
+      path: "/statuses/manage",
+      name: "status",
+      component: () => import("../components/StatusTable.vue"),
+    }
     // {
-    //   path: "/:notfoundpath(.*)",
-    //   name: "NotFound",
-    //   component: NotFound,
+    //   path: "/task/:id",
+    //   name: "taskdetail",
+    //   component: TaskDetail,
+    // },
+    // {
+    //   path: "/task/add",
+    //   name: "addtask",
+    // },
+    // {
+    //   path: "/task/:id/delete",
+    //   name: "deleteTask",
+    //   component: DeleteModal,
     // },
 
-    {
-      path: "/task/:id/edit",
-      name: "editTaskModal",
-      component: EditTaskModal,
-    },
+    // {
+    //   path: "/task/:id/edit",
+    //   name: "editTaskModal",
+    //   component: EditTaskModal,
+    // },
   ],
 });
 

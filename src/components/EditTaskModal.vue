@@ -1,8 +1,7 @@
 <script setup>
-import { ref, onMounted, computed, reactive, defineEmits } from "vue";
+import { ref, onMounted, computed, reactive } from "vue";
 import { getItemById, editItem } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import router from "@/router";
 
 const emit = defineEmits('yohoo', 'close', 'saveChanges');
 const { params } = useRoute();
@@ -51,28 +50,9 @@ onMounted(async () => {
   }
 });
 
-const saveChanges = async () => {
+const saveChanges = () => {
   if (isFormModified.value) {
-    const editedTask = {
-      id: id,
-      title: taskProp.title.trim(),
-      description: taskProp.description.trim(),
-      assignees: taskProp.assignees,
-      status: taskProp.status,
-    };
-
-    const fetching = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-
-    if (fetching === undefined) {
-      await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
-      emit('saveChanges', taskProp, undefined);
-      console.log(fetching);
-    } else {
-      router.push({ name: 'task' });
-      emit('saveChanges', taskProp, id);
-      console.log(fetching)
-    }
-
+    emit('saveChanges', taskProp, id);
   }
 }
 </script>
@@ -114,17 +94,17 @@ const saveChanges = async () => {
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(taskProp.updatedOn) }}</h1>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
-          <RouterLink to="/task">
+          <router-link to="/task">
             <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges"
               :disabled="!isFormModified">
               Save
             </button>
-          </RouterLink>
-          <RouterLink to="/task">
-            <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
-              Close
-            </button>
-          </RouterLink>
+            </router-link>  
+            <router-link to="/task">
+              <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+                Close
+              </button>
+            </router-link>
         </div>
       </div>
     </div>

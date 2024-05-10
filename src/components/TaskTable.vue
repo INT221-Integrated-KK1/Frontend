@@ -28,6 +28,7 @@ onMounted(async () => {
   taskmanager.value.setTasks(items);
   console.log("Received tasks:", items);
 
+
   setTimeout(() => {
     showNewTaskAdded.value = false;
     showNewTaskError.value = false;
@@ -43,7 +44,9 @@ onMounted(async () => {
 
 const handleTaskAdded = (addedTasks) => {
   if (addedTasks.id !== 0) {
-    showNewTaskAdded.value = true;
+    setTimeout(() => {
+      showNewTaskAdded.value = true;
+    }, 3000);
     addedTasksTitle.value = addedTasks.title;
     taskmanager.value.addTask(addedTasks);
     todo.value = taskmanager.getTask();
@@ -57,7 +60,7 @@ const handleTaskAdded = (addedTasks) => {
 async function showConfirmModals(task) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, task.id);
   console.log(task.id);
-  showDeleteModal.value = true; 
+  showDeleteModal.value = true;
   console.log(items);
 }
 
@@ -85,13 +88,12 @@ const closeEditModal = () => {
 
 async function editHandler(id) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-  if (items === null || undefined) {
-    showUpdatedError.value = true;
-  }
-  else {
+  if (items !== null || undefined) {
     taskDetails.value = items;
     showEditModal.value = true;
     console.log(items);
+  } else {
+    showUpdatedError.value = true;
   }
 }
 
@@ -113,12 +115,13 @@ const saveChanges = async (getTaskProp, id) => {
     assignees: getTaskProp.assignees,
     status: getTaskProp.status,
   };
+  updatedTaskTitle.value = getTaskProp.title.trim();
   try {
-    updatedTaskTitle.value = getTaskProp.title.trim();
+    await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
     taskmanager.value.editTask(id, editedTask);
-    todo.value = taskmanager.value.getTask();
-    showUpdated.value = true;
+
     closeEditModal();
+    showUpdated.value = true;
   } catch (error) {
     // Other error
     console.error("Error editing task:", error);
@@ -251,6 +254,12 @@ const getStatusClass = (status) => {
     <EditTaskModal v-if="showEditModal" @close="closeEditModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
       @saveChanges="saveChanges" />
   </Teleport>
+
+  <div class="flex justify-end mr-52">
+    <RouterLink :to="{ name: 'status' }">
+      <div class="btn mt-5">Manage Status</div>
+    </RouterLink>
+  </div>
 
   <div class="flex justify-center items-center">
     <table class="overflow-x-auto mt-10 table w-3/4 text-md ">
