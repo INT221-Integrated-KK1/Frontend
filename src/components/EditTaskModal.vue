@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, reactive, defineEmits } from "vue";
+import { ref, onMounted, computed, reactive } from "vue";
 import { getItemById, editItem } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 
@@ -94,13 +94,17 @@ const saveChanges = () => {
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(taskProp.updatedOn) }}</h1>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
-          <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges"
-            :disabled="!isFormModified">
-            Save
-          </button>
-          <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
-            Close
-          </button>
+          <router-link to="/task">
+            <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges"
+              :disabled="!isFormModified">
+              Save
+            </button>
+            </router-link>  
+            <router-link to="/task">
+              <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+                Close
+              </button>
+            </router-link>
         </div>
       </div>
     </div>
