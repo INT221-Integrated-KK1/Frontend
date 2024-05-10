@@ -16,20 +16,23 @@ onMounted(async () => {
     }
 });
 
+const actionBtn = `<button class="btn mr-5 h-12">edit</button>
+                        <button class="btn h-12">delete</button>`;
+
 </script>
 
 <template>
-    <div class="flex justify-end mr-52">
+    <div class="flex justify-end mr-52 mt-5">
         <RouterLink :to="{ name: 'task' }">
-            <div class="btn mt-">Home</div>
+            <div class="btn ">Home</div>
         </RouterLink>
     </div>
     <!-- demo table -->
     <div class="overflow-x-auto flex justify-center">
-        <table class="table w-3/4 mt-10 rounded-lg border-solid border-2 border-black">
+        <table class="table w-3/4 mt-10 border-solid border-2 border-black">
             <thead>
-                <tr class="bg-pink-300  rounded-lg border-solid border-2 border-black text-xl text-black">
-                    <th class=""></th>
+                <tr class="bg-orange-200 border-solid border-2 border-black text-xl text-black">
+                    <th class="w-20"></th>
                     <th class="font-bold">Name</th>
                     <th class="font-bold">Description</th>
                     <th class="font-bold">Action</th>
@@ -37,13 +40,11 @@ onMounted(async () => {
             </thead>
             <tbody>
                 <tr v-for="(status, index) in statusmanager.getStatus()" :key="index"
-                    class=" rounded-lg border-solid border-2 border-black">
-                    <th>{{ index + 1 }}</th>
+                    class="border-solid border-2 border-black h-16">
+                    <th class="font-semibold text-center">{{ index + 1 }}</th>
                     <td>{{ status.statusName }}</td>
                     <td>{{ status.statusDescription }}</td>
-                    <td><button class="btn mr-5">edit</button>
-                        <button class="btn">delete</button>
-                    </td>
+                    <td v-html="status.statusName === 'No Status' ? '' :actionBtn "></td>
                 </tr>
             </tbody>
         </table>

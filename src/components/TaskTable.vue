@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { getItems, getItemById, editItem } from "../libs/fetchUtils.js";
 import { TaskManagement } from "../libs/TaskManagement.js";
-import AddModal from "./AddModal.vue";
+import AddTaskModal from "./AddTaskModal.vue";
 import EditTaskModal from "./EditTaskModal.vue";
 import DeleteModal from "./DeleteModal.vue";
 
@@ -39,7 +39,7 @@ const handleTaskAdded = (addedTasks) => {
     }, 3000);
     addedTasksTitle.value = addedTasks.title;
     taskmanager.value.addTask(addedTasks);
-    todo.value = taskmanager.getTask();
+    todo.value = taskmanager.value.getTask();
   } else {
     showNewTaskError.value = true;
   }
@@ -54,9 +54,9 @@ async function showConfirmModals(task) {
   console.log(items);
 }
 
-// const closeConfirmModals = () => {
-//   showDeleteModal.value = false;
-// };
+const handleClose = () => {
+  showDeleteModal.value = false;
+};
 
 const handleTaskDeleted = (deletedid) => {
   taskmanager.value.deleteTask(deletedid);
@@ -107,9 +107,11 @@ const saveChanges = async (getTaskProp, id) => {
   const editedTask = {
     id: id,
     title: getTaskProp.title.trim(),
-    description: getTaskProp.description.trim(),
+    description: getTaskProp.description,
     assignees: getTaskProp.assignees,
-    status: getTaskProp.status,
+    status: {
+      statusId: getTaskProp.status
+    }
   };
 
   updatedTaskTitle.value = getTaskProp.title.trim();
@@ -147,28 +149,20 @@ const saveChanges = async (getTaskProp, id) => {
 
 const getStatusClass = (status) => {
   switch (status) {
-    case "NO_STATUS":
-      return { class: "bg-gray-200 text-gray-800 rounded", label: "No Status" };
-    case "TO_DO":
-      return { class: "bg-red-200 text-red-800 rounded", label: "To Do" };
-    case "DOING":
-      return { class: "bg-yellow-200 text-yellow-800 rounded", label: "Doing" };
-    case "DONE":
-      return { class: "bg-green-200 text-green-800 rounded", label: "Done" };
+    case "No Status":
+      return { class: "bg-gray-200 text-gray-800 rounded" };
+    case "To Do":
+      return { class: "bg-red-200 text-red-800 rounded" };
+    case "Doing":
+      return { class: "bg-yellow-200 text-yellow-800 rounded" };
+    case "Done":
+      return { class: "bg-green-200 text-green-800 rounded" };
     default:
-      return { class: "bg-gray-200 text-gray-800 rounded", label: status };
+      return { class: "bg-gray-200 text-gray-800 rounded" };
   }
 };
 
-// const formatStatus = (status) => {
-//   const parts = status.split("_");
-//   for (let i = 0; i < parts.length; i++) {
-//     parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1).toLowerCase();
-//   }
 
-//   // Special case for "NO_STATUS"
-//   return formattedStatus === "NO_STATUS" ? "No Status" : formattedStatus;
-// };
 
 
 
@@ -269,56 +263,59 @@ const getStatusClass = (status) => {
       @saveChanges="saveChanges" />
   </Teleport>
 
-  <div class="flex justify-end mr-52">
+  <div class="flex justify-end mr-52 mt-5">
     <RouterLink :to="{ name: 'status' }">
-      <div class="btn mt-5">Manage Status</div>
+      <div class="btn">Manage Status</div>
     </RouterLink>
   </div>
 
-  <div class="flex justify-center items-center">
-    <table class="overflow-x-auto mt-10 table w-3/4 text-md ">
-      <thead class="text-xl text-black border-slate-600 bg-orange-200">
-        <tr class="">
-          <th class="w-[20px]"></th>
+  <div class="overflow-x-auto flex justify-center">
+    <table class="table w-3/4 mt-10 border-solid border-2 border-black">
+      <thead>
+        <tr class="bg-orange-200 border-solid border-2 border-black text-xl text-black">
+          <th class="w-20"></th>
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
           <th class="font-bold">Status</th>
-          <th></th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(task, index) in taskmanager.getTask()" :key="index"
-          class="itbkk-item border-slate-600 borderrounded-e-2xl bg-yellow-50" v-if="todo">
+          class="itbkk-item h-16 border-solid border-2 border-black" v-if="todo">
+
           <th class="font-semibold text-center">{{ index + 1 }}</th>
-          <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
-            <td style="cursor: pointer; word-break" class="itbkk-title">
+
+
+          <td class="itbkk-title cursor-pointer ">
+            <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
               {{ task.title }}
-            </td>
-          </router-link>
+            </router-link>
+          </td>
+
+
           <td class="itbkk-assignees" :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
-            {{
-      task.assignees === null || task.assignees === ""
-        ? "Unassigned"
-        : task.assignees
-    }}
+            {{ task.assignees === null || task.assignees === "" ? "Unassigned" : task.assignees
+            }}
           </td>
-          <td :class="getStatusClass(task.status).class" class="itbkk-status text-center">
-            {{ getStatusClass(task.status).label }}
+
+          <td class="itbkk-status " :class="getStatusClass(task.status.statusName).class">
+            {{ task.status.statusName }}
           </td>
-          <router-link :to="{ name: 'editTaskModal', params: { id: task.id } }">
-            <td class="itbkk-button-action" @click="editHandler(task.id)">
-              <span class="itbkk-button-edit block  p-2 text-center">✏️</span>
-            </td>
-          </router-link>
 
-          <router-link :to="{ name: 'deleteTask', params: { id: task.id } }">
+          <div class="flex justify-center">
+            <router-link :to="{ name: 'editTaskModal', params: { id: task.id } }">
+              <td class="itbkk-button-action" @click="editHandler(task.id)">
+                <span class="itbkk-button-edit block  p-2 text-center">✏️</span>
+              </td>
+            </router-link>
 
-            <td class="itbkk-button-action" @click="showConfirmModals(task)">
-              <span class="itbkk-button-delete block p-2 text-center" :id="task.id">🗑️️</span>
-            </td>
-
-          </router-link>
+            <router-link :to="{ name: 'deleteTask', params: { id: task.id } }">
+              <td class="itbkk-button-action" @click="showConfirmModals(task)">
+                <span class="itbkk-button-delete block p-2 text-center" :id="task.id">🗑️️</span>
+              </td>
+            </router-link>
+          </div>
         </tr>
       </tbody>
     </table>
@@ -329,8 +326,8 @@ const getStatusClass = (status) => {
       @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
   <router-link :to="{ name: 'addtask' }">
-    <AddModal @taskAdded="handleTaskAdded" />
-    <!-- <AddModal  /> -->
+    <AddTaskModal @taskAdded="handleTaskAdded" />
+    <!-- <AddTaskModal  /> -->
   </router-link>
 </template>
 

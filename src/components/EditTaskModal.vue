@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from "vue";
-import { getItemById, editItem } from "../libs/fetchUtils.js";
+import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
+import { StatusManagement } from "@/libs/StatusManagement.js";
 
 const emit = defineEmits('yohoo', 'close', 'saveChanges');
 const { params } = useRoute();
 const id = Number(params.id);
+const statusmanager = ref(new StatusManagement());
 const task = ref(null);
 const isLoaded = ref(false);
 const props1 = defineProps({
@@ -45,6 +47,8 @@ onMounted(async () => {
   try {
     task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
     isLoaded.value = true;
+    const items = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    statusmanager.value.setStatuses(items);
   } catch (error) {
     console.error("Error fetching task details:", error)
   }
@@ -83,11 +87,11 @@ const saveChanges = () => {
             :class="{ EmptyStyle: taskProp.assignees === '' }" v-model="taskProp.assignees"
             :placeholder="EmptyAssigneeText"></textarea>
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskProp.status">
-            <option value="NO STATUS">No Status</option>
-            <option value="TO DO">To Do</option>
-            <option value="DOING">Doing</option>
-            <option value="DONE">Done</option>
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
+            v-model="taskProp.status.statusName">
+            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.statusName">
+              {{ status.statusName }}
+            </option>
           </select>
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
           <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(taskProp.createdOn) }}</h1>
@@ -99,12 +103,12 @@ const saveChanges = () => {
               :disabled="!isFormModified">
               Save
             </button>
-            </router-link>  
-            <router-link to="/task">
-              <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
-                Close
-              </button>
-            </router-link>
+          </router-link>
+          <router-link to="/task">
+            <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+              Close
+            </button>
+          </router-link>
         </div>
       </div>
     </div>
