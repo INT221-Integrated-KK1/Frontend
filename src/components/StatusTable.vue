@@ -1,4 +1,20 @@
 <script setup>
+import { ref, onMounted } from "vue";
+import { StatusManagement } from "@/libs/StatusManagement.js";
+import { getItems } from "@/libs/fetchUtils";
+
+const statusmanager = ref(new StatusManagement());
+const todo = ref([]);
+
+onMounted(async () => {
+    try {
+        const items = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+        todo.value = items;
+        statusmanager.value.setStatuses(items);
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
+    }
+});
 
 </script>
 
@@ -11,7 +27,6 @@
     <!-- demo table -->
     <div class="overflow-x-auto flex justify-center">
         <table class="table w-3/4 mt-10 rounded-lg border-solid border-2 border-black">
-            <!-- head -->
             <thead>
                 <tr class="bg-pink-300  rounded-lg border-solid border-2 border-black text-xl text-black">
                     <th class=""></th>
@@ -21,29 +36,11 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- row 1 -->
-                <tr class=" rounded-lg border-solid border-2 border-black">
-                    <th>1</th>
-                    <td>Cy Ganderton</td>
-                    <td>Quality Control Specialist</td>
-                    <td><button class="btn mr-5">edit</button>
-                        <button class="btn">delete</button>
-                    </td>
-                </tr>
-                <!-- row 2 -->
-                <tr class="rounded-lg border-solid border-2 border-black">
-                    <th>2</th>
-                    <td>Hart Hagerty</td>
-                    <td>Desktop Support Technician</td>
-                    <td><button class="btn mr-5">edit</button>
-                        <button class="btn">delete</button>
-                    </td>
-                </tr>
-                <!-- row 3 -->
-                <tr class="">
-                    <th>3</th>
-                    <td>Brice Swyre</td>
-                    <td>Tax Accountant</td>
+                <tr v-for="(status, index) in statusmanager.getStatus()" :key="index"
+                    class=" rounded-lg border-solid border-2 border-black">
+                    <th>{{ index + 1 }}</th>
+                    <td>{{ status.statusName }}</td>
+                    <td>{{ status.statusDescription }}</td>
                     <td><button class="btn mr-5">edit</button>
                         <button class="btn">delete</button>
                     </td>
