@@ -38,6 +38,7 @@ const AddStatus = async () => {
             emit("statusAdded", items);
         } catch (error) {
             console.log(`Error fetching data: ${error}`);
+            emit("statusAdded", undefined);
         }
     }
 

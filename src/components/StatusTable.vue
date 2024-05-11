@@ -7,6 +7,7 @@ import EditStatusModal from "./EditStatusModal.vue";
 
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
+const isDefault = (status) => status.statusName === "No Status";
 
 
 onMounted(async () => {
@@ -25,7 +26,7 @@ const showUpdatedError = ref(false);
 const addedTasksTitle = ref("");
 
 const handleStatusAdded = (items) => {
-    if (items.statusId !== 0) {
+    if (items.statusId !== 0 || undefined) {
         statusmanager.value.addStatus(items);
         todo.value = statusmanager.value.getStatus();
         showNewTaskAdded.value = true;
@@ -36,7 +37,7 @@ const handleStatusAdded = (items) => {
     } else {
         showUpdatedError.value = true;
     }
-    
+
 };
 
 
@@ -126,11 +127,11 @@ const actionBtn = `<RouterLink :to="{ name: 'editstatus', params: { id: status.s
                     <td>{{ status.statusName }}</td>
                     <td>{{ status.statusDescription }}</td>
                     <!-- <td v-html="status.statusName === 'No Status' ? '' : actionBtn"></td> -->
-                    <td>
+                    <td v-if="isDefault(status) == false">
                         <RouterLink :to="{ name: 'editstatus', params: { id: status.statusId } }">
-                            <button class="btn mr-5 h-12" @click="showEditModals(status)" :disabled="status.statusName === 'No Status'">edit</button>
+                            <button class="btn mr-5 h-12" @click="showEditModals(status)">edit</button>
                         </RouterLink>
-                        <button class="btn h-12" :disabled="status.statusName === 'No Status'">delete</button>
+                        <button class="btn h-12">delete</button>
                     </td>
                 </tr>
             </tbody>
