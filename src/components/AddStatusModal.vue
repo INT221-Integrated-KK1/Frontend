@@ -7,28 +7,45 @@ const showModal = ref(false);
 const statusName = ref("");
 const statusDescription = ref("");
 const emit = defineEmits(["statusAdded"]);
+const checkWhiteSpace = (title) => {
+    return /^\s*$/.test(title);
+};
 
 const AddStatus = async () => {
+    const trimStatusName = ref(statusName.value.trim());
+    const trimStatusDescription = ref(statusDescription.value.trim());
+
     const newItem = {
-        statusName: statusName.value,
-        statusDescription: statusDescription.value
+        statusName: trimStatusName.value,
+        statusDescription: trimStatusDescription.value
     };
-    try {
-        const items = await addItem(import.meta.env.VITE_BASE_STATUS_URL, newItem);
-        console.log(items);
-        console.log(newItem);
-        statusName.value = "";
-        statusDescription.value = "";
-        showModal.value = false;
-        emit("statusAdded", items);
-    } catch (error) {
-        console.log(`Error fetching data: ${error}`);
+
+    const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    if (existingStatus.some((status) => status.statusName === newItem.statusName)) {
+        alert("Status name already exists");
+    } else if (newItem.statusName === "") {
+        alert("Status name cannot be empty");
+    } else if (trimStatusName.value.length > 50) {
+        alert("Status name cannot contain more than 50 characters");
+    } else if (trimStatusDescription.value.length > 200) {
+        alert("Description cannot contain more than 200 characters");
+    } else {
+        try {
+            const items = await addItem(import.meta.env.VITE_BASE_STATUS_URL, newItem);
+            statusName.value = "";
+            statusDescription.value = "";
+            showModal.value = false;
+            emit("statusAdded", items);
+        } catch (error) {
+            console.log(`Error fetching data: ${error}`);
+        }
     }
+
 };
 
 
 </script>
- 
+
 <template>
 
     <button @click="showModal = true"
@@ -55,11 +72,12 @@ const AddStatus = async () => {
 
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
-                        <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3' @click="AddStatus">
+                        <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
+                            @click="AddStatus" :disabled="checkWhiteSpace(statusName)">
                             Save
                         </button>
                     </router-link>
-                    <router-link :to=" { name: 'status' }">
+                    <router-link :to="{ name: 'status' }">
                         <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white"
                             @click="showModal = false">
                             Cancel
@@ -71,6 +89,4 @@ const AddStatus = async () => {
     </div>
 </template>
 
-    <style scoped>
-
-    </style>
+<style scoped></style>

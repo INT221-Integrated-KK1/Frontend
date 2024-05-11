@@ -20,11 +20,26 @@ onMounted(async () => {
 });
 
 // add handler
+const showNewTaskAdded = ref(false);
+const showUpdatedError = ref(false);
+const addedTasksTitle = ref("");
 
 const handleStatusAdded = (items) => {
-    statusmanager.value.addStatus(items);
-    todo.value = statusmanager.value.getStatus();
+    if (items.statusId !== 0) {
+        statusmanager.value.addStatus(items);
+        todo.value = statusmanager.value.getStatus();
+        showNewTaskAdded.value = true;
+        setTimeout(() => {
+            showNewTaskAdded.value = false;
+        }, 3000);
+        addedTasksTitle.value = items.statusName;
+    } else {
+        showUpdatedError.value = true;
+    }
+    
 };
+
+
 
 // edit handler
 
@@ -48,7 +63,9 @@ async function showEditModals(status) {
 
 const saveChanges = async (editedTask, id) => {
     statusmanager.value.editStatus(id, editedTask);
+    statusmanager.value.getStatus();
     todo.value = statusmanager.value.getStatus();
+    console.log(todo.value);
     closeEditModal();
 }
 
@@ -57,6 +74,35 @@ const actionBtn = `<RouterLink :to="{ name: 'editstatus', params: { id: status.s
 </script>
 
 <template>
+
+    <div class="flex justify-center items-center">
+        <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Success</h1>
+                    <button @click="showNewTaskAdded = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold break-words">
+                    The task "{{ addedTasksTitle }}" is added successfully
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center items-center">
+        <div v-if="showNewTaskError" class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Error</h1>
+                    <button @click="showNewTaskError = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold break-words">
+                    An error occurred adding the new task
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="flex justify-end mr-52 mt-5">
         <RouterLink :to="{ name: 'task' }">
             <div class="btn ">Home</div>
@@ -82,9 +128,9 @@ const actionBtn = `<RouterLink :to="{ name: 'editstatus', params: { id: status.s
                     <!-- <td v-html="status.statusName === 'No Status' ? '' : actionBtn"></td> -->
                     <td>
                         <RouterLink :to="{ name: 'editstatus', params: { id: status.statusId } }">
-                            <button class="btn mr-5 h-12" @click="showEditModals(status)">edit</button>
+                            <button class="btn mr-5 h-12" @click="showEditModals(status)" :disabled="status.statusName === 'No Status'">edit</button>
                         </RouterLink>
-                        <button class="btn h-12">delete</button>
+                        <button class="btn h-12" :disabled="status.statusName === 'No Status'">delete</button>
                     </td>
                 </tr>
             </tbody>
