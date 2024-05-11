@@ -1,16 +1,13 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
-import { getItems } from "@/libs/fetchUtils";
+import { getItems, getItemById } from "@/libs/fetchUtils";
 import AddStatusModal from "@/components/AddStatusModal.vue";
+import EditStatusModal from "./EditStatusModal.vue";
 
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
 
-const handleStatusAdded = (items) => {
-    statusmanager.value.addStatus(items);
-    todo.value = statusmanager.value.getStatus();
-};
 
 onMounted(async () => {
     try {
@@ -22,8 +19,40 @@ onMounted(async () => {
     }
 });
 
-const actionBtn = `<button class="btn mr-5 h-12">edit</button>
-                        <button class="btn h-12">delete</button>`;
+// add handler
+
+const handleStatusAdded = (items) => {
+    statusmanager.value.addStatus(items);
+    todo.value = statusmanager.value.getStatus();
+};
+
+// edit handler
+
+const editModal = ref(false);
+
+const closeEditModal = () => {
+    editModal.value = false;
+};
+
+const taskDetails = ref({});
+async function showEditModals(status) {
+    const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.statusId);
+    if (items !== null || undefined) {
+        taskDetails.value = items;
+        editModal.value = true;
+
+    } else {
+        showUpdatedError.value = true;
+    }
+}
+
+const saveChanges = async (editedTask, id) => {
+    statusmanager.value.editStatus(id, editedTask);
+    todo.value = statusmanager.value.getStatus();
+    closeEditModal();
+}
+
+const actionBtn = `<RouterLink :to="{ name: 'editstatus', params: { id: status.statusId }  }"> <button class="btn mr-5 h-12">edit</button> </RouterLink> <button class="btn h-12">delete</button>`;
 
 </script>
 
@@ -50,7 +79,13 @@ const actionBtn = `<button class="btn mr-5 h-12">edit</button>
                     <th class="font-semibold text-center">{{ index + 1 }}</th>
                     <td>{{ status.statusName }}</td>
                     <td>{{ status.statusDescription }}</td>
-                    <td v-html="status.statusName === 'No Status' ? '' :actionBtn "></td>
+                    <!-- <td v-html="status.statusName === 'No Status' ? '' : actionBtn"></td> -->
+                    <td>
+                        <RouterLink :to="{ name: 'editstatus', params: { id: status.statusId } }">
+                            <button class="btn mr-5 h-12" @click="showEditModals(status)">edit</button>
+                        </RouterLink>
+                        <button class="btn h-12">delete</button>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -59,6 +94,11 @@ const actionBtn = `<button class="btn mr-5 h-12">edit</button>
     <router-link :to="{ name: 'addstatus' }">
         <AddStatusModal @statusAdded="handleStatusAdded" />
     </router-link>
+    <Teleport to="body">
+        <EditStatusModal v-if="editModal == true" @close="closeEditModal" @saveChanges="saveChanges"
+            :taskDetailsProp="taskDetails" />
+    </Teleport>
+
 </template>
 
 <style scoped></style>

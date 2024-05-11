@@ -13,6 +13,13 @@ class StatusManagement {
       this.status.push(Status);
     });
   }
+  // setTasks(tasks = []) {
+  //   this.tasks.length = 0;
+  //   tasks.forEach((task) => {
+  //     // task.taskStatus = this.convertStatus(task.taskStatus);
+  //     this.tasks.push(task);
+  //   });
+  // }
 
   addStatus(Status) {
     this.status.push(Status);

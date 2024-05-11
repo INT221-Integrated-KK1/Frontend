@@ -5,7 +5,8 @@ import TaskDetail from "../components/TaskDetail.vue";
 // import TaskTable from "../components/TaskTable.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteModal from "../components/DeleteModal.vue";
-import StatusTable from "../components/StatusTable.vue";
+// import StatusTable from "../components/StatusTable.vue";
+import EditStatusModal from "@/components/EditStatusModal.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -48,29 +49,14 @@ const router = createRouter({
         {
           path: "/status/add",
           name: "addstatus",
-        }
+        },
+        {
+          path: "/status/:id/edit",
+          name: "editstatus",
+          component: EditStatusModal,
+        },
       ],
-    }
-    // {
-    //   path: "/task/:id",
-    //   name: "taskdetail",
-    //   component: TaskDetail,
-    // },
-    // {
-    //   path: "/task/add",
-    //   name: "addtask",
-    // },
-    // {
-    //   path: "/task/:id/delete",
-    //   name: "deleteTask",
-    //   component: DeleteModal,
-    // },
-
-    // {
-    //   path: "/task/:id/edit",
-    //   name: "editTaskModal",
-    //   component: EditTaskModal,
-    // },
+    },
   ],
 });
 
