@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
-import { getItems, getItemById } from "@/libs/fetchUtils";
+import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import AddStatusModal from "@/components/AddStatusModal.vue";
 import EditStatusModal from "./EditStatusModal.vue";
 
@@ -22,7 +22,7 @@ onMounted(async () => {
 
 // add handler
 const showNewTaskAdded = ref(false);
-const showUpdatedError = ref(false);
+const showNewTaskError = ref(false);
 const addedTasksTitle = ref("");
 
 const handleStatusAdded = (items) => {
@@ -43,7 +43,8 @@ const handleStatusAdded = (items) => {
 
 
 // edit handler
-
+const showUpdated = ref(false);
+const showUpdatedError = ref(false);
 const editModal = ref(false);
 
 const closeEditModal = () => {
@@ -62,15 +63,46 @@ async function showEditModals(status) {
     }
 }
 
-const saveChanges = async (editedTask, id) => {
-    statusmanager.value.editStatus(id, editedTask);
-    statusmanager.value.getStatus();
-    todo.value = statusmanager.value.getStatus();
-    console.log(todo.value);
-    closeEditModal();
+const updatedStatusName = ref("");
+const updatedStatusDescription = ref("");
+const saveChanges = async (statusProp, id) => {
+    
+    updatedStatusName.value = statusProp.statusName.trim();
+    updatedStatusDescription.value = statusProp.statusDescription.trim();
+    const editedStatus = {
+        statusId: id,
+        statusName: updatedStatusName.value,
+        statusDescription: updatedStatusDescription.value
+    };
+    const existingStatus = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+    if (!existingStatus) {
+        closeEditModal();
+        showUpdatedError.value = true;
+        setTimeout(() => {
+            showUpdatedError.value = false;
+        }, 3000);
+    } else {
+        try {
+            await editItem(import.meta.env.VITE_BASE_STATUS_URL, id, editedStatus);
+            statusmanager.value.editStatus(id, editedStatus);
+            todo.value = statusmanager.value.getStatus();
+
+            closeEditModal();
+            showUpdated.value = true;
+            setTimeout(() => {
+                showUpdated.value = false;
+            }, 3000);
+        }
+        catch (error) {
+            console.error("Error editing task:", error);
+            showUpdatedError.value = true;
+            setTimeout(() => {
+                showUpdatedError.value = false;
+            }, 3000);
+        }
+    }
 }
 
-const actionBtn = `<RouterLink :to="{ name: 'editstatus', params: { id: status.statusId }  }"> <button class="btn mr-5 h-12">edit</button> </RouterLink> <button class="btn h-12">delete</button>`;
 
 </script>
 
@@ -103,6 +135,37 @@ const actionBtn = `<RouterLink :to="{ name: 'editstatus', params: { id: status.s
             </div>
         </div>
     </div>
+
+    <!-- edit task alert -->
+
+    <div v-if="showUpdated" class="flex justify-center items-center">
+        <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Success</h1>
+                    <button @click="showUpdated = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold break-words">The task "{{ updatedStatusName }}" is updated
+                    successfully
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="showUpdatedError" class="flex justify-center items-center">
+        <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Error</h1>
+                    <button @click="showUpdatedError = false" class="px-4 py-2 rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">
+                    An error has occurred, the task does not exist
+                </p>
+            </div>
+        </div>
+    </div>
+
 
     <div class="flex justify-end mr-52 mt-5">
         <RouterLink :to="{ name: 'task' }">
@@ -143,7 +206,7 @@ const actionBtn = `<RouterLink :to="{ name: 'editstatus', params: { id: status.s
     </router-link>
     <Teleport to="body">
         <EditStatusModal v-if="editModal == true" @close="closeEditModal" @saveChanges="saveChanges"
-            :taskDetailsProp="taskDetails" />
+            :taskDetailsProp="taskDetails"  />
     </Teleport>
 
 </template>

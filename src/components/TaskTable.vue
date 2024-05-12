@@ -177,7 +177,7 @@ const getStatusClass = (status) => {
           <h1 class="text-2xl font-bold">Success</h1>
           <button @click="showNewTaskAdded = false" class="px-4 py-2rounded">✖</button>
         </div>
-        <p class="itbkk-message text-lg font-bold">
+        <p class="itbkk-message text-lg font-bold break-words">
           The task "{{ addedTasksTitle }}" is added successfully
         </p>
       </div>
@@ -237,7 +237,8 @@ const getStatusClass = (status) => {
           <h1 class="text-2xl font-bold">Success</h1>
           <button @click="showUpdated = false" class="px-4 py-2rounded">✖</button>
         </div>
-        <p class="itbkk-message text-lg font-bold">The task "{{ updatedTaskTitle }}" is updated successfully</p>
+        <p class="itbkk-message text-lg font-bold break-words">The task "{{ updatedTaskTitle }}" is updated successfully
+        </p>
       </div>
     </div>
   </div>

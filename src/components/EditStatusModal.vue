@@ -1,12 +1,12 @@
 <script setup>
-import { onMounted, ref, reactive } from "vue";
-import { editItem, getItemById } from "../libs/fetchUtils.js";
+import { onMounted, ref, reactive, computed } from "vue";
+import { getItemById } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 
 const { params } = useRoute();
 const id = Number(params.id);
-const emit = defineEmits(['saveChanges'])
+const emit = defineEmits(['saveChanges', 'close'])
 
 const status = ref(null);
 const isLoaded = ref(false);
@@ -16,6 +16,18 @@ const receivedProps = defineProps({
 });
 const props = reactive(receivedProps.taskDetailsProp);
 console.log(props.statusName);
+
+// const statusProp = reactive({
+//     statusId: props.statusId,
+//     statusName: props.statusName,
+//     statusDescription: props.statusDescription
+// });
+
+// const initialTask = ref(JSON.stringify(statusProp));
+// console.log("initialTask", initialTask);
+// const isFormModified = computed(() => JSON.stringify(statusProp) !== initialTask);
+// console.log("isFormModified", isFormModified.value);
+
 onMounted(async () => {
     try {
         const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
@@ -27,16 +39,12 @@ onMounted(async () => {
     }
 });
 
-const EditStatus = async () => {
-    try {
-        await editItem(import.meta.env.VITE_BASE_STATUS_URL, id, props);
-        statusmanager.value.editStatus(props);
-        isLoaded.value == false;
-        emit('saveChanges', props, id);
-    } catch (error) {
-        console.error("Error editing task:", error)
-    }
-    
+const EditStatus = () => {
+    // if (isFormModified.value == true) {
+    isLoaded.value == false;
+    emit('saveChanges', props, id);
+    // }
+
 }
 
 </script>
@@ -63,7 +71,8 @@ const EditStatus = async () => {
 
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
-                        <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3' @click="EditStatus">
+                        <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
+                            @click="EditStatus">
                             Save
                         </button>
                     </router-link>
