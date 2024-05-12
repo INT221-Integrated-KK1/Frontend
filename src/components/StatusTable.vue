@@ -41,7 +41,6 @@ const handleStatusAdded = (items) => {
 };
 
 
-
 // edit handler
 const showUpdated = ref(false);
 const showUpdatedError = ref(false);
@@ -66,7 +65,7 @@ async function showEditModals(status) {
 const updatedStatusName = ref("");
 const updatedStatusDescription = ref("");
 const saveChanges = async (statusProp, id) => {
-    
+
     updatedStatusName.value = statusProp.statusName.trim();
     updatedStatusDescription.value = statusProp.statusDescription.trim();
     const editedStatus = {
@@ -83,9 +82,8 @@ const saveChanges = async (statusProp, id) => {
         }, 3000);
     } else {
         try {
-            await editItem(import.meta.env.VITE_BASE_STATUS_URL, id, editedStatus);
-            statusmanager.value.editStatus(id, editedStatus);
-            todo.value = statusmanager.value.getStatus();
+            const item = await editItem(import.meta.env.VITE_BASE_STATUS_URL, id, editedStatus);
+            statusmanager.value.editStatus(id, { ...item });
 
             closeEditModal();
             showUpdated.value = true;
@@ -188,7 +186,7 @@ const saveChanges = async (statusProp, id) => {
                     class="border-solid border-2 border-black h-16">
                     <th class="font-semibold text-center">{{ index + 1 }}</th>
                     <td>{{ status.statusName }}</td>
-                    <td>{{ status.statusDescription }}</td>
+                    <td class="">{{ status.statusDescription }}</td>
                     <!-- <td v-html="status.statusName === 'No Status' ? '' : actionBtn"></td> -->
                     <td v-if="isDefault(status) == false">
                         <RouterLink :to="{ name: 'editstatus', params: { id: status.statusId } }">
@@ -206,7 +204,7 @@ const saveChanges = async (statusProp, id) => {
     </router-link>
     <Teleport to="body">
         <EditStatusModal v-if="editModal == true" @close="closeEditModal" @saveChanges="saveChanges"
-            :taskDetailsProp="taskDetails"  />
+            :taskDetailsProp="taskDetails" />
     </Teleport>
 
 </template>

@@ -23,6 +23,8 @@ const taskProp = reactive({
   assignees: props.assignees,
   status: {
     statusId: props.status.statusId,
+    statusName: props.status.statusName,
+    statusDescription: props.status.statusDescription
   },
   createdOn: props.createdOn,
   updatedOn: props.updatedOn

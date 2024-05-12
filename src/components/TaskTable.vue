@@ -102,6 +102,7 @@ const saveChanges = async (getTaskProp, id) => {
     status: {
       statusId: getTaskProp.status.statusId,
       statusName: getTaskProp.status.statusName,
+      statusDescription: getTaskProp.status.statusDescription
     }
   };
   console.log("Edited task:", editedTask.status.statusId);
@@ -117,9 +118,9 @@ const saveChanges = async (getTaskProp, id) => {
     }, 3000);
   } else {
     try {
-      await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
-      console.log("Edited task:", editedTask);
-      taskmanager.value.editTask(id, editedTask);
+      const item = await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+      taskmanager.value.editTask(id, {...item});
+      console.log({ ...item });
 
       closeEditModal();
       showUpdated.value = true;
