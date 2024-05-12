@@ -17,16 +17,17 @@ const receivedProps = defineProps({
 const props = reactive(receivedProps.taskDetailsProp);
 console.log(props.statusName);
 
-// const statusProp = reactive({
-//     statusId: props.statusId,
-//     statusName: props.statusName,
-//     statusDescription: props.statusDescription
-// });
+const statusProp = reactive({
+    statusId: props.statusId,
+    statusName: props.statusName,
+    statusDescription: props.statusDescription
+});
 
-// const initialTask = ref(JSON.stringify(statusProp));
-// console.log("initialTask", initialTask);
-// const isFormModified = computed(() => JSON.stringify(statusProp) !== initialTask);
-// console.log("isFormModified", isFormModified.value);
+const initialTask = ref(JSON.stringify(statusProp));
+console.log("initialTask", initialTask);
+
+const isFormModified = computed(() => JSON.stringify(statusProp) !== initialTask.value);
+console.log("isFormModified", isFormModified.value);
 
 onMounted(async () => {
     try {
@@ -40,39 +41,32 @@ onMounted(async () => {
 });
 
 const EditStatus = () => {
-    // if (isFormModified.value == true) {
-    isLoaded.value == false;
-    emit('saveChanges', props, id);
-    // }
-
+    if (isFormModified.value) {
+        isLoaded.value = false;
+        emit('saveChanges', statusProp, id);
+    }
 }
-
 </script>
 
 <template>
     <div v-if="isLoaded" class="text-black fixed z-10 inset-0 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
             <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
-
                 <div class="itbkk-modal-status col-start-1 col-span-3">
                     <h1 class="font-bold text-2xl py-2 mb-2">Edit new status</h1>
-
                     <h1 class="font-bold mt-2">Name : <span class="text-red-600">*</span></h1>
                     <input class="itbkk-status-name p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        placeholder="Name here" v-model="props.statusName" />
+                        placeholder="Name here" v-model="statusProp.statusName" />
                     <h1 class="font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        rows="4" placeholder="Description here" v-model="props.statusDescription" />
+                        rows="4" placeholder="Description here" v-model="statusProp.statusDescription" />
                 </div>
-               
-
                 <hr class="col-start-1 col-span-3" />
-
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
                         <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
-                            @click="EditStatus">
+                            @click="EditStatus" :disabled="!isFormModified">
                             Save
                         </button>
                     </router-link>
@@ -87,5 +81,6 @@ const EditStatus = () => {
         </div>
     </div>
 </template>
+
 
 <style scoped></style>

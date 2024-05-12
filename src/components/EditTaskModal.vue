@@ -4,7 +4,7 @@ import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 
-const emit = defineEmits('yohoo', 'close', 'saveChanges');
+const emit = defineEmits( 'close', 'saveChanges');
 const { params } = useRoute();
 const id = Number(params.id);
 const statusmanager = ref(new StatusManagement());
@@ -21,12 +21,17 @@ const taskProp = reactive({
   title: props.title,
   description: props.description,
   assignees: props.assignees,
-  status: props.status,
+  status: {
+    statusId: props.status.statusId,
+  },
   createdOn: props.createdOn,
   updatedOn: props.updatedOn
 });
+
+console.log("taskProp", taskProp.status.statusId);
+
+
 const initialTask = JSON.stringify(taskProp);
-const timezoneOffset = new Date().getTimezoneOffset() * 60000
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const formatToLocalTime = (dateTimeString) => {
   const dateTime = new Date(dateTimeString)
@@ -43,6 +48,7 @@ const formatToLocalTime = (dateTimeString) => {
 };
 const isFormModified = computed(() => JSON.stringify(taskProp) !== initialTask);
 
+
 onMounted(async () => {
   try {
     task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
@@ -57,6 +63,7 @@ onMounted(async () => {
 const saveChanges = () => {
   if (isFormModified.value) {
     emit('saveChanges', taskProp, id);
+    console.log("taskProp", taskProp);
   }
 }
 </script>
@@ -88,8 +95,8 @@ const saveChanges = () => {
             :placeholder="EmptyAssigneeText"></textarea>
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="taskProp.status.statusName">
-            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.statusName">
+            v-model="taskProp.status.statusId">
+            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.statusId">
               {{ status.statusName }}
             </option>
           </select>

@@ -93,16 +93,6 @@ async function editHandler(id) {
   }
 }
 
-function yohooHandler(obj) {
-  const task = taskmanager.value.getTaskById();
-  task.title = obj.title;
-  task.description = obj.description;
-  task.assignees = obj.assignees;
-  task.status = obj.status;
-  task.createOn = obj.createOn;
-  task.updatedOn = obj.updatedOn;
-}
-
 const saveChanges = async (getTaskProp, id) => {
   const editedTask = {
     id: id,
@@ -110,9 +100,11 @@ const saveChanges = async (getTaskProp, id) => {
     description: getTaskProp.description,
     assignees: getTaskProp.assignees,
     status: {
-      statusId: getTaskProp.status
+      statusId: getTaskProp.status.statusId,
+      statusName: getTaskProp.status.statusName,
     }
   };
+  console.log("Edited task:", editedTask.status.statusId);
 
   updatedTaskTitle.value = getTaskProp.title.trim();
 
@@ -126,6 +118,7 @@ const saveChanges = async (getTaskProp, id) => {
   } else {
     try {
       await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+      console.log("Edited task:", editedTask);
       taskmanager.value.editTask(id, editedTask);
 
       closeEditModal();
@@ -260,7 +253,7 @@ const getStatusClass = (status) => {
 
 
   <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeEditModal" :taskDetailsza="taskDetails" @yohoo="yohooHandler"
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal" :taskDetailsza="taskDetails"
       @saveChanges="saveChanges" />
   </Teleport>
 
