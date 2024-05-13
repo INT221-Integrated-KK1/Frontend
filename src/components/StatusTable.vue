@@ -185,11 +185,28 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
                 <tr v-for="(status, index) in statusmanager.getStatus()" :key="index"
                     class="border-solid border-2 border-black h-16">
                     <th class="font-semibold text-center">{{ index + 1 }}</th>
-                    <td>{{ status.statusName }}</td>
-                    <td class=""
-                        :class="status.statusDescription === null || status.statusDescription === '' ? EmptyStyle : ''">
-                        {{ status.statusDescription === null || status.statusDescription === "" ? "No Description Provided" : status.statusDescription }}
+                    <td>
+                        <div v-if="status.statusName && status.statusName.length > 10">
+                            <span>{{ status.statusName.substring(0, 25) }}</span>
+                            <br>
+                            <span>{{ status.statusName.substring(26, 50) }}</span>
+                        </div>
+                        <div v-else>{{ status.statusName }}</div>
                     </td>
+                    <td class="break-words"
+                        :class="status.statusDescription === null || status.statusDescription === '' ? EmptyStyle : ''">
+                        <div v-if="status.statusDescription && status.statusDescription.length > 50">
+                            <span>{{ status.statusDescription.substring(0, 50) }}</span>
+                            <br>
+                            <span>{{ status.statusDescription.substring(51, 100) }}</span>
+                            <br>
+                            <span>{{ status.statusDescription.substring(101, 150) }}</span>
+                            <br>
+                            <span>{{ status.statusDescription.substring(151, 200) }}</span>
+                        </div>
+                        <div v-else>{{ status.statusDescription === null || status.statusDescription === "" ? "No Description Provided" : status.statusDescription }}</div>
+                    </td>
+
                     <td v-if="isDefault(status) == false">
                         <RouterLink :to="{ name: 'editstatus', params: { id: status.statusId } }">
                             <button class="btn mr-5 h-12" @click="showEditModals(status)">edit</button>
