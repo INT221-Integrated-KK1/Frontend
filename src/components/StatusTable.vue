@@ -100,7 +100,7 @@ const saveChanges = async (statusProp, id) => {
         }
     }
 }
-
+const EmptyStyle = "italic text-slate-400 font-semibold";
 
 </script>
 
@@ -186,8 +186,10 @@ const saveChanges = async (statusProp, id) => {
                     class="border-solid border-2 border-black h-16">
                     <th class="font-semibold text-center">{{ index + 1 }}</th>
                     <td>{{ status.statusName }}</td>
-                    <td class="">{{ status.statusDescription }}</td>
-                    <!-- <td v-html="status.statusName === 'No Status' ? '' : actionBtn"></td> -->
+                    <td class=""
+                        :class="status.statusDescription === null || status.statusDescription === '' ? EmptyStyle : ''">
+                        {{ status.statusDescription === null || status.statusDescription === "" ? "No Description Provided" : status.statusDescription }}
+                    </td>
                     <td v-if="isDefault(status) == false">
                         <RouterLink :to="{ name: 'editstatus', params: { id: status.statusId } }">
                             <button class="btn mr-5 h-12" @click="showEditModals(status)">edit</button>
