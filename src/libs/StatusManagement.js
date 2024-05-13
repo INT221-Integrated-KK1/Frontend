@@ -2,39 +2,36 @@ import { reactive } from "vue";
 
 class StatusManagement {
   constructor() {
-    this.status = reactive([]);
+    this.statuses = reactive([]);
   }
   getStatus() {
-    return this.status;
+    return this.statuses;
   }
-  setStatuses(status = []) {
-    this.status.length = 0;
-    status.forEach((Status) => {
-      this.status.push(Status);
+  setStatuses(statuses = []) {
+    this.statuses.length = 0;
+    statuses.forEach((Status) => {
+      this.statuses.push(Status);
     });
   }
 
   addStatus(Status) {
-    this.status.push(Status);
+    this.statuses.push(Status);
   }
 
   deleteStatus(id) {
-    const index = this.status.findIndex((e) => e.id === Number(id));
-    this.status.splice(index, 1);
+    const index = this.statuses.findIndex((e) => e.id === Number(id));
+    this.statuses.splice(index, 1);
   }
 
   getStatusById(id) {
-    return this.status.find((Status) => Status.id === id);
+    return this.statuses.find((Status) => Status.id === id);
   }
 
   editStatus(id, updateStatus) {
-    const index = this.status.findIndex((e) => e.id === Number(id));
-
-    this.status[index] = {
-      ...this.status[index],
-      ...updateStatus,
-    };
-    console.log(this.status);
+    const index = this.statuses.findIndex((e) => e.statusId === Number(id));
+    console.log(index);
+    this.statuses[index] = updateStatus;
   }
 }
+
 export { StatusManagement };
