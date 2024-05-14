@@ -91,7 +91,7 @@ const closeEditModal = () => {
 
 async function editHandler(id) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-  if (items !== undefined || items !== null) {
+  if (items !== undefined) {
     taskDetails.value = items;
     showEditModal.value = true;
     console.log(items);
