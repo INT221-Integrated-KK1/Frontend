@@ -4,7 +4,7 @@ import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 
-const emit = defineEmits( 'close', 'saveChanges');
+const emit = defineEmits( 'close', 'saveChanges','status-updated');
 const { params } = useRoute();
 const id = Number(params.id);
 const statusmanager = ref(new StatusManagement());
@@ -22,15 +22,15 @@ const taskProp = reactive({
   description: props.description,
   assignees: props.assignees,
   status: {
-    statusId: props.status.statusId,
-    statusName: props.status.statusName,
-    statusDescription: props.status.statusDescription
+    id: props.status.id,
+    name: props.status.name,
+    description: props.status.description
   },
   createdOn: props.createdOn,
   updatedOn: props.updatedOn
 });
 
-console.log("taskProp", taskProp.status.statusId);
+console.log("taskProp", taskProp.status.id);
 
 
 const initialTask = JSON.stringify(taskProp);
@@ -68,6 +68,7 @@ const saveChanges = () => {
     console.log("taskProp", taskProp);
   }
 }
+
 </script>
 
 <template>
@@ -97,8 +98,8 @@ const saveChanges = () => {
             :placeholder="EmptyAssigneeText"></textarea>
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="taskProp.status.statusId">
-            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.statusId">
+            v-model="taskProp.status.id">
+            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.id">
               {{ status.statusName }}
             </option>
           </select>

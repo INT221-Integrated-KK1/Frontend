@@ -1,14 +1,13 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { addItem, getItems } from "../libs/fetchUtils.js";
+import { getItems, addItem } from "../libs/fetchUtils.js";
 import { StatusManagement } from "@/libs/StatusManagement";
 
 const title = ref("");
 const description = ref("");
-const assignees = ref(null);
+const assignees = ref("");
 const status = ref(1);
-// const CreatedOn = ref(new Date().toISOString());
-// const UpdatedOn = ref(new Date().toISOString());
+
 const showModal = ref(false);
 const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 disabled";
 
@@ -25,42 +24,38 @@ const AddTask = async () => {
   const trimTitle = ref(title.value.trim());
   const trimDescription = ref(description.value.trim());
 
-
-  // Validate Length
-  // if (trimTitle.value.length > 100) {
-  //   window.alert("Title cannot contain more than 100 characters");
-  // } if (trimDescription.value.length > 500) {
-
-  //   window.alert("Description cannot contain more than 500 characters");
-  // } if (assignees.value.length > 30) {
-  //   window.alert("Assignees cannot contain more than 100 characters");
-  // } else {
-
   const newItem = {
     title: trimTitle.value,
     description: trimDescription.value,
     assignees: assignees.value,
-    status: { statusId: status.value },
-    // createdOn: CreatedOn.value,
-    // updatedOn: UpdatedOn.value,
+    status: { id: status.value },
   };
 
-  try {
-    const items = await addItem(import.meta.env.VITE_BASE_TASK_URL, newItem);
-    console.log(newItem);
-    console.log(items);
+  // Validate Length
+  if (trimTitle.value.length > 100) {
+    alert("Title cannot contain more than 100 characters");
+  } if (trimDescription.value.length > 500) {
+    alert("Description cannot contain more than 500 characters");
+  } if (assignees.value.length > 30) {
+    alert("Assignees cannot contain more than 100 characters");
+  } else {
 
-    title.value = "";
-    description.value = "";
-    assignees.value = "";
-    status.value = 1;
-    showModal.value = false;
-    emit("taskAdded", items);
-  } catch (error) {
-    console.log(`Error fetching data: ${error}`);
+    try {
+      const items = await addItem(import.meta.env.VITE_BASE_TASK_URL, newItem);
+      console.log(newItem);
+      console.log(items);
+
+      title.value = "";
+      description.value = "";
+      assignees.value = "";
+      status.value = 1;
+      showModal.value = false;
+      emit("taskAdded", items);
+    } catch (error) {
+      console.log(`Error fetching data: ${error}`);
+    }
+
   }
-
-  // }
 };
 
 onMounted(async () => {
@@ -103,8 +98,8 @@ onMounted(async () => {
           <h1 class="font-bold pt-3">Status :</h1>
 
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status">
-            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.statusId">
-              {{ status.statusName }}
+            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.id">
+              {{ status.name }}
             </option>
           </select>
         </div>

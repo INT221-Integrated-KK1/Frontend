@@ -15,12 +15,12 @@ const receivedProps = defineProps({
     taskDetailsProp: Object
 });
 const props = reactive(receivedProps.taskDetailsProp);
-console.log(props.statusName);
+console.log(props.name);
 
 const statusProp = reactive({
-    statusId: props.statusId,
-    statusName: props.statusName,
-    statusDescription: props.statusDescription
+    id: props.id,
+    name: props.name,
+    description: props.description
 });
 
 const initialTask = ref(JSON.stringify(statusProp));
@@ -56,11 +56,11 @@ const EditStatus = () => {
                     <h1 class="font-bold text-2xl py-2 mb-2">Edit new status</h1>
                     <h1 class="font-bold mt-2">Name : <span class="text-red-600">*</span></h1>
                     <input class="itbkk-status-name p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        placeholder="Name here" v-model="statusProp.statusName" />
+                        placeholder="Name here" v-model="statusProp.name" />
                     <h1 class="font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        rows="4" placeholder="Description here" v-model="statusProp.statusDescription" />
+                        rows="4" placeholder="Description here" v-model="statusProp.description" />
                 </div>
                 <hr class="col-start-1 col-span-3" />
                 <div class="flex justify-end mt-4 col-start-3">

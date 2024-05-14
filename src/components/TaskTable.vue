@@ -1,13 +1,15 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItems, getItemById, editItem } from "../libs/fetchUtils.js";
+import { getItems, getItemById, editItem, addItem } from "../libs/fetchUtils.js";
 import { TaskManagement } from "../libs/TaskManagement.js";
+import { StatusManagement } from "../libs/StatusManagement.js";
 import AddTaskModal from "./AddTaskModal.vue";
 import EditTaskModal from "./EditTaskModal.vue";
 import DeleteModal from "./DeleteModal.vue";
 
 
 const taskmanager = ref(new TaskManagement());
+const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
 const taskDetails = ref({});
 const showEditModal = ref(false);
@@ -31,17 +33,22 @@ onMounted(async () => {
 
 // add handler
 
-const handleTaskAdded = (addedTasks) => {
-  if (addedTasks.id !== 0) {
+async function handleTaskAdded(addedTasks) {
+  try {
+    addedTasksTitle.value = addedTasks.title;
+    const item = await addItem(import.meta.env.VITE_BASE_TASK_URL, addedTasks);
+    taskmanager.value.addTask({ ...item });
+    todo.value = taskmanager.value.getTask();
     showNewTaskAdded.value = true;
     setTimeout(() => {
       showNewTaskAdded.value = false;
     }, 3000);
-    addedTasksTitle.value = addedTasks.title;
-    taskmanager.value.addTask(addedTasks);
-    todo.value = taskmanager.value.getTask();
-  } else {
+  } catch (error) {
     showNewTaskError.value = true;
+    setTimeout(() => {
+      showNewTaskError.value = false;
+    }, 3000);
+    console.log("Error adding task:", error);
   }
 };
 
@@ -84,7 +91,7 @@ const closeEditModal = () => {
 
 async function editHandler(id) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-  if (items !== null || undefined) {
+  if (items !== undefined || items !== null) {
     taskDetails.value = items;
     showEditModal.value = true;
     console.log(items);
@@ -96,16 +103,16 @@ async function editHandler(id) {
 const saveChanges = async (getTaskProp, id) => {
   const editedTask = {
     id: id,
-    title: getTaskProp.title.trim(),
+    title: getTaskProp.title,
     description: getTaskProp.description,
     assignees: getTaskProp.assignees,
     status: {
-      statusId: getTaskProp.status.statusId,
-      statusName: getTaskProp.status.statusName,
-      statusDescription: getTaskProp.status.statusDescription
+      id: getTaskProp.status.id,
+      name: getTaskProp.status.name,
+      description: getTaskProp.status.description
     }
   };
-  console.log("Edited task:", editedTask.status.statusId);
+  console.log("Edited task:", editedTask.status.id);
 
   updatedTaskTitle.value = getTaskProp.title.trim();
 
@@ -119,8 +126,8 @@ const saveChanges = async (getTaskProp, id) => {
   } else {
     try {
       const item = await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
-      taskmanager.value.editTask(id, {...item});
-      console.log({ ...item });
+      taskmanager.value.editTask(id, {...editedTask});
+      console.log({ ...editedTask });
 
       closeEditModal();
       showUpdated.value = true;
@@ -294,10 +301,11 @@ const getStatusClass = (status) => {
             }}
           </td>
 
-          <td class="itbkk-status " :class="getStatusClass(task.status.statusName).class">
-            {{ task.status.statusName }}
+       
+          <td class="itbkk-status " :class="getStatusClass(task.status.name).class">
+            {{ task.status.name }}
           </td>
-
+          
           <div class="flex justify-center">
             <router-link :to="{ name: 'editTaskModal', params: { id: task.id } }">
               <td class="itbkk-button-action" @click="editHandler(task.id)">

@@ -7,7 +7,7 @@ import EditStatusModal from "./EditStatusModal.vue";
 
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
-const isDefault = (status) => status.statusName === "No Status";
+const isDefault = (status) => status.name === "No Status";
 
 
 onMounted(async () => {
@@ -26,14 +26,14 @@ const showNewTaskError = ref(false);
 const addedTasksTitle = ref("");
 
 const handleStatusAdded = (items) => {
-    if (items.statusId !== 0 || undefined) {
+    if (items.id !== 0 || undefined) {
         statusmanager.value.addStatus(items);
         todo.value = statusmanager.value.getStatus();
         showNewTaskAdded.value = true;
         setTimeout(() => {
             showNewTaskAdded.value = false;
         }, 3000);
-        addedTasksTitle.value = items.statusName;
+        addedTasksTitle.value = items.name;
     } else {
         showUpdatedError.value = true;
     }
@@ -52,7 +52,7 @@ const closeEditModal = () => {
 
 const taskDetails = ref({});
 async function showEditModals(status) {
-    const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.statusId);
+    const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
     if (items !== null || undefined) {
         taskDetails.value = items;
         editModal.value = true;
@@ -65,13 +65,13 @@ async function showEditModals(status) {
 const updatedStatusName = ref("");
 const updatedStatusDescription = ref("");
 const saveChanges = async (statusProp, id) => {
-
-    updatedStatusName.value = statusProp.statusName.trim();
-    updatedStatusDescription.value = statusProp.statusDescription.trim();
+    console.log("statusProp", statusProp);
+    updatedStatusName.value = statusProp.name.trim();
+    updatedStatusDescription.value = statusProp.description.trim();
     const editedStatus = {
-        statusId: id,
-        statusName: updatedStatusName.value,
-        statusDescription: updatedStatusDescription.value
+        id: id,
+        name: updatedStatusName.value,
+        description: updatedStatusDescription.value
     };
     const existingStatus = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
     if (!existingStatus) {
@@ -83,7 +83,10 @@ const saveChanges = async (statusProp, id) => {
     } else {
         try {
             const item = await editItem(import.meta.env.VITE_BASE_STATUS_URL, id, editedStatus);
-            statusmanager.value.editStatus(id, { ...item });
+            console.log(id);
+            console.log("edited status", editedStatus);
+            statusmanager.value.editStatus(id, { ...editedStatus });
+            console.log(statusmanager.value.editStatus(id, { ...editedStatus }));
 
             closeEditModal();
             showUpdated.value = true;
@@ -186,29 +189,29 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
                     class="border-solid border-2 border-black h-16">
                     <th class="font-semibold text-center">{{ index + 1 }}</th>
                     <td>
-                        <div v-if="status.statusName && status.statusName.length > 10">
-                            <span>{{ status.statusName.substring(0, 25) }}</span>
+                        <div v-if="status.name && status.name.length > 10">
+                            <span>{{ status.name.substring(0, 25) }}</span>
                             <br>
-                            <span>{{ status.statusName.substring(26, 50) }}</span>
+                            <span>{{ status.name.substring(26, 50) }}</span>
                         </div>
-                        <div v-else>{{ status.statusName }}</div>
+                        <div v-else>{{ status.name }}</div>
                     </td>
                     <td class="break-words"
-                        :class="status.statusDescription === null || status.statusDescription === '' ? EmptyStyle : ''">
-                        <div v-if="status.statusDescription && status.statusDescription.length > 50">
-                            <span>{{ status.statusDescription.substring(0, 50) }}</span>
+                        :class="status.description === null || status.description === '' ? EmptyStyle : ''">
+                        <div v-if="status.description && status.description.length > 50">
+                            <span>{{ status.description.substring(0, 50) }}</span>
                             <br>
-                            <span>{{ status.statusDescription.substring(51, 100) }}</span>
+                            <span>{{ status.description.substring(51, 100) }}</span>
                             <br>
-                            <span>{{ status.statusDescription.substring(101, 150) }}</span>
+                            <span>{{ status.description.substring(101, 150) }}</span>
                             <br>
-                            <span>{{ status.statusDescription.substring(151, 200) }}</span>
+                            <span>{{ status.description.substring(151, 200) }}</span>
                         </div>
-                        <div v-else>{{ status.statusDescription === null || status.statusDescription === "" ? "No Description Provided" : status.statusDescription }}</div>
+                        <div v-else>{{ status.description === null || status.description === "" ? "No Description Provided" : status.description }}</div>
                     </td>
 
                     <td v-if="isDefault(status) == false">
-                        <RouterLink :to="{ name: 'editstatus', params: { id: status.statusId } }">
+                        <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }">
                             <button class="btn mr-5 h-12" @click="showEditModals(status)">edit</button>
                         </RouterLink>
                         <button class="btn h-12">delete</button>

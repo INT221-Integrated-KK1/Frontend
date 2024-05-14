@@ -4,26 +4,26 @@ import { addItem, getItems } from "../libs/fetchUtils.js";
 const showModal = ref(false);
 
 
-const statusName = ref("");
-const statusDescription = ref("");
+const name = ref("");
+const description = ref("");
 const emit = defineEmits(["statusAdded"]);
 const checkWhiteSpace = (title) => {
     return /^\s*$/.test(title);
 };
 
 const AddStatus = async () => {
-    const trimStatusName = ref(statusName.value.trim());
-    const trimStatusDescription = ref(statusDescription.value.trim());
+    const trimStatusName = ref(name.value.trim());
+    const trimStatusDescription = ref(description.value.trim());
 
     const newItem = {
-        statusName: trimStatusName.value,
-        statusDescription: trimStatusDescription.value
+        name: trimStatusName.value,
+        description: trimStatusDescription.value
     };
 
     const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
-    if (existingStatus.some((status) => status.statusName === newItem.statusName)) {
+    if (existingStatus.some((status) => status.name === newItem.name)) {
         alert("Status name already exists");
-    } else if (newItem.statusName === "") {
+    } else if (newItem.name === "") {
         alert("Status name cannot be empty");
     } else if (trimStatusName.value.length > 50) {
         alert("Status name cannot contain more than 50 characters");
@@ -32,8 +32,8 @@ const AddStatus = async () => {
     } else {
         try {
             const items = await addItem(import.meta.env.VITE_BASE_STATUS_URL, newItem);
-            statusName.value = "";
-            statusDescription.value = "";
+            name.value = "";
+            description.value = "";
             showModal.value = false;
             emit("statusAdded", items);
         } catch (error) {
@@ -63,18 +63,18 @@ const AddStatus = async () => {
 
                     <h1 class="font-bold mt-2">Name : <span class="text-red-600">*</span></h1>
                     <input class="itbkk-status-name p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        placeholder="Name here" v-model="statusName" />
+                        placeholder="Name here" v-model="name" />
                     <h1 class="font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        rows="4" placeholder="Description here" v-model="statusDescription" />
+                        rows="4" placeholder="Description here" v-model="description" />
                 </div>
                 <hr class="col-start-1 col-span-3" />
 
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
                         <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
-                            @click="AddStatus" :disabled="checkWhiteSpace(statusName)">
+                            @click="AddStatus" :disabled="checkWhiteSpace(name)">
                             Save
                         </button>
                     </router-link>
