@@ -1,13 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import App from "../App.vue";
 import TaskDetail from "../components/TaskDetail.vue";
-// import AddModal from "../components/AddModal.vue";
-// import TaskTable from "../components/TaskTable.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteModal from "../components/DeleteModal.vue";
-// import StatusTable from "../components/StatusTable.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
-
+import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -55,6 +51,11 @@ const router = createRouter({
           name: "editstatus",
           component: EditStatusModal,
         },
+        {
+          path: "/status/:id/delete",
+          name: "deletestatus",
+          component: DeleteStatusModal,
+        }
       ],
     },
   ],

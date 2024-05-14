@@ -4,6 +4,7 @@ import { StatusManagement } from "@/libs/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import AddStatusModal from "@/components/AddStatusModal.vue";
 import EditStatusModal from "./EditStatusModal.vue";
+import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
@@ -104,6 +105,18 @@ const saveChanges = async (statusProp, id) => {
     }
 }
 const EmptyStyle = "italic text-slate-400 font-semibold";
+
+// delete handler
+const deleteModal = ref(false);
+const closeDeleteModal = () => {
+    deleteModal.value = false;
+};
+
+async function showDeleteModals(status) {
+    const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
+    console.log(items);
+    deleteModal.value = true;
+};
 
 </script>
 
@@ -214,7 +227,9 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
                         <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }">
                             <button class="btn mr-5 h-12" @click="showEditModals(status)">edit</button>
                         </RouterLink>
-                        <button class="btn h-12">delete</button>
+                        <RouterLink :to="{ name: 'deletestatus', params: { id: status.id } }">
+                            <button class="btn h-12" @click="showDeleteModals(status)">delete</button>
+                        </RouterLink>
                     </td>
                 </tr>
             </tbody>
@@ -227,6 +242,9 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
     <Teleport to="body">
         <EditStatusModal v-if="editModal == true" @close="closeEditModal" @saveChanges="saveChanges"
             :taskDetailsProp="taskDetails" />
+    </Teleport>
+    <Teleport to="body">
+        <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal"/> 
     </Teleport>
 
 </template>
