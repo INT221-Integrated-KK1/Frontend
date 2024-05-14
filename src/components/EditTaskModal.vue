@@ -98,9 +98,9 @@ const saveChanges = () => {
             :placeholder="EmptyAssigneeText"></textarea>
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="taskProp.status.id">
-            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.id">
-              {{ status.statusName }}
+            v-model="taskProp.status">
+            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status">
+              {{ status.name }}
             </option>
           </select>
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
