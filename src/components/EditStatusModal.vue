@@ -17,6 +17,15 @@ const receivedProps = defineProps({
 const props = reactive(receivedProps.taskDetailsProp);
 console.log(props.name);
 
+if (props.name !== null) {
+  props.name = props.name.trim()
+}
+
+if (props.description !== null) {
+  props.description = props.description.trim()
+}
+
+
 const statusProp = reactive({
     id: props.id,
     name: props.name,

@@ -11,7 +11,7 @@ const statusmanager = ref(new StatusManagement());
 
 const emit = defineEmits(["close", "statusDeleted"]);
 const count = ref(0);
-const selectId = ref(1);
+const selectId = ref();
 
 onMounted(async () => {
     try {
@@ -35,6 +35,7 @@ onMounted(async () => {
 async function transferConfirm(transferId) {
     confirmModal.value = true;
     tranferModal.value = false;
+
     const taskItems = await getItems(import.meta.env.VITE_BASE_TASK_URL);
     for (let index = 0; index < taskItems.length; index++) {
         if (taskItems[index].status.id === id) {

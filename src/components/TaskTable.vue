@@ -6,6 +6,7 @@ import { StatusManagement } from "../libs/StatusManagement.js";
 import AddTaskModal from "./AddTaskModal.vue";
 import EditTaskModal from "./EditTaskModal.vue";
 import DeleteModal from "./DeleteModal.vue";
+import TaskDetail from "./TaskDetail.vue";
 
 
 const taskmanager = ref(new TaskManagement());
@@ -162,6 +163,13 @@ const getStatusClass = (status) => {
 };
 
 
+// sort handler
+const handleSort = () => {
+  todo.value = taskmanager.value.sortTask();
+  console.log("Sorted tasks:", todo.value); 
+};
+
+
 
 
 
@@ -277,7 +285,7 @@ const getStatusClass = (status) => {
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
           <th class="font-bold">Status</th>
-          <th></th>
+          <th @click="handleSort" class="font-bold cursor-pointer">Sort</th>
         </tr>
       </thead>
       <tbody>
@@ -286,13 +294,11 @@ const getStatusClass = (status) => {
 
           <th class="font-semibold text-center">{{ index + 1 }}</th>
 
-
-          <td class="itbkk-title cursor-pointer ">
-            <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
-              {{ task.title }}
-            </router-link>
-          </td>
-
+          <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
+            <td class="itbkk-title cursor-pointer" >
+              <span class=" block py-2 text-center">{{ task.title }}</span>
+            </td>
+          </router-link>
 
           <td class="itbkk-assignees" :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
             {{ task.assignees === null || task.assignees === "" ? "Unassigned" : task.assignees
@@ -326,6 +332,7 @@ const getStatusClass = (status) => {
     <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
       @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
+
   <router-link :to="{ name: 'addtask' }">
     <AddTaskModal @taskAdded="handleTaskAdded" />
     <!-- <AddTaskModal  /> -->

@@ -2,19 +2,21 @@
 import { ref, watch, onMounted, computed } from "vue";
 import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
+import { StatusManagement } from "@/libs/StatusManagement.js";
 const { params } = useRoute();
 
-// const url = "http://localhost:8080/v1/tasks";
-const Id = params.id;
-console.log(Id);
+const id = Number(params.id);
+console.log(id);
 
 const task = ref(null);
 const timezoneOffset = new Date().getTimezoneOffset() * 60000;
 console.log(task);
 
+const statusmanager = ref(new StatusManagement());
+
 onMounted(async () => {
   try {
-    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, Id);
+    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
     console.log(task);
   } catch (error) {
     console.error("Error fetching task details:", error);
@@ -28,7 +30,7 @@ const EmptyDescriptionText = "No Description Provided";
 const getTaskProp = (propName) => 
 computed(() => (task.value ? task.value[propName] : ""));
 
-const id = getTaskProp("id");
+const Id = getTaskProp("id");
 const title = getTaskProp("title");
 const description = getTaskProp("description");
 const assignees = getTaskProp("assignees");
@@ -86,15 +88,10 @@ const formatToLocalTime = (dateTimeString) => {
             {{ assignees === null ? EmptyAssigneeText : assignees }}
           </div>
           <h1 class="font-bold">Status :</h1>
-          <select
-            class="p-2 border-solid border-2 border-grey w-full mb-10 itbkk-status"
-            v-model="status"
-            disabled
-          >
-            <option value="NO_STATUS">No Status</option>
-            <option value="TO_DO">To Do</option>
-            <option value="DOING">Doing</option>
-            <option value="DONE">Done</option>
+         <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status" disabled>
+            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status">
+              {{ status.name }}
+            </option>
           </select>
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
           <h1 class="font-bold itbkk-created-on">Created On: {{ createdOn }}</h1>

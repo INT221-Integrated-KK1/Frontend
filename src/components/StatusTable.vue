@@ -64,15 +64,16 @@ async function showEditModals(status) {
 }
 
 const updatedStatusName = ref("");
-const updatedStatusDescription = ref("");
 const saveChanges = async (statusProp, id) => {
     console.log("statusProp", statusProp);
     updatedStatusName.value = statusProp.name.trim();
-    updatedStatusDescription.value = statusProp.description.trim();
+    if (statusProp.description === "") {
+        statusProp.description = null;
+    }
     const editedStatus = {
         id: id,
-        name: updatedStatusName.value,
-        description: updatedStatusDescription.value
+        name: statusProp.name,
+        description: statusProp.description
     };
     const existingStatus = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
     if (!existingStatus) {
@@ -108,19 +109,28 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
 
 // delete handler
 const deleteModal = ref(false);
+const showDelete = ref(false);
+const showDeleteError = ref(false);
+
 const closeDeleteModal = () => {
     deleteModal.value = false;
 };
 
 async function showDeleteModals(status) {
-    const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
-    console.log(items);
-    deleteModal.value = true;
+    try {
+        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
+        console.log(items);
+        deleteModal.value = true;
+    } catch (error) {
+        console.log(error);
+        showDeleteError.value = true;
+    }
 };
 
 async function handleStatusDeleted(id) {
     statusmanager.value.deleteStatus(id);
     todo.value = statusmanager.value.getStatus();
+    showDelete.value = true;
 }
 
 </script>
@@ -185,12 +195,43 @@ async function handleStatusDeleted(id) {
         </div>
     </div>
 
+    <!-- delete task alert -->
+
+    <div v-if="showDelete" class="flex justify-center items-center">
+        <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Success</h1>
+                    <button @click="showDelete = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold break-words">The task is deleted
+                    successfully
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="showDeleteError" class="flex justify-center items-center">
+        <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Error</h1>
+                    <button @click="showDeleteError = false" class="px-4 py-2 rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold">
+                    An error has occurred, the task does not exist
+                </p>
+            </div>
+        </div>
+    </div>
+
 
     <div class="flex justify-end mr-52 mt-5">
         <RouterLink :to="{ name: 'task' }">
             <div class="btn ">Home</div>
         </RouterLink>
     </div>
+
     <!-- demo table -->
     <div class="overflow-x-auto flex justify-center">
         <table class="table w-3/4 mt-10 border-solid border-2 border-black">
