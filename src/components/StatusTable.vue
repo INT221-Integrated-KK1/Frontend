@@ -118,6 +118,11 @@ async function showDeleteModals(status) {
     deleteModal.value = true;
 };
 
+async function handleStatusDeleted(id) {
+    statusmanager.value.deleteStatus(id);
+    todo.value = statusmanager.value.getStatus();
+}
+
 </script>
 
 <template>
@@ -244,7 +249,7 @@ async function showDeleteModals(status) {
             :taskDetailsProp="taskDetails" />
     </Teleport>
     <Teleport to="body">
-        <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal"/> 
+        <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted()"/> 
     </Teleport>
 
 </template>
