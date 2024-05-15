@@ -34,22 +34,20 @@ onMounted(async () => {
 // add handler
 
 async function handleTaskAdded(addedTasks) {
-  try {
-    addedTasksTitle.value = addedTasks.title;
-    const item = await addItem(import.meta.env.VITE_BASE_TASK_URL, addedTasks);
-    taskmanager.value.addTask({ ...item });
+    if (addedTasks !== undefined || addedTasks !== null) {
+      addedTasksTitle.value = addedTasks.title;
+    taskmanager.value.addTask({ ...addedTasks });
     todo.value = taskmanager.value.getTask();
     showNewTaskAdded.value = true;
     setTimeout(() => {
       showNewTaskAdded.value = false;
     }, 3000);
-  } catch (error) {
-    showNewTaskError.value = true;
-    setTimeout(() => {
-      showNewTaskError.value = false;
-    }, 3000);
-    console.log("Error adding task:", error);
-  }
+    } else {
+      showNewTaskError.value = true;
+      setTimeout(() => {
+        showNewTaskError.value = false;
+      }, 3000);
+    }
 };
 
 //delete handler
