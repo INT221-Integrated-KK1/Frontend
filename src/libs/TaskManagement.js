@@ -7,13 +7,12 @@ class TaskManagement {
   getTask() {
     return this.tasks;
   }
- setTasks(tasks = []) {
-        this.tasks.length = 0;
-        tasks.forEach((task) => {
-            // task.taskStatus = this.convertStatus(task.taskStatus);
-            this.tasks.push(task);
-        });
-    }
+  setTasks(tasks = []) {
+    this.tasks.length = 0;
+    tasks.forEach((task) => {
+      this.tasks.push(task);
+    });
+  }
 
   addTask(task) {
     this.tasks.push(task);
@@ -25,18 +24,34 @@ class TaskManagement {
   }
 
   getTaskById(id) {
-        return this.tasks.find((task) => task.id === id)
-    }
+    return this.tasks.find((task) => task.id === id);
+  }
 
   editTask(id, updateTaks) {
-        const index = this.tasks.findIndex((e) => e.id === Number(id))
-      
-        this.tasks[index] = {
-            ...this.tasks[index],
-            ...updateTaks,
-        }
-        console.log(this.tasks);
-    }
+    const index = this.tasks.findIndex((e) => e.id === Number(id));
 
+    this.tasks[index] = {
+      ...this.tasks[index],
+      ...updateTaks,
+    };
+    console.log(this.tasks);
+  }
+  
+  sortTask(sortType) {
+    if (sortType === "asc") {
+      return this.tasks.sort((a, b) => a.status.name.localeCompare(b.status.name));
+    } else if (sortType === "desc") {
+      return this.tasks.sort((a, b) => b.status.name.localeCompare(a.status.name));
+    } else if (sortType === "default"){
+      return this.tasks.sort((a, b) => a.id - b.id);
+      
+    }
+  }
+
+  sortTaskDesc() {
+    return this.tasks.sort((a, b) =>
+      b.status.name.localeCompare(a.status.name)
+    );
+  }
 }
 export { TaskManagement };

@@ -17,8 +17,17 @@ const EmptyStyle = "italic text-slate-400";
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided";
 const props = reactive(props1.taskDetailsza);
+
+if (props.description !== null) {
+  props.description = props.description.trim()
+}
+
+if (props.assignees !== null) {
+  props.assignees = props.assignees.trim()
+}
+
 const taskProp = reactive({
-  title: props.title,
+  title: props.title.trim(),
   description: props.description,
   assignees: props.assignees,
   status: {

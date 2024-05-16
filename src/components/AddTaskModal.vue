@@ -28,7 +28,7 @@ const AddTask = async () => {
     title: trimTitle.value,
     description: trimDescription.value,
     assignees: assignees.value,
-    status: { id: status.value },
+    status: status.value,
   };
 
   // Validate Length
