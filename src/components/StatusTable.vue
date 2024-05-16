@@ -121,6 +121,14 @@ async function showDeleteModals(status) {
         const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
         console.log(items);
         deleteModal.value = true;
+        if (items !== undefined) {
+            taskDetails.value = items;
+        } else {
+            showDeleteError.value = true;
+            setTimeout(() => {
+                showDeleteError.value = false;
+            }, 3000);
+        }
     } catch (error) {
         console.log(error);
         showDeleteError.value = true;
@@ -130,8 +138,21 @@ async function showDeleteModals(status) {
 async function handleStatusDeleted(id) {
     statusmanager.value.deleteStatus(id);
     todo.value = statusmanager.value.getStatus();
+    deleteModal.value = false;
     showDelete.value = true;
+    setTimeout(() => {
+        showDelete.value = false;
+    }, 3000);
 }
+
+
+const handleStatusDeletedNotfound = () => {
+  console.log("Received status not found: ");
+  showDeletedError.value = true;
+  setTimeout(() => {
+    showDeletedError.value = false;
+  }, 3000);
+};
 
 </script>
 
@@ -290,7 +311,8 @@ async function handleStatusDeleted(id) {
             :taskDetailsProp="taskDetails" />
     </Teleport>
     <Teleport to="body">
-        <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted()"/> 
+        <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted()"
+         @taskNotfound="handleStatusDeletedNotfound"/> 
     </Teleport>
 
 </template>

@@ -36,8 +36,19 @@ class TaskManagement {
     };
     console.log(this.tasks);
   }
+  
+  sortTask(sortType) {
+    if (sortType === "asc") {
+      return this.tasks.sort((a, b) => a.status.name.localeCompare(b.status.name));
+    } else if (sortType === "desc") {
+      return this.tasks.sort((a, b) => b.status.name.localeCompare(a.status.name));
+    } else if (sortType === "default"){
+      return this.tasks.sort((a, b) => a.id - b.id);
+      
+    }
+  }
 
-  sortTask() {
+  sortTaskDesc() {
     return this.tasks.sort((a, b) =>
       b.status.name.localeCompare(a.status.name)
     );

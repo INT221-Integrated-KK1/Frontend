@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItemById, getItems, deleteItemById,  editItem } from "../libs/fetchUtils.js";
+import { getItemById, getItems, deleteItemById, editItem } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 const { params } = useRoute();
@@ -9,7 +9,7 @@ const confirmModal = ref(false);
 const id = Number(params.id);
 const statusmanager = ref(new StatusManagement());
 
-const emit = defineEmits(["close", "statusDeleted"]);
+const emit = defineEmits(["taskNotfound", "close", "statusDeleted"]);
 const count = ref(0);
 const selectId = ref();
 
@@ -24,27 +24,36 @@ onMounted(async () => {
             statusmanager.value.deleteStatus(id);
             console.log(statusmanager.value.getStatus());
         } else {
-           confirmModal.value = true;
+            confirmModal.value = true;
         }
-        
+
     } catch (error) {
         console.error("Error fetching task details:", error)
+        emit("taskNotfound");
     }
 });
 
 async function transferConfirm(transferId) {
-    confirmModal.value = true;
-    tranferModal.value = false;
+    if (transferId != 0 && transferId != undefined) {
+        console.log("transferId = " + transferId);
+        confirmModal.value = true;
+        tranferModal.value = false;
 
-    const taskItems = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-    for (let index = 0; index < taskItems.length; index++) {
-        if (taskItems[index].status.id === id) {
-            taskItems[index].status.id = transferId;
-            taskItems[index].status.name = statusmanager.value.getStatusById(transferId).name;
-            taskItems[index].status.description = statusmanager.value.getStatusById(transferId).description;
-            console.log(taskItems[index]);
-            await editItem(import.meta.env.VITE_BASE_TASK_URL, taskItems[index].id, taskItems[index]);
+        const taskItems = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+        for (let index = 0; index < taskItems.length; index++) {
+            if (taskItems[index].status.id === id) {
+                taskItems[index].status.id = transferId;
+                taskItems[index].status.name = statusmanager.value.getStatusById(transferId).name;
+                taskItems[index].status.description = statusmanager.value.getStatusById(transferId).description;
+                console.log(taskItems[index]);
+                await editItem(import.meta.env.VITE_BASE_TASK_URL, taskItems[index].id, taskItems[index]);
+            }
         }
+    } else {
+        confirmModal.value = false;
+        tranferModal.value = false;
+        emit("taskNotfound")
+        alert("Please select a status to transfer");
     }
 }
 
@@ -56,6 +65,7 @@ async function DeleteStatus(deletedId) {
         confirmModal.value = false;
     } catch (error) {
         console.error("Error fetching task details:", error)
+        emit("taskNotfound")
     }
 }
 
@@ -71,22 +81,23 @@ async function DeleteStatus(deletedId) {
                         <h1 class="font-bold text-2xl mb-2">Transfer a Status</h1>
                         <hr />
                         <p class="text-lg pt-2 mb-2 break-words">
-                            There is {{count}} task associated with the status
+                            There is {{ count }} task associated with the status
                         </p>
                         <p class="text-lg pb-2 mb-2 break-words">Tranfer this task's status to :</p>
-                        <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="selectId">
-                            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.id">
+                        <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
+                            v-model="selectId">
+                            <option v-for="(status, index) in statusmanager.getStatus()" :key="index"
+                                :value="status.id">
                                 {{ status.name }}
                             </option>
                         </select>
                         <div class="text-right">
-                                <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                                    @click="transferConfirm(selectId)">
-                                    Transfer
-                                </button>
-                            <router-link :to="{ name: 'status'}" >
-                                <button class="btn bg-red-500 hover:bg-red-700 text-white" 
-                                @click="$emit('close')">
+                            <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
+                                @click="transferConfirm(selectId)">
+                                Transfer
+                            </button>
+                            <router-link :to="{ name: 'status' }">
+                                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
                                     Cancel
                                 </button>
                             </router-link>
@@ -106,16 +117,14 @@ async function DeleteStatus(deletedId) {
                         </p>
 
                         <div class="text-right">
-                            <router-link :to="{ name: 'status'}">
+                            <router-link :to="{ name: 'status' }">
                                 <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                                @click="DeleteStatus(id)"
-                                   >
+                                    @click="DeleteStatus(id)">
                                     Confirm
                                 </button>
                             </router-link>
-                            <router-link :to="{ name: 'status'}" >
-                                <button class="btn bg-red-500 hover:bg-red-700 text-white" 
-                                @click="$emit('close')">
+                            <router-link :to="{ name: 'status' }">
+                                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
                                     Cancel
                                 </button>
                             </router-link>
