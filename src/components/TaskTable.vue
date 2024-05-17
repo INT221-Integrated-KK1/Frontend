@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { getItems, getItemById, editItem, addItem } from "../libs/fetchUtils.js";
 import { TaskManagement } from "../libs/TaskManagement.js";
 import { StatusManagement } from "../libs/StatusManagement.js";
@@ -196,6 +196,55 @@ function handleSort() {
   }
 }
 
+const showFilterDropdown = ref(false);
+const selectedStatuses = ref([]);
+const statusOptions = ref([]);
+
+// Method to toggle the filter dropdown
+const toggleFilterDropdown = () => {
+  showFilterDropdown.value = !showFilterDropdown.value;
+};
+
+
+const applyFilter = async () => {
+  try {
+    // สร้างพารามิเตอร์สำหรับการกรองข้อมูล
+    const params = new URLSearchParams();
+    selectedStatuses.value.forEach(filterStatuses => {
+      params.append('filterStatuses', filterStatuses);
+    });
+
+    // สร้าง URL พร้อมพารามิเตอร์
+    const url = `${import.meta.env.VITE_BASE_TASK_URL}?${params.toString()}`;
+
+    // ส่งคำขอ GET ไปยัง URL
+    const response = await fetch(url);
+    const data = await response.json();
+
+    // อัปเดตข้อมูลใน Vue.js ด้วยข้อมูลที่ได้รับ
+    todo.value = data;
+  } catch (error) {
+    console.error('Error applying filter:', error);
+  }
+};
+
+
+
+
+
+
+
+// Computed property to get unique status options from tasks
+const uniqueStatusOptions = computed(() => {
+  const statuses = new Set(todo.value.map(task => task.status.name));
+  return Array.from(statuses);
+});
+
+// Update statusOptions when todo changes
+watch(todo, () => {
+  statusOptions.value = uniqueStatusOptions.value.map(name => ({ id: name, name }));
+});
+
 </script>
 
 <template>
@@ -295,6 +344,30 @@ function handleSort() {
   </Teleport>
 
   <div class="flex justify-end mr-52 mt-5">
+    <!-- filter -->
+    <div>
+
+      <details class="dropdown mx-5">
+        <summary class="btn font-bold" @click="toggleFilterDropdown">Filter</summary>
+        <ul v-if="showFilterDropdown"
+          class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg w-56 mt-2 ring-1 ring-black ring-opacity-5">
+          <template v-for="status in statusOptions" :key="status.id">
+            <li>
+              <label :for="status.id"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer">
+                <input type="checkbox" :id="status.id" :value="status.name" class="mr-2">
+                {{ status.name }}
+              </label>
+            </li>
+          </template>
+        </ul>
+      </details>
+
+
+
+
+    </div>
+
     <div class="mr-5">
       <div v-if="showDefaultSort == true" @click='handleSort(sortType)'
         class="btn cursor-pointer flex items-center justify-center">
@@ -334,7 +407,7 @@ function handleSort() {
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
           <th class="font-bold">Status</th>
-          <th ></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
