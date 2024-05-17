@@ -34,7 +34,7 @@ onMounted(async () => {
 });
 
 async function transferConfirm(transferId) {
-    if (transferId != 0 && transferId != undefined) {
+    if (transferId != undefined) {
         console.log("transferId = " + transferId);
         confirmModal.value = true;
         tranferModal.value = false;

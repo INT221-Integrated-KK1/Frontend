@@ -116,7 +116,20 @@ const saveChanges = async (getTaskProp, id) => {
   updatedTaskTitle.value = getTaskProp.title.trim();
 
   const existingTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+  const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
   if (!existingTask) {
+    closeEditModal();
+    showUpdatedError.value = true;
+    setTimeout(() => {
+      showUpdatedError.value = false;
+    }, 3000);
+  } else if (!existingStatus.some((status) => status.id === editedTask.status.id)) {
+    closeEditModal();
+    showUpdatedError.value = true;
+    setTimeout(() => {
+      showUpdatedError.value = false;
+    }, 3000);
+  } else if (editedTask.status.name !== existingStatus.find((status) => status.id === editedTask.status.id).name){
     closeEditModal();
     showUpdatedError.value = true;
     setTimeout(() => {
@@ -290,7 +303,7 @@ function handleSort() {
 
 
   <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeEditModal" :taskDetailsza="taskDetails"
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal()" :taskDetailsza="taskDetails"
       @saveChanges="saveChanges" />
   </Teleport>
 

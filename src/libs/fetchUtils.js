@@ -18,8 +18,8 @@ async function getItemById(url, id) {
     } else {
       // 404 error
       if (data.status === 404) {
-        //window.alert('The requested task does not exist');
-        router.push('/task');
+        // window.alert('The requested task does not exist');
+        router.go(-1);
       }
       // other errors
       console.error(`Error fetching task details: ${data.status}`);

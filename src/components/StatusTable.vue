@@ -5,7 +5,6 @@ import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import AddStatusModal from "@/components/AddStatusModal.vue";
 import EditStatusModal from "./EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
-
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
 const isDefault = (status) => status.name === "No Status";
@@ -37,6 +36,9 @@ const handleStatusAdded = (items) => {
         addedTasksTitle.value = items.name;
     } else {
         showUpdatedError.value = true;
+        setTimeout(() => {
+            showUpdatedError.value = false;
+        }, 3000);
     }
 
 };
@@ -53,14 +55,34 @@ const closeEditModal = () => {
 
 const taskDetails = ref({});
 async function showEditModals(status) {
-    const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
-    if (items !== null || undefined) {
-        taskDetails.value = items;
-        editModal.value = true;
-
-    } else {
+    try {
+        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
+        if (items !== undefined) {
+            taskDetails.value = items;
+            editModal.value = true;
+        } else {
+            showUpdatedError.value = true;
+            setTimeout(() => {
+                showUpdatedError.value = false;
+            }, 3000);
+        }
+    } catch (error) {
         showUpdatedError.value = true;
+        setTimeout(() => {
+            showUpdatedError.value = false;
+        }, 3000);
     }
+//     const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
+//     if (items !== null || undefined) {
+//         taskDetails.value = items;
+//         editModal.value = true;
+
+//     } else {
+//         showUpdatedError.value = true;
+//         setTimeout(() => {
+//             showUpdatedError.value = false;
+//         }, 3000);
+//     }
 }
 
 const updatedStatusName = ref("");
@@ -75,18 +97,22 @@ const saveChanges = async (statusProp, id) => {
         name: statusProp.name,
         description: statusProp.description
     };
+    console.log(editedStatus);
     const existingStatus = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+
     if (!existingStatus) {
-        closeEditModal();
+        console.log("Status not found");
+        console.log(existingStatus);
+        // closeEditModal();
         showUpdatedError.value = true;
         setTimeout(() => {
             showUpdatedError.value = false;
         }, 3000);
     } else {
         try {
+            console.log("edited status", editedStatus);
             const item = await editItem(import.meta.env.VITE_BASE_STATUS_URL, id, editedStatus);
             console.log(id);
-            console.log("edited status", editedStatus);
             statusmanager.value.editStatus(id, { ...editedStatus });
             console.log(statusmanager.value.editStatus(id, { ...editedStatus }));
 
@@ -97,7 +123,7 @@ const saveChanges = async (statusProp, id) => {
             }, 3000);
         }
         catch (error) {
-            console.error("Error editing task:", error);
+            console.error("Error editing status:", error);
             showUpdatedError.value = true;
             setTimeout(() => {
                 showUpdatedError.value = false;
@@ -120,9 +146,10 @@ async function showDeleteModals(status) {
     try {
         const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
         console.log(items);
-        deleteModal.value = true;
+       
         if (items !== undefined) {
-            taskDetails.value = items;
+            taskDetails.value = items; 
+            deleteModal.value = true;
         } else {
             showDeleteError.value = true;
             setTimeout(() => {
@@ -132,6 +159,9 @@ async function showDeleteModals(status) {
     } catch (error) {
         console.log(error);
         showDeleteError.value = true;
+        setTimeout(() => {
+            showDeleteError.value = false;
+        }, 3000);
     }
 };
 
@@ -147,11 +177,11 @@ async function handleStatusDeleted(id) {
 
 
 const handleStatusDeletedNotfound = () => {
-  console.log("Received status not found: ");
-  showDeletedError.value = true;
-  setTimeout(() => {
-    showDeletedError.value = false;
-  }, 3000);
+    console.log("Received status not found: ");
+    showDeleteError.value = true;
+    setTimeout(() => {
+        showDeleteError.value = false;
+    }, 3000);
 };
 
 </script>
@@ -166,7 +196,7 @@ const handleStatusDeletedNotfound = () => {
                     <button @click="showNewTaskAdded = false" class="px-4 py-2rounded">✖</button>
                 </div>
                 <p class="itbkk-message text-lg font-bold break-words">
-                    The task "{{ addedTasksTitle }}" is added successfully
+                    The status "{{ addedTasksTitle }}" is added successfully
                 </p>
             </div>
         </div>
@@ -180,13 +210,13 @@ const handleStatusDeletedNotfound = () => {
                     <button @click="showNewTaskError = false" class="px-4 py-2rounded">✖</button>
                 </div>
                 <p class="itbkk-message text-lg font-bold break-words">
-                    An error occurred adding the new task
+                    An error occurred adding the new status
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- edit task alert -->
+    <!-- edit status alert -->
 
     <div v-if="showUpdated" class="flex justify-center items-center">
         <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
@@ -195,7 +225,7 @@ const handleStatusDeletedNotfound = () => {
                     <h1 class="text-2xl font-bold">Success</h1>
                     <button @click="showUpdated = false" class="px-4 py-2rounded">✖</button>
                 </div>
-                <p class="itbkk-message text-lg font-bold break-words">The task "{{ updatedStatusName }}" is updated
+                <p class="itbkk-message text-lg font-bold break-words">The status "{{ updatedStatusName }}" is updated
                     successfully
                 </p>
             </div>
@@ -210,13 +240,13 @@ const handleStatusDeletedNotfound = () => {
                     <button @click="showUpdatedError = false" class="px-4 py-2 rounded">✖</button>
                 </div>
                 <p class="itbkk-message text-lg font-bold">
-                    An error has occurred, the task does not exist
+                    An error has occurred, the status does not exist
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- delete task alert -->
+    <!-- delete status alert -->
 
     <div v-if="showDelete" class="flex justify-center items-center">
         <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
@@ -225,7 +255,7 @@ const handleStatusDeletedNotfound = () => {
                     <h1 class="text-2xl font-bold">Success</h1>
                     <button @click="showDelete = false" class="px-4 py-2rounded">✖</button>
                 </div>
-                <p class="itbkk-message text-lg font-bold break-words">The task is deleted
+                <p class="itbkk-message text-lg font-bold break-words">The status is deleted
                     successfully
                 </p>
             </div>
@@ -240,7 +270,7 @@ const handleStatusDeletedNotfound = () => {
                     <button @click="showDeleteError = false" class="px-4 py-2 rounded">✖</button>
                 </div>
                 <p class="itbkk-message text-lg font-bold">
-                    An error has occurred, the task does not exist
+                    An error has occurred, the status does not exist
                 </p>
             </div>
         </div>
@@ -312,7 +342,7 @@ const handleStatusDeletedNotfound = () => {
     </Teleport>
     <Teleport to="body">
         <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted()"
-         @taskNotfound="handleStatusDeletedNotfound"/> 
+            @taskNotfound="handleStatusDeletedNotfound()" />
     </Teleport>
 
 </template>
