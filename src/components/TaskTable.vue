@@ -23,6 +23,8 @@ const showDeletedError = ref(false);
 const showUpdated = ref(false);
 const updatedTaskTitle = ref("");
 const showUpdatedError = ref(false);
+const showTaskDetail = ref(false)
+const idza = ref(null);
 const EmptyStyle = "italic text-slate-400 font-semibold";
 
 onMounted(async () => {
@@ -97,6 +99,12 @@ async function editHandler(id) {
   } else {
     showUpdatedError.value = true;
   }
+}
+
+function taskDetailsHandler(id) {
+  console.log(id);
+  idza.value = id;
+  showTaskDetail.value = true;
 }
 
 const saveChanges = async (getTaskProp, id) => {
@@ -194,6 +202,11 @@ function handleSort() {
     showAscSort.value = false;
     showDescSort.value = false;
   }
+}
+
+function isTaskDetailModalOpen() {
+  showTaskDetail.value = false;
+  console.log("Task detail modal closed");  
 }
 
 </script>
@@ -294,6 +307,10 @@ function handleSort() {
       @saveChanges="saveChanges" />
   </Teleport>
 
+  <Teleport to="body">
+    <TaskDetail v-if="showTaskDetail" :id="idza"  @closed="isTaskDetailModalOpen" />   
+    </Teleport>
+
   <div class="flex justify-end mr-52 mt-5">
     <div class="mr-5">
       <div v-if="showDefaultSort == true" @click='handleSort(sortType)'
@@ -344,7 +361,7 @@ function handleSort() {
           <th class="font-semibold text-center">{{ index + 1 }}</th>
 
           <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
-            <td class="itbkk-title cursor-pointer">
+            <td @click="taskDetailsHandler(task.id)" class="itbkk-title cursor-pointer">
               <span class=" block py-2 text-center">{{ task.title }}</span>
             </td>
           </router-link>
