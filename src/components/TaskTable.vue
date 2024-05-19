@@ -210,15 +210,16 @@ const toggleFilterDropdown = () => {
   showFilterDropdown.value = !showFilterDropdown.value;
 };
 
-const applyFilter = async  () => {
-  console.log(selectedStatuses);
-  console.log(selectedStatuses.value);
-  console.log(selectedStatuses.value.length);
+const clearSelectedStatues = async () => {
+  selectedStatuses.value = [];
+  const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+  taskmanager.value.setTasks(items);
+  taskmanager.value.getTask();
+};
 
+const applyFilter = async () => {
   if (selectedStatuses.value.length === 0) {
-    const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-    taskmanager.value.setTasks(items);
-    taskmanager.value.getTask();
+    clearSelectedStatues();
   } else if (selectedStatuses.value.length > 0) {
     let filteredTasks = [];
     for (let i = 0; i < selectedStatuses.value.length; i++) {
@@ -226,7 +227,7 @@ const applyFilter = async  () => {
       filteredTasks = [...filteredTasks, ...tasksWithSelectedStatus];
     }
     taskmanager.value.setTasks(filteredTasks);
-  } 
+  }
 };
 
 </script>
@@ -327,58 +328,53 @@ const applyFilter = async  () => {
       @saveChanges="saveChanges" />
   </Teleport>
 
-  <div class="flex justify-end mr-52 mt-5">
+  <div class="flex justify-between mx-52 mt-5 items-center">
     <!-- filter -->
-    <div>
+    <div class="flex items-center">
+      <div>
 
-      <details class="dropdown mx-5">
-        <summary class="btn font-bold" @click="toggleFilterDropdown">Filter</summary>
-        <ul v-if="showFilterDropdown"
-          class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg w-56 mt-2 ring-1 ring-black ring-opacity-5">
-          <template v-for="status in statuses" :key="status.id">
-            <li>
-              <label :for="status.id"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer">
-                <input type="checkbox" :id="status.id" :value="status.name" class="mr-2" v-model="selectedStatuses"
-                  @change="applyFilter()">
-                {{ status.name }}
-              </label>
-            </li>
-          </template>
-        </ul>
-      </details>
+        <details class="dropdown mx-5">
+          <summary class="btn font-bold flex" @click="toggleFilterDropdown">
+            <div v-if="selectedStatuses.length > 0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                <path fill="#de5b23"
+                  d="M11 18q-.425 0-.712-.288T10 17t.288-.712T11 16h2q.425 0 .713.288T14 17t-.288.713T13 18zm-4-5q-.425 0-.712-.288T6 12t.288-.712T7 11h10q.425 0 .713.288T18 12t-.288.713T17 13zM4 8q-.425 0-.712-.288T3 7t.288-.712T4 6h16q.425 0 .713.288T21 7t-.288.713T20 8z" />
+              </svg>
+            </div>
+            <div v-if="selectedStatuses.length === 0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                <path fill="#888888"
+                  d="M11 18q-.425 0-.712-.288T10 17t.288-.712T11 16h2q.425 0 .713.288T14 17t-.288.713T13 18zm-4-5q-.425 0-.712-.288T6 12t.288-.712T7 11h10q.425 0 .713.288T18 12t-.288.713T17 13zM4 8q-.425 0-.712-.288T3 7t.288-.712T4 6h16q.425 0 .713.288T21 7t-.288.713T20 8z" />
+              </svg>
+            </div>
+            Filter
+          </summary>
+
+          <ul v-if="showFilterDropdown"
+            class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg w-56 mt-2 ring-1 ring-black ring-opacity-5">
+            <template v-for="status in statuses" :key="status.id">
+              <li>
+                <label :for="status.id"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer">
+                  <input type="checkbox" :id="status.id" :value="status.name" class="mr-2" v-model="selectedStatuses"
+                    @change="applyFilter()">
+                  {{ status.name }}
+                </label>
+              </li>
+            </template>
+          </ul>
+        </details>
 
 
-
-
-    </div>
-
-    <div class="mr-5">
-      <div v-if="showDefaultSort == true" @click='handleSort(sortType)'
-        class="btn cursor-pointer flex items-center justify-center">
-        <span class="font-bold">Sort</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#9c9995"
-            d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm12.9 8V3h-2v13h-3l4 5l4-5zm-8-3H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
-        </svg>
       </div>
-      <div v-if="showAscSort == true" @click='handleSort(sortType)'
-        class="btn cursor-pointer flex items-center justify-center">
-        <span class="font-bold">Sort</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#de5b23"
-            d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm12.9 8V3h-2v13h-3l4 5l4-5zm-8-3H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
-        </svg>
-      </div>
-      <div v-if="showDescSort == true" @click='handleSort(sortType)'
-        class="btn cursor-pointer flex items-center justify-center">
-        <span class="font-bold">Sort</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#de5b23"
-            d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm15.9 0l-4-5l-4 5h3v13h2V8zm-11 5H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
-        </svg>
+
+      <div class="btn btn-ghost flex font-bold text-sm cursor-pointer" v-if="selectedStatuses.length > 0"
+        @click="clearSelectedStatues">
+        Reset<span class="px-2">✖</span>
       </div>
     </div>
+
+
     <RouterLink :to="{ name: 'status' }">
       <div class="btn font-bold">Manage Status</div>
     </RouterLink>
@@ -391,11 +387,35 @@ const applyFilter = async  () => {
           <th class="w-20"></th>
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
-          <th class="font-bold">Status</th>
+          <th class="font-bold">
+            <div @click='handleSort(sortType)' class="cursor-pointer flex items-center ">
+              <span class="font-bold mr-2">Status</span>
+              <div v-if="showDefaultSort == true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                  <path fill="#9c9995"
+                    d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm12.9 8V3h-2v13h-3l4 5l4-5zm-8-3H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
+                </svg>
+              </div>
+              <div v-if="showAscSort == true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                  <path fill="#de5b23"
+                    d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm12.9 8V3h-2v13h-3l4 5l4-5zm-8-3H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
+                </svg>
+              </div>
+              <div v-if="showDescSort == true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                  <path fill="#de5b23"
+                    d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm15.9 0l-4-5l-4 5h3v13h2V8zm-11 5H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
+                </svg>
+              </div>
+            </div>
+
+          </th>
           <th></th>
         </tr>
       </thead>
       <tbody>
+
         <tr v-for="(task, index) in taskmanager.getTask()" :key="index"
           class="itbkk-item h-16 border-solid border-2 border-black" v-if="todo">
 
