@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch, h } from "vue";
 import { getItems, getItemById, editItem, addItem } from "../libs/fetchUtils.js";
 import { TaskManagement } from "../libs/TaskManagement.js";
 import { StatusManagement } from "../libs/StatusManagement.js";
@@ -25,9 +25,13 @@ const updatedTaskTitle = ref("");
 const showUpdatedError = ref(false);
 const EmptyStyle = "italic text-slate-400 font-semibold";
 
+const statuses = ref([]);
+
 onMounted(async () => {
   const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+  const statusItems = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
   todo.value = items;
+  statuses.value = statusItems;
   taskmanager.value.setTasks(items);
   console.log("Received tasks:", items);
 });
@@ -196,54 +200,38 @@ function handleSort() {
   }
 }
 
+
+
+// filter handler
 const showFilterDropdown = ref(false);
 const selectedStatuses = ref([]);
-const statusOptions = ref([]);
 
-// Method to toggle the filter dropdown
 const toggleFilterDropdown = () => {
   showFilterDropdown.value = !showFilterDropdown.value;
 };
 
+const applyFilter = async  () => {
+  console.log(selectedStatuses);
+  console.log(selectedStatuses.value);
+  console.log(selectedStatuses.value.length);
 
-const applyFilter = async () => {
-  try {
-    // สร้างพารามิเตอร์สำหรับการกรองข้อมูล
-    const params = new URLSearchParams();
-    selectedStatuses.value.forEach(filterStatuses => {
-      params.append('filterStatuses', filterStatuses);
-    });
-
-    // สร้าง URL พร้อมพารามิเตอร์
-    const url = `${import.meta.env.VITE_BASE_TASK_URL}?${params.toString()}`;
-
-    // ส่งคำขอ GET ไปยัง URL
-    const response = await fetch(url);
-    const data = await response.json();
-
-    // อัปเดตข้อมูลใน Vue.js ด้วยข้อมูลที่ได้รับ
-    todo.value = data;
-  } catch (error) {
-    console.error('Error applying filter:', error);
+  if (selectedStatuses.value.length === 0) {
+    const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+    taskmanager.value.setTasks(items);
+    taskmanager.value.getTask();
+  } else if (selectedStatuses.value.length > 0) {
+    let filteredTasks = [];
+    for (let i = 0; i < selectedStatuses.value.length; i++) {
+      let tasksWithSelectedStatus = todo.value.filter(task => task.status.name.includes(selectedStatuses.value[i]));
+      filteredTasks = [...filteredTasks, ...tasksWithSelectedStatus];
+    }
+    taskmanager.value.setTasks(filteredTasks);
+    taskmanager.value.getTask();
+  } else {
+    taskmanager.value.setTasks(todo.value);
+    taskmanager.value.getTask();
   }
 };
-
-
-
-
-
-
-
-// Computed property to get unique status options from tasks
-const uniqueStatusOptions = computed(() => {
-  const statuses = new Set(todo.value.map(task => task.status.name));
-  return Array.from(statuses);
-});
-
-// Update statusOptions when todo changes
-watch(todo, () => {
-  statusOptions.value = uniqueStatusOptions.value.map(name => ({ id: name, name }));
-});
 
 </script>
 
@@ -351,11 +339,12 @@ watch(todo, () => {
         <summary class="btn font-bold" @click="toggleFilterDropdown">Filter</summary>
         <ul v-if="showFilterDropdown"
           class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg w-56 mt-2 ring-1 ring-black ring-opacity-5">
-          <template v-for="status in statusOptions" :key="status.id">
+          <template v-for="status in statuses" :key="status.id">
             <li>
               <label :for="status.id"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer">
-                <input type="checkbox" :id="status.id" :value="status.name" class="mr-2">
+                <input type="checkbox" :id="status.id" :value="status.name" class="mr-2" v-model="selectedStatuses"
+                  @change="applyFilter()">
                 {{ status.name }}
               </label>
             </li>

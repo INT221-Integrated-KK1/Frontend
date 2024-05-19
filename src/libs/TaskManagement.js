@@ -47,11 +47,5 @@ class TaskManagement {
       
     }
   }
-
-  sortTaskDesc() {
-    return this.tasks.sort((a, b) =>
-      b.status.name.localeCompare(a.status.name)
-    );
-  }
 }
 export { TaskManagement };
