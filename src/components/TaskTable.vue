@@ -178,21 +178,21 @@ function handleSort() {
   const currentSortType = sortType.value;
   if (currentSortType === "asc") {
     console.log("Sorting tasks ascending");
-    todo.value = taskmanager.value.sortTask("asc");
+    taskmanager.value.sortTask("asc");
     sortType.value = "desc";
     showDefaultSort.value = false;
     showAscSort.value = true;
     showDescSort.value = false;
   } else if (currentSortType === "desc") {
     console.log("Sorting tasks descending");
-    todo.value = taskmanager.value.sortTask("desc");
+    taskmanager.value.sortTask("desc");
     sortType.value = "default";
     showDefaultSort.value = false;
     showAscSort.value = false;
     showDescSort.value = true;
   } else {
     console.log("Default:", sortType.value);
-    todo.value = taskmanager.value.sortTask("default");
+    taskmanager.value.sortTask("default");
     sortType.value = "asc";
     showDefaultSort.value = true;
     showAscSort.value = false;
@@ -226,11 +226,7 @@ const applyFilter = async  () => {
       filteredTasks = [...filteredTasks, ...tasksWithSelectedStatus];
     }
     taskmanager.value.setTasks(filteredTasks);
-    taskmanager.value.getTask();
-  } else {
-    taskmanager.value.setTasks(todo.value);
-    taskmanager.value.getTask();
-  }
+  } 
 };
 
 </script>
