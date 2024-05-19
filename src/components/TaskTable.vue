@@ -241,7 +241,7 @@ const applyFilter = async () => {
 // conflic area
 function isTaskDetailModalOpen() {
   showTaskDetail.value = false;
-  console.log("Task detail modal closed");  
+  console.log("Task detail modal closed");
 }
 
 </script>
@@ -335,13 +335,6 @@ function isTaskDetailModalOpen() {
     </div>
   </div>
 
-
-
-  <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeEditModal" :taskDetailsza="taskDetails"
-      @saveChanges="saveChanges" />
-  </Teleport>
-
   <div class="flex justify-between mx-52 mt-5 items-center">
     <!-- filter -->
     <div class="flex items-center">
@@ -380,28 +373,6 @@ function isTaskDetailModalOpen() {
         </details>
 
 
-// conflic area
-  <Teleport to="body">
-    <TaskDetail v-if="showTaskDetail" :id="idza"  @closed="isTaskDetailModalOpen" />   
-    </Teleport>
-
-  <div class="flex justify-end mr-52 mt-5">
-    <div class="mr-5">
-      <div v-if="showDefaultSort == true" @click='handleSort(sortType)'
-        class="btn cursor-pointer flex items-center justify-center">
-        <span class="font-bold">Sort</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#9c9995"
-            d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm12.9 8V3h-2v13h-3l4 5l4-5zm-8-3H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
-        </svg>
-      </div>
-      <div v-if="showAscSort == true" @click='handleSort(sortType)'
-        class="btn cursor-pointer flex items-center justify-center">
-        <span class="font-bold">Sort</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#de5b23"
-            d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm12.9 8V3h-2v13h-3l4 5l4-5zm-8-3H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
-        </svg>
       </div>
 
       <div class="btn btn-ghost flex font-bold text-sm cursor-pointer" v-if="selectedStatuses.length > 0"
@@ -512,6 +483,15 @@ function isTaskDetailModalOpen() {
   <Teleport to="body">
     <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
       @taskNotfound="handleTaskDeletedNotfound" />
+  </Teleport>
+
+  <Teleport to="body">
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal" :taskDetailsza="taskDetails"
+      @saveChanges="saveChanges" />
+  </Teleport>
+
+  <Teleport to="body">
+    <TaskDetail v-if="showTaskDetail" :id="idza" @closed="isTaskDetailModalOpen" />
   </Teleport>
 
   <router-link :to="{ name: 'addtask' }">
