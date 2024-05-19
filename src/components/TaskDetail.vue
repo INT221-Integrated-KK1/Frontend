@@ -1,13 +1,15 @@
 <script setup>
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, watch, onMounted, computed} from "vue";
 import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
-const { params } = useRoute();
+const route = useRoute();
+const emit = defineEmits(['closed'])
+const props = defineProps({
+  id: Number  
+});
 
-const id = Number(params.id);
-console.log(id);
-
+console.log("props.id", props.id);
 const task = ref(null);
 const timezoneOffset = new Date().getTimezoneOffset() * 60000;
 console.log(task);
@@ -15,9 +17,14 @@ console.log(task);
 const statusmanager = ref(new StatusManagement());
 
 onMounted(async () => {
+  console.log("================")
   try {
-    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, props.id);
     console.log(task);
+    console.log("========asas=================");
+    const yeah = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    statusmanager.value.setStatuses(yeah)
+    console.log(statusmanager.value.getStatus());
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -55,6 +62,7 @@ const formatToLocalTime = (dateTimeString) => {
     hour12: false, // Use 24-hour time format
   });
 };
+
 </script>
 
 <template>
@@ -89,6 +97,7 @@ const formatToLocalTime = (dateTimeString) => {
           </div>
           <h1 class="font-bold">Status :</h1>
          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status" disabled>
+      
             <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status">
               {{ status.name }}
             </option>
@@ -99,7 +108,7 @@ const formatToLocalTime = (dateTimeString) => {
         </div>
         <div class="flex justify-end mt-4 col-start-3">
           <RouterLink :to="{ name: 'task' }">
-            <button class="btn bg-red-500 hover:bg-red-700 text-white">Close</button>
+            <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="emit('closed')">Close</button>
           </RouterLink>
         </div>
       </div>
