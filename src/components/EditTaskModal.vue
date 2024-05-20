@@ -4,7 +4,7 @@ import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 
-const emit = defineEmits( 'close', 'saveChanges','status-updated');
+const emit = defineEmits('close', 'saveChanges', 'status-updated');
 const { params } = useRoute();
 const id = Number(params.id);
 const statusmanager = ref(new StatusManagement());
@@ -18,29 +18,51 @@ const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided";
 const props = reactive(props1.taskDetailsza);
 
-if (props.description !== null) {
-  props.description = props.description.trim()
-}
+// if (props.title !== null) {
+//   props.title = props.title.trim()
+// }
 
-if (props.assignees !== null) {
-  props.assignees = props.assignees.trim()
-}
 
-const taskProp = reactive({
-  title: props.title.trim(),
-  description: props.description,
-  assignees: props.assignees,
-  status: {
+
+let taskProp = reactive({});
+console.log(props.title);
+console.log(props.description);
+console.log(props.assignees);
+if (props.title.trim().length > 100) {
+  alert("Title cannot contain more than 100 characters");
+}
+if (props.description !== null && props.description.length > 500) {
+  alert("Description cannot contain more than 500 characters");
+}
+if (props.assignees !== null && props.assignees.length > 30) {
+  alert("Assignees cannot contain more than 30 characters");
+} else {
+  if (props.description !== null) {
+    taskProp.description = props.description.trim(); // Modify existing property
+  }
+
+  if (props.assignees !== null) {
+    taskProp.assignees = props.assignees.trim(); // Modify existing property
+  }
+
+  taskProp.title = props.title.trim(); // Directly assign to existing object
+  taskProp.status = {
     id: props.status.id,
     name: props.status.name,
     description: props.status.description
-  },
-  createdOn: props.createdOn,
-  updatedOn: props.updatedOn
-});
+  };
+  taskProp.createdOn = props.createdOn;
+  taskProp.updatedOn = props.updatedOn;
+}
+
+
+
+
 
 console.log("taskProp", taskProp.status.id);
-
+const checkWhiteSpace = (title) => {
+  return /^\s*$/.test(title);
+};
 
 const initialTask = JSON.stringify(taskProp);
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -106,8 +128,7 @@ const saveChanges = () => {
             :class="{ EmptyStyle: taskProp.assignees === '' }" v-model="taskProp.assignees"
             :placeholder="EmptyAssigneeText"></textarea>
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status"
-            v-model="taskProp.status">
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskProp.status">
             <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status">
               {{ status.name }}
             </option>
@@ -119,7 +140,7 @@ const saveChanges = () => {
         <div class="flex justify-end mt-4 col-start-3">
           <router-link to="/task">
             <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges"
-              :disabled="!isFormModified">
+              :disabled="!isFormModified || checkWhiteSpace(taskProp.title)">
               Save
             </button>
           </router-link>

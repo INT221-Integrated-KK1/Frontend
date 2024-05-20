@@ -28,7 +28,9 @@ const AddTask = async () => {
     title: trimTitle.value,
     description: trimDescription.value,
     assignees: assignees.value,
-    status: status.value,
+    status: {
+      id: status.value
+    }
   };
 
   // Validate Length
@@ -37,7 +39,7 @@ const AddTask = async () => {
   } if (trimDescription.value.length > 500) {
     alert("Description cannot contain more than 500 characters");
   } if (assignees.value.length > 30) {
-    alert("Assignees cannot contain more than 100 characters");
+    alert("Assignees cannot contain more than 30 characters");
   } else {
 
     try {

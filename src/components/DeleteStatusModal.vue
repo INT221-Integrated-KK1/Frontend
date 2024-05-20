@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItemById, getItems, deleteItemById, editItem } from "../libs/fetchUtils.js";
+import { getItemById, getItems, deleteItemById, editItem, deleteAndTransfer } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 const { params } = useRoute();
@@ -22,7 +22,6 @@ onMounted(async () => {
             tranferModal.value = true;
             statusmanager.value.setStatuses(statusItems);
             statusmanager.value.deleteStatus(id);
-            console.log(statusmanager.value.getStatus());
         } else {
             confirmModal.value = true;
         }
@@ -32,22 +31,24 @@ onMounted(async () => {
         emit("taskNotfound");
     }
 });
+const transfer = ref(0)
 
 async function transferConfirm(transferId) {
-    if (transferId != 0 && transferId != undefined) {
-        console.log("transferId = " + transferId);
+    if (transferId != undefined) {
         confirmModal.value = true;
-        tranferModal.value = false;
-
-        const taskItems = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-        for (let index = 0; index < taskItems.length; index++) {
-            if (taskItems[index].status.id === id) {
-                taskItems[index].status.id = transferId;
-                taskItems[index].status.name = statusmanager.value.getStatusById(transferId).name;
-                taskItems[index].status.description = statusmanager.value.getStatusById(transferId).description;
-                console.log(taskItems[index]);
-                await editItem(import.meta.env.VITE_BASE_TASK_URL, taskItems[index].id, taskItems[index]);
-            }
+        tranferModal.value = false; 
+        const exist = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+        console.log(exist);
+        const item = await deleteAndTransfer(import.meta.env.VITE_BASE_STATUS_URL, id, transferId);
+        if (item === undefined) {
+            confirmModal.value = false;
+            tranferModal.value = false;
+            emit("taskNotfound")
+        } else {
+            // emit("statusDeleted", id);
+            transfer.value = 1;
+            console.log(transfer);
+            confirmModal.value = true;
         }
     } else {
         confirmModal.value = false;
@@ -59,10 +60,21 @@ async function transferConfirm(transferId) {
 
 async function DeleteStatus(deletedId) {
     try {
-        const item = await deleteItemById(import.meta.env.VITE_BASE_STATUS_URL, deletedId);
-        statusmanager.value.deleteStatus(deletedId);
-        emit("statusDeleted", deletedId);
+        const exist = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, deletedId);
+        if (exist) {
+            const item = await deleteItemById(import.meta.env.VITE_BASE_STATUS_URL, deletedId);
+            statusmanager.value.deleteStatus(deletedId);
+            emit("statusDeleted", deletedId);
+        } else if (transfer.value === 1) {
+            statusmanager.value.deleteStatus(deletedId);
+            emit("statusDeleted", deletedId);
+            transfer.value = 0;
+        } else {
+            emit("taskNotfound")
+        }
         confirmModal.value = false;
+     
+        // emit("taskNotfound")
     } catch (error) {
         console.error("Error fetching task details:", error)
         emit("taskNotfound")
@@ -93,7 +105,7 @@ async function DeleteStatus(deletedId) {
                         </select>
                         <div class="text-right">
                             <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                                @click="transferConfirm(selectId)">
+                                @click="transferConfirm(selectId)" :disabled="selectId === undefined">
                                 Transfer
                             </button>
                             <router-link :to="{ name: 'status' }">

@@ -19,7 +19,7 @@ async function getItemById(url, id) {
       // 404 error
       if (data.status === 404) {
         //window.alert('The requested task does not exist');
-        router.push('/task');
+         router.go(-1);
       }
       // other errors
       console.error(`Error fetching task details: ${data.status}`);
@@ -77,4 +77,18 @@ async function editItem(url, id, editItem) {
     console.log(`error: ${error}`);
   }
 }
-export { getItems, getItemById, deleteItemById, addItem, editItem };
+
+async function deleteAndTransfer(url, id, transferId) {
+  try {
+    const response = await fetch(`${url}/${id}/${transferId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to delete and transfer item: ${response.status}`);
+    }
+    return response.status; // Assuming you only need the status code
+  } catch (error) {
+    console.log(error);
+  }
+}
+export { getItems, getItemById, deleteItemById, addItem, editItem, deleteAndTransfer };

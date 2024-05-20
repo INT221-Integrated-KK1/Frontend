@@ -112,6 +112,33 @@ function taskDetailsHandler(id) {
 }
 
 const saveChanges = async (getTaskProp, id) => {
+
+  const checkinput = ref(0);
+  console.log(getTaskProp);
+
+  if (getTaskProp.title.length > 100) {
+    alert("Title cannot contain more than 100 characters");
+    checkinput.value += 1;
+  } 
+  
+  console.log(getTaskProp.description);
+  if (getTaskProp.description == null ||  getTaskProp.description == "" || getTaskProp.description == undefined){ 
+    }
+  else if (getTaskProp.description.length > 500) {
+    console.log(getTaskProp.description.length);
+    alert("Description cannot contain more than 500 characters");
+    checkinput.value += 1;
+  } 
+  
+
+  if (getTaskProp === null || getTaskProp === "" || getTaskProp === undefined) {
+    
+  } else if (getTaskProp.assignees.length > 30) {
+      alert("Assignees cannot contain more than 30 characters");
+      checkinput.value += 1;
+    }
+  
+
   const editedTask = {
     id: id,
     title: getTaskProp.title,
@@ -128,7 +155,20 @@ const saveChanges = async (getTaskProp, id) => {
   updatedTaskTitle.value = getTaskProp.title.trim();
 
   const existingTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+  const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
   if (!existingTask) {
+    closeEditModal();
+    showUpdatedError.value = true;
+    setTimeout(() => {
+      showUpdatedError.value = false;
+    }, 3000);
+  } else if (!existingStatus.some((status) => status.id === editedTask.status.id)) {
+    closeEditModal();
+    showUpdatedError.value = true;
+    setTimeout(() => {
+      showUpdatedError.value = false;
+    }, 3000);
+  } else if (editedTask.status.name !== existingStatus.find((status) => status.id === editedTask.status.id).name) {
     closeEditModal();
     showUpdatedError.value = true;
     setTimeout(() => {
@@ -137,6 +177,14 @@ const saveChanges = async (getTaskProp, id) => {
   } else {
     try {
       const item = await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+      console.log(checkinput.value);
+      if (checkinput.value > 0) {
+        showUpdatedError.value = true;
+        setTimeout(() => {
+          showUpdatedError.value = false;
+        }, 3000);
+        closeEditModal();
+      } else {
       taskmanager.value.editTask(id, { ...editedTask });
       console.log({ ...editedTask });
 
@@ -145,6 +193,7 @@ const saveChanges = async (getTaskProp, id) => {
       setTimeout(() => {
         showUpdated.value = false;
       }, 3000);
+    }
     }
     catch (error) {
       console.error("Error editing task:", error);
@@ -486,7 +535,7 @@ function isTaskDetailModalOpen() {
   </Teleport>
 
   <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeEditModal" :taskDetailsza="taskDetails"
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal()" :taskDetailsza="taskDetails"
       @saveChanges="saveChanges" />
   </Teleport>
 

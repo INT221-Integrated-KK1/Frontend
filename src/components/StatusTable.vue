@@ -24,7 +24,7 @@ onMounted(async () => {
 // add handler
 const showNewTaskAdded = ref(false);
 const showNewTaskError = ref(false);
-const addedTasksTitle = ref("");
+const addedStatusTitle = ref("");
 
 const handleStatusAdded = (items) => {
     if (items.id !== 0 || undefined) {
@@ -34,9 +34,12 @@ const handleStatusAdded = (items) => {
         setTimeout(() => {
             showNewTaskAdded.value = false;
         }, 3000);
-        addedTasksTitle.value = items.name;
+        addedStatusTitle.value = items.name;
     } else {
         showUpdatedError.value = true;
+        setTimeout(() => {
+            showUpdatedError.value = false;
+        }, 3000);
     }
 
 };
@@ -53,13 +56,22 @@ const closeEditModal = () => {
 
 const taskDetails = ref({});
 async function showEditModals(status) {
-    const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
-    if (items !== null || undefined) {
-        taskDetails.value = items;
-        editModal.value = true;
-
-    } else {
+    try {
+        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
+        if (items !== undefined) {
+            taskDetails.value = items;
+            editModal.value = true;
+        } else {
+            showUpdatedError.value = true;
+            setTimeout(() => {
+                showUpdatedError.value = false;
+            }, 3000);
+        }
+    } catch (error) {
         showUpdatedError.value = true;
+        setTimeout(() => {
+            showUpdatedError.value = false;
+        }, 3000);
     }
 }
 
@@ -70,6 +82,26 @@ const saveChanges = async (statusProp, id) => {
     if (statusProp.description === "") {
         statusProp.description = null;
     }
+
+
+    const checkinput = ref(0);
+    console.log(statusProp);
+
+    if (statusProp.name.length > 50) {
+        alert("Name cannot contain more than 50 characters");
+        checkinput.value += 1;
+    }
+
+    console.log(statusProp.description);
+    if (statusProp.description == null || statusProp.description == "" || statusProp.description == undefined) {
+    }
+    else if (statusProp.description.length > 200) {
+        console.log(statusProp.description.length);
+        alert("Description cannot contain more than 200 characters");
+        checkinput.value += 1;
+    }
+
+
     const editedStatus = {
         id: id,
         name: statusProp.name,
@@ -85,19 +117,24 @@ const saveChanges = async (statusProp, id) => {
     } else {
         try {
             const item = await editItem(import.meta.env.VITE_BASE_STATUS_URL, id, editedStatus);
-            console.log(id);
-            console.log("edited status", editedStatus);
-            statusmanager.value.editStatus(id, { ...editedStatus });
-            console.log(statusmanager.value.editStatus(id, { ...editedStatus }));
+            if (checkinput.value > 0) {
+                showUpdatedError.value = true;
+                setTimeout(() => {
+                    showUpdatedError.value = false;
+                }, 3000);
+                closeEditModal();
+            } else {
+                statusmanager.value.editStatus(id, { ...editedStatus });
 
-            closeEditModal();
-            showUpdated.value = true;
-            setTimeout(() => {
-                showUpdated.value = false;
-            }, 3000);
+                closeEditModal();
+                showUpdated.value = true;
+                setTimeout(() => {
+                    showUpdated.value = false;
+                }, 3000);
+            }
         }
         catch (error) {
-            console.error("Error editing task:", error);
+            console.error("Error editing status:", error);
             showUpdatedError.value = true;
             setTimeout(() => {
                 showUpdatedError.value = false;
@@ -120,9 +157,10 @@ async function showDeleteModals(status) {
     try {
         const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
         console.log(items);
-        deleteModal.value = true;
         if (items !== undefined) {
+            deleteModal.value = true;
             taskDetails.value = items;
+            deleteModal.value = true;
         } else {
             showDeleteError.value = true;
             setTimeout(() => {
@@ -132,11 +170,15 @@ async function showDeleteModals(status) {
     } catch (error) {
         console.log(error);
         showDeleteError.value = true;
+        setTimeout(() => {
+            showDeleteError.value = false;
+        }, 3000);
     }
 };
 
-async function handleStatusDeleted(id) {
-    statusmanager.value.deleteStatus(id);
+const handleStatusDeleted = (deletedid) => {
+    statusmanager.value.deleteStatus(deletedid);
+    console.log(deletedid);
     todo.value = statusmanager.value.getStatus();
     deleteModal.value = false;
     showDelete.value = true;
@@ -147,11 +189,11 @@ async function handleStatusDeleted(id) {
 
 
 const handleStatusDeletedNotfound = () => {
-  console.log("Received status not found: ");
-  showDeletedError.value = true;
-  setTimeout(() => {
-    showDeletedError.value = false;
-  }, 3000);
+    console.log("Received status not found: ");
+    showDeleteError.value = true;
+    setTimeout(() => {
+        showDeleteError.value = false;
+    }, 3000);
 };
 
 </script>
@@ -166,7 +208,7 @@ const handleStatusDeletedNotfound = () => {
                     <button @click="showNewTaskAdded = false" class="px-4 py-2rounded">✖</button>
                 </div>
                 <p class="itbkk-message text-lg font-bold break-words">
-                    The task "{{ addedTasksTitle }}" is added successfully
+                    The status "{{ addedStatusTitle }}" is added successfully
                 </p>
             </div>
         </div>
@@ -180,13 +222,13 @@ const handleStatusDeletedNotfound = () => {
                     <button @click="showNewTaskError = false" class="px-4 py-2rounded">✖</button>
                 </div>
                 <p class="itbkk-message text-lg font-bold break-words">
-                    An error occurred adding the new task
+                    An error occurred adding the new status
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- edit task alert -->
+    <!-- edit status alert -->
 
     <div v-if="showUpdated" class="flex justify-center items-center">
         <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
@@ -195,7 +237,7 @@ const handleStatusDeletedNotfound = () => {
                     <h1 class="text-2xl font-bold">Success</h1>
                     <button @click="showUpdated = false" class="px-4 py-2rounded">✖</button>
                 </div>
-                <p class="itbkk-message text-lg font-bold break-words">The task "{{ updatedStatusName }}" is updated
+                <p class="itbkk-message text-lg font-bold break-words">The status "{{ updatedStatusName }}" is updated
                     successfully
                 </p>
             </div>
@@ -210,13 +252,13 @@ const handleStatusDeletedNotfound = () => {
                     <button @click="showUpdatedError = false" class="px-4 py-2 rounded">✖</button>
                 </div>
                 <p class="itbkk-message text-lg font-bold">
-                    An error has occurred, the task does not exist
+                    An error has occurred, the status does not exist
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- delete task alert -->
+    <!-- delete status alert -->
 
     <div v-if="showDelete" class="flex justify-center items-center">
         <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
@@ -225,7 +267,7 @@ const handleStatusDeletedNotfound = () => {
                     <h1 class="text-2xl font-bold">Success</h1>
                     <button @click="showDelete = false" class="px-4 py-2rounded">✖</button>
                 </div>
-                <p class="itbkk-message text-lg font-bold break-words">The task is deleted
+                <p class="itbkk-message text-lg font-bold break-words">The status is deleted
                     successfully
                 </p>
             </div>
@@ -240,7 +282,7 @@ const handleStatusDeletedNotfound = () => {
                     <button @click="showDeleteError = false" class="px-4 py-2 rounded">✖</button>
                 </div>
                 <p class="itbkk-message text-lg font-bold">
-                    An error has occurred, the task does not exist
+                    An error has occurred, the status does not exist
                 </p>
             </div>
         </div>
@@ -311,8 +353,8 @@ const handleStatusDeletedNotfound = () => {
             :taskDetailsProp="taskDetails" />
     </Teleport>
     <Teleport to="body">
-        <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted()"
-         @taskNotfound="handleStatusDeletedNotfound"/> 
+        <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted"
+            @taskNotfound="handleStatusDeletedNotfound()" />
     </Teleport>
 
 </template>

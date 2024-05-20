@@ -17,18 +17,22 @@ const receivedProps = defineProps({
 const props = reactive(receivedProps.taskDetailsProp);
 console.log(props.name);
 
-if (props.name !== null) {
-  props.name = props.name.trim()
-}
+// if (props.name !== null) {
+//   props.name = props.name.trim()
+// }
 
 if (props.description !== null) {
   props.description = props.description.trim()
 }
 
+const checkWhiteSpace = (title) => {
+    return /^\s*$/.test(title);
+};
+
 
 const statusProp = reactive({
     id: props.id,
-    name: props.name,
+    name: props.name.trim(),
     description: props.description
 });
 
@@ -75,7 +79,7 @@ const EditStatus = () => {
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
                         <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
-                            @click="EditStatus" :disabled="!isFormModified">
+                            @click="EditStatus" :disabled="!isFormModified || checkWhiteSpace(statusProp.name)">
                             Save
                         </button>
                     </router-link>
