@@ -28,18 +28,38 @@ const AddTask = async () => {
     title: trimTitle.value,
     description: trimDescription.value,
     assignees: assignees.value,
-    status: {
-      id: status.value
-    }
+    status: status.value
   };
+  const checkinput = ref(0);
 
   // Validate Length
   if (trimTitle.value.length > 100) {
     alert("Title cannot contain more than 100 characters");
-  } if (trimDescription.value.length > 500) {
+    checkinput.value += 1;
+    title.value = "";
+    description.value = "";
+    assignees.value = "";
+    status.value = 1;
+    emit("taskAdded", null);
+    showModal.value = false;
+  } else if (trimDescription.value.length > 500) {
     alert("Description cannot contain more than 500 characters");
-  } if (assignees.value.length > 30) {
+    checkinput.value += 1;
+    title.value = "";
+    description.value = "";
+    assignees.value = "";
+    status.value = 1;
+    emit("taskAdded", null);
+    showModal.value = false;
+  } else if (assignees.value.length > 30) {
     alert("Assignees cannot contain more than 30 characters");
+    checkinput.value += 1;
+    title.value = "";
+    description.value = "";
+    assignees.value = "";
+    status.value = 1;
+    emit("taskAdded", null);
+    showModal.value = false;
   } else {
 
     try {
@@ -52,7 +72,11 @@ const AddTask = async () => {
       assignees.value = "";
       status.value = 1;
       showModal.value = false;
-      emit("taskAdded", items);
+      if (checkinput.value === 0) {
+        emit("taskAdded", items);
+      } else {
+        emit("taskAdded", null);
+      }
     } catch (error) {
       console.log(`Error fetching data: ${error}`);
     }
@@ -86,17 +110,25 @@ onMounted(async () => {
           <h1 class="font-bold mt-2">Title : <span class="text-red-600">*</span></h1>
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
             placeholder="Title name here" v-model="title" required />
+          <span class="text-gray-500 text-sm"
+            :class="{ 'text-red-500': title.trim().length > 100 || title.trim().length === 0 }">{{ title.trim().length
+            }} / 100 characters</span>
         </div>
         <hr class="col-start-1 col-span-3" />
         <div class="col-start-1 col-span-2">
           <h1 class="font-bold">Description :</h1>
           <textarea class="itbkk-description p-2 border-solid border-2 border-grey w-full h-[14rem] break-words"
             placeholder="Description here" v-model="description" />
+          <span class="text-gray-500 text-sm"
+            :class="{ 'text-red-500': description.trim().length > 500}">{{
+            description.trim().length }} / 500 characters</span>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
           <textarea class="itbkk-assignees p-2 border-solid border-2 border-grey w-full break-words"
             placeholder="Assignees here" v-model.trim="assignees" />
+          <span class="text-gray-500 text-sm" :class="{ 'text-red-500': assignees.trim().length > 30 }"
+          >{{ assignees.trim().length }} / 30 characters</span>
           <h1 class="font-bold pt-3">Status :</h1>
 
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status">

@@ -24,6 +24,7 @@ const router = createRouter({
         {
           path: "/task/add",
           name: "addtask",
+          component: () => import("../components/AddTaskModal.vue"),
         },
         {
           path: "/task/:id/delete",
@@ -45,6 +46,7 @@ const router = createRouter({
         {
           path: "/status/add",
           name: "addstatus",
+          component: () => import("../components/AddStatusModal.vue"),
         },
         {
           path: "/status/:id/edit",

@@ -27,7 +27,7 @@ const showNewTaskError = ref(false);
 const addedStatusTitle = ref("");
 
 const handleStatusAdded = (items) => {
-    if (items.id !== 0 || undefined) {
+    if (items !== undefined) {
         statusmanager.value.addStatus(items);
         todo.value = statusmanager.value.getStatus();
         showNewTaskAdded.value = true;

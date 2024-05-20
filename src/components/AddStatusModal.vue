@@ -7,9 +7,11 @@ const showModal = ref(false);
 const name = ref("");
 const description = ref("");
 const emit = defineEmits(["statusAdded"]);
+
 const checkWhiteSpace = (title) => {
     return /^\s*$/.test(title);
 };
+
 
 const AddStatus = async () => {
     const trimStatusName = ref(name.value.trim());
@@ -23,12 +25,26 @@ const AddStatus = async () => {
     const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
     if (existingStatus.some((status) => status.name === newItem.name)) {
         alert("Status name already exists");
+        name.value = "";
+        description.value = "";
+        emit("statusAdded", undefined);
+        showModal.value = false;
     } else if (newItem.name === "") {
         alert("Status name cannot be empty");
+        name.value = "";
+        description.value = "";
+        emit("statusAdded", undefined);
+        showModal.value = false;
     } else if (trimStatusName.value.length > 50) {
         alert("Status name cannot contain more than 50 characters");
+        name.value = "";
+        description.value = "";
+        emit("statusAdded", undefined);
+        showModal.value = false;
     } else if (trimStatusDescription.value.length > 200) {
         alert("Description cannot contain more than 200 characters");
+        emit("statusAdded", undefined);
+        showModal.value = false;
     } else {
         try {
             const items = await addItem(import.meta.env.VITE_BASE_STATUS_URL, newItem);
@@ -64,12 +80,19 @@ const AddStatus = async () => {
                     <h1 class="font-bold mt-2">Name : <span class="text-red-600">*</span></h1>
                     <input class="itbkk-status-name p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         placeholder="Name here" v-model="name" />
-                    <h1 class="font-bold mt-2">Description : </h1>
+                    <span class="text-gray-500 text-sm"
+                        :class="{ 'text-red-500': name.trim().length > 50 || name.trim().length === 0 }"> {{
+                        name.trim().length }} / 50 characters </span>
+
+                    <h1 class=" font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         rows="4" placeholder="Description here" v-model="description" />
+                    <span class="text-gray-500 text-sm"
+                        :class="{ 'text-red-500': description.trim().length > 200 } ">{{
+                        description.trim().length }} / 200 characters</span>
                 </div>
-                <hr class="col-start-1 col-span-3" />
+                <hr class=" col-start-1 col-span-3" />
 
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">

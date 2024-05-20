@@ -59,6 +59,15 @@ const EditStatus = () => {
         emit('saveChanges', statusProp, id);
     }
 }
+
+const countOptionalCharacters = (text) => {
+    if (text === null || text === undefined) {
+        text = "";
+        return text.trim().length ;
+    } else {
+        return text.trim().length;
+    }
+}
 </script>
 
 <template>
@@ -70,10 +79,17 @@ const EditStatus = () => {
                     <h1 class="font-bold mt-2">Name : <span class="text-red-600">*</span></h1>
                     <input class="itbkk-status-name p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         placeholder="Name here" v-model="statusProp.name" />
+                    <span class="text-gray-500 text-sm"
+                        :class="{ 'text-red-500': statusProp.name.trim().length > 50 || statusProp.name.trim().length === 0 }">{{
+                        statusProp.name.trim().length }} / 50 characters</span>
                     <h1 class="font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         rows="4" placeholder="Description here" v-model="statusProp.description" />
+                    <span :class="{ 'text-red-500': countOptionalCharacters(statusProp.description) > 200 }"
+                        class="text-gray-500 text-sm">{{ countOptionalCharacters(statusProp.description)}} / 200
+                        characters
+                    </span>
                 </div>
                 <hr class="col-start-1 col-span-3" />
                 <div class="flex justify-end mt-4 col-start-3">

@@ -55,10 +55,6 @@ if (props.assignees !== null && props.assignees.length > 30) {
   taskProp.updatedOn = props.updatedOn;
 }
 
-
-
-
-
 console.log("taskProp", taskProp.status.id);
 const checkWhiteSpace = (title) => {
   return /^\s*$/.test(title);
@@ -100,6 +96,15 @@ const saveChanges = () => {
   }
 }
 
+const countOptionalCharacters = (text) => {
+  if (text === null || text === undefined) {
+    text = "";
+    return text.trim().length;
+  } else {
+    return text.trim().length;
+  }
+}
+
 </script>
 
 <template>
@@ -111,6 +116,9 @@ const saveChanges = () => {
           <h1 class="font-bold mt-2">Title :</h1>
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
             v-model="taskProp.title">
+          <span class="text-gray-500 text-sm"
+            :class="{ 'text-red-500': taskProp.title.trim().length > 100 || taskProp.title.trim().length === 0 }">{{
+            taskProp.title.trim().length }} / 100 characters</span>
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -120,6 +128,9 @@ const saveChanges = () => {
             class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
             :class="{ EmptyStyle: taskProp.description === '' }" v-model="taskProp.description"
             :placeholder="EmptyDescriptionText"></textarea>
+          <span class="text-gray-500 text-sm"
+            :class="{ 'text-red-500': countOptionalCharacters(taskProp.description) > 500 }">{{
+            countOptionalCharacters(taskProp.description) }} / 500 characters</span>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
@@ -127,6 +138,9 @@ const saveChanges = () => {
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
             :class="{ EmptyStyle: taskProp.assignees === '' }" v-model="taskProp.assignees"
             :placeholder="EmptyAssigneeText"></textarea>
+          <span class="text-gray-500 text-sm"
+          :class="{ 'text-red-500': countOptionalCharacters(taskProp.assignees) > 30 }"
+          >{{ taskProp.assignees.trim().length }} / 30 characters</span>
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskProp.status">
             <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status">

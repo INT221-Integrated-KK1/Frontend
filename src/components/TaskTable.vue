@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, computed, watch, h } from "vue";
-import { getItems, getItemById, editItem, addItem } from "../libs/fetchUtils.js";
+import { ref, onMounted } from "vue";
+import { getItems, getItemById, editItem } from "../libs/fetchUtils.js";
 import { TaskManagement } from "../libs/TaskManagement.js";
 import { StatusManagement } from "../libs/StatusManagement.js";
 import AddTaskModal from "./AddTaskModal.vue";
@@ -41,7 +41,7 @@ onMounted(async () => {
 // add handler
 
 async function handleTaskAdded(addedTasks) {
-  if (addedTasks !== undefined || addedTasks !== null) {
+  if (addedTasks !== null) {
     addedTasksTitle.value = addedTasks.title;
     taskmanager.value.addTask({ ...addedTasks });
     todo.value = taskmanager.value.getTask();
