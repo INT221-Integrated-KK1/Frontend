@@ -119,6 +119,7 @@ const saveChanges = async (getTaskProp, id) => {
   if (getTaskProp.title.length > 100) {
     alert("Title cannot contain more than 100 characters");
     checkinput.value += 1;
+    console.log("Title Alert:", getTaskProp.title.length);
   } 
   
   console.log(getTaskProp.description);
@@ -128,14 +129,16 @@ const saveChanges = async (getTaskProp, id) => {
     console.log(getTaskProp.description.length);
     alert("Description cannot contain more than 500 characters");
     checkinput.value += 1;
+    console.log("Description Alert:", getTaskProp.description.length);
   } 
   
 
-  if (getTaskProp === null || getTaskProp === "" || getTaskProp === undefined) {
+  if (getTaskProp.assignees === null || getTaskProp.assignees === "" || getTaskProp.assignees === undefined) {
     
   } else if (getTaskProp.assignees.length > 30) {
       alert("Assignees cannot contain more than 30 characters");
       checkinput.value += 1;
+      console.log("Assignees Alert:", getTaskProp.assignees.length);
     }
   
 
@@ -144,39 +147,44 @@ const saveChanges = async (getTaskProp, id) => {
     title: getTaskProp.title,
     description: getTaskProp.description,
     assignees: getTaskProp.assignees,
-    status: {
-      id: getTaskProp.status.id,
-      name: getTaskProp.status.name,
-      description: getTaskProp.status.description
-    }
+    status: getTaskProp.status
   };
-  console.log("Edited task:", editedTask.status.id);
+  console.log("getTaskProp:", getTaskProp);
+  console.log("Edited task:", editedTask.status);
 
   updatedTaskTitle.value = getTaskProp.title.trim();
 
   const existingTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
   const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+  const editedTaskStatus = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, editedTask.status);
+  const statusItems = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+  
   if (!existingTask) {
     closeEditModal();
     showUpdatedError.value = true;
     setTimeout(() => {
       showUpdatedError.value = false;
     }, 3000);
-  } else if (!existingStatus.some((status) => status.id === editedTask.status.id)) {
+  } else if (!existingStatus.some((status) => status.id === editedTask.status)) {
     closeEditModal();
     showUpdatedError.value = true;
     setTimeout(() => {
       showUpdatedError.value = false;
     }, 3000);
-  } else if (editedTask.status.name !== existingStatus.find((status) => status.id === editedTask.status.id).name) {
-    closeEditModal();
-    showUpdatedError.value = true;
-    setTimeout(() => {
-      showUpdatedError.value = false;
-    }, 3000);
-  } else {
+  } 
+  
+  // else if (editedTaskStatus) {
+  //   closeEditModal();
+  //   showUpdatedError.value = true;
+  //   setTimeout(() => {
+  //     showUpdatedError.value = false;
+  //   }, 3000);
+  // } 
+  
+  else {
     try {
       const item = await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+      console.log(item);
       console.log(checkinput.value);
       if (checkinput.value > 0) {
         showUpdatedError.value = true;
@@ -185,8 +193,18 @@ const saveChanges = async (getTaskProp, id) => {
         }, 3000);
         closeEditModal();
       } else {
-      taskmanager.value.editTask(id, { ...editedTask });
-      console.log({ ...editedTask });
+        const ShowEditedTask = {
+          id: id,
+          title: getTaskProp.title,
+          description: getTaskProp.description,
+          assignees: getTaskProp.assignees,
+          status: {
+            id: getTaskProp.status,
+            name: editedTaskStatus.name
+          }
+        };
+        taskmanager.value.editTask(id, { ...ShowEditedTask });
+        console.log({ ...ShowEditedTask });
 
       closeEditModal();
       showUpdated.value = true;
@@ -297,6 +315,19 @@ function isTaskDetailModalOpen() {
 
 <template>
   <!-- add task alert -->
+  <!-- <div class="flex justify-center items-center fixed">
+    <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+      <div class="p-4">
+        <div class="flex justify-between mb-3">
+          <h1 class="text-2xl font-bold">Success</h1>
+          <button class="px-4 py-2rounded">✖</button>
+        </div>
+        <p class="itbkk-message text-lg font-bold break-words">
+          The task "{{ addedTasksTitle }}" is added successfully
+        </p>
+      </div>
+    </div>
+  </div> -->
   <div class="flex justify-center items-center">
     <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
       <div class="p-4">

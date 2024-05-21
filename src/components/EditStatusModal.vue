@@ -17,13 +17,14 @@ const receivedProps = defineProps({
 const props = reactive(receivedProps.taskDetailsProp);
 console.log(props.name);
 
-// if (props.name !== null) {
-//   props.name = props.name.trim()
-// }
+
+if (props.description === null) {
+  props.description = "";
+}
 
 if (props.description !== null) {
-  props.description = props.description.trim()
-}
+    props.description = props.description.trim()
+} 
 
 const checkWhiteSpace = (title) => {
     return /^\s*$/.test(title);
