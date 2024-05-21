@@ -129,8 +129,8 @@ const countOptionalCharacters = (text) => {
             :class="{ EmptyStyle: taskProp.description === '' }" v-model="taskProp.description"
             :placeholder="EmptyDescriptionText"></textarea>
           <span class="text-gray-500 text-sm"
-            :class="{ 'text-red-500': countOptionalCharacters(taskProp.description) > 500 }">{{
-            countOptionalCharacters(taskProp.description) }} / 500 characters</span>
+            :class="{ 'text-red-500': countOptionalCharacters(taskProp.description) > 500 }">
+            {{ countOptionalCharacters(taskProp.description) }} / 500 characters</span>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
@@ -139,8 +139,8 @@ const countOptionalCharacters = (text) => {
             :class="{ EmptyStyle: taskProp.assignees === '' }" v-model="taskProp.assignees"
             :placeholder="EmptyAssigneeText"></textarea>
           <span class="text-gray-500 text-sm"
-          :class="{ 'text-red-500': countOptionalCharacters(taskProp.assignees) > 30 }"
-          >{{ taskProp.assignees.trim().length }} / 30 characters</span>
+            :class="{ 'text-red-500': countOptionalCharacters(taskProp.assignees) > 30 }">
+            {{ countOptionalCharacters(taskProp.assignees) }} / 30 characters</span>
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskProp.status">
             <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status">
