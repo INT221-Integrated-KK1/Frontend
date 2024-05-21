@@ -107,7 +107,8 @@ onMounted(async () => {
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">
           <h1 class="font-bold text-2xl py-2 mb-2">Add new task</h1>
-          <h1 class="font-bold mt-2">Title : <span class="text-red-600">*</span></h1>
+          <h1 class="font-bold mt-2">Title : <span class="none text-red-600"
+              :class="{ 'hidden': title.trim().length > 0 }">*</span></h1>
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
             placeholder="Title name here" v-model="title" required />
           <span class="text-gray-500 text-sm"
@@ -119,16 +120,15 @@ onMounted(async () => {
           <h1 class="font-bold">Description :</h1>
           <textarea class="itbkk-description p-2 border-solid border-2 border-grey w-full h-[14rem] break-words"
             placeholder="Description here" v-model="description" />
-          <span class="text-gray-500 text-sm"
-            :class="{ 'text-red-500': description.trim().length > 500}">{{
+          <span class="text-gray-500 text-sm" :class="{ 'text-red-500': description.trim().length > 500}">{{
             description.trim().length }} / 500 characters</span>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
           <textarea class="itbkk-assignees p-2 border-solid border-2 border-grey w-full break-words"
             placeholder="Assignees here" v-model.trim="assignees" />
-          <span class="text-gray-500 text-sm" :class="{ 'text-red-500': assignees.trim().length > 30 }"
-          >{{ assignees.trim().length }} / 30 characters</span>
+          <span class="text-gray-500 text-sm" :class="{ 'text-red-500': assignees.trim().length > 30 }">{{
+            assignees.trim().length }} / 30 characters</span>
           <h1 class="font-bold pt-3">Status :</h1>
 
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status">

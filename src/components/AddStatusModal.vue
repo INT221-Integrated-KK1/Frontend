@@ -77,7 +77,8 @@ const AddStatus = async () => {
                 <div class="itbkk-modal-status col-start-1 col-span-3">
                     <h1 class="font-bold text-2xl py-2 mb-2">Add new status</h1>
 
-                    <h1 class="font-bold mt-2">Name : <span class="text-red-600">*</span></h1>
+                    <h1 class="font-bold mt-2">Name : <span class="none text-red-600"
+                            :class="{ 'hidden': name.trim().length > 0 }">*</span></h1>
                     <input class="itbkk-status-name p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         placeholder="Name here" v-model="name" />
                     <span class="text-gray-500 text-sm"
