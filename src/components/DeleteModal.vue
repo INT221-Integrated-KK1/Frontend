@@ -29,12 +29,15 @@ onMounted(async () => {
 
 const deleteTask = async (deleteid) => {
   try {
-
-    await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
-    console.log("Deleted task:", deleteid);
-
+    const exist = await getItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
+    if (exist) {
+      await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
+      console.log("Deleted task:", deleteid);
+      emit("taskDeleted", deleteid);
+    } else {
+      emit("taskNotfound"); 
+    } 
     showModal.value = false;
-    emit("taskDeleted", deleteid);
   } catch (error) {
     console.error("Error deleting task:", error);
   }

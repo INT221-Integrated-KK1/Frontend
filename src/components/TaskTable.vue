@@ -7,6 +7,7 @@ import AddTaskModal from "./AddTaskModal.vue";
 import EditTaskModal from "./EditTaskModal.vue";
 import DeleteModal from "./DeleteModal.vue";
 import TaskDetail from "./TaskDetail.vue";
+import router from "@/router";
 
 
 const taskmanager = ref(new TaskManagement());
@@ -82,6 +83,7 @@ const handleTaskDeleted = (deletedid) => {
 
 const handleTaskDeletedNotfound = () => {
   console.log("Received task not found: ");
+  showDeleteModal.value = false;
   showDeletedError.value = true;
   setTimeout(() => {
     showDeletedError.value = false;
