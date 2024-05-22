@@ -1,16 +1,12 @@
 <script setup>
-import TaskTable from '../src/components/TaskTable.vue';
+import Header from "@/components/Header.vue";
 
 </script>
 
 <template>
-  <h1 class="text-center text-3xl font-bold pt-20">IT Bangmod Kradan Kanban</h1>
+  <Header />
   <div>
     <RouterView />
-    <!-- <TaskTable />  -->
-    </div>
-  <div class="fixed bottom-2 right-2"> 
-
   </div>
 </template>
 

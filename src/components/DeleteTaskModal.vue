@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { getItemById, deleteItemById } from "../libs/fetchUtils.js";
+import { getItemById, deleteItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 
 const route = useRoute();

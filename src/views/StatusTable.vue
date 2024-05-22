@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import AddStatusModal from "@/components/AddStatusModal.vue";
-import EditStatusModal from "./EditStatusModal.vue";
+import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 
 const statusmanager = ref(new StatusManagement());

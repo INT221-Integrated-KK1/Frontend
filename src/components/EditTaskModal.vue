@@ -101,7 +101,7 @@ const countOptionalCharacters = (text) => {
             v-model="taskProp.title">
           <span class="text-gray-500 text-sm"
             :class="{ 'text-red-500': taskProp.title.trim().length > 100 || taskProp.title.trim().length === 0 }">{{
-            taskProp.title.trim().length }} / 100 characters</span>
+    taskProp.title.trim().length }} / 100 characters</span>
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />

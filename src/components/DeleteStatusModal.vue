@@ -12,7 +12,6 @@ const statusmanager = ref(new StatusManagement());
 const emit = defineEmits(["taskNotfound", "close", "statusDeleted"]);
 const count = ref(0);
 const selectId = ref();
-taskDeletedtaskDeleted
 onMounted(async () => {
     try {
         const taskItems = await getItems(import.meta.env.VITE_BASE_TASK_URL);
@@ -73,8 +72,6 @@ async function DeleteStatus(deletedId) {
             emit("taskNotfound")
         }
         confirmModal.value = false;
-     
-        // emit("taskNotfound")
     } catch (error) {
         console.error("Error fetching task details:", error)
         emit("taskNotfound")

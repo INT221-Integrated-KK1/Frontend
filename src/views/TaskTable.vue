@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItems, getItemById, editItem } from "../libs/fetchUtils.js";
-import { TaskManagement } from "../libs/TaskManagement.js";
-import { StatusManagement } from "../libs/StatusManagement.js";
-import AddTaskModal from "./AddTaskModal.vue";
-import EditTaskModal from "./EditTaskModal.vue";
-import DeleteModal from "./DeleteModal.vue";
-import TaskDetail from "./TaskDetail.vue";
+import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
+import { TaskManagement } from "@/libs/TaskManagement.js";
+import { StatusManagement } from "@/libs/StatusManagement.js";
+import AddTaskModal from "@/components/AddTaskModal.vue";
+import EditTaskModal from "@/components/EditTaskModal.vue";
+import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
+import TaskDetail from "@/components/TaskDetail.vue";
 import router from "@/router";
 
 
@@ -29,6 +29,7 @@ const idza = ref(null);
 const EmptyStyle = "italic text-slate-400 font-semibold";
 
 const statuses = ref([]);
+const emit = defineEmits(["AlertTaskAdded"]);
 
 onMounted(async () => {
   const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
@@ -36,6 +37,7 @@ onMounted(async () => {
   todo.value = items;
   statuses.value = statusItems;
   taskmanager.value.setTasks(items);
+  taskmanager.value.sortTask("default");
   console.log("Received tasks:", items);
 });
 
@@ -317,19 +319,7 @@ function isTaskDetailModalOpen() {
 
 <template>
   <!-- add task alert -->
-  <!-- <div class="flex justify-center items-center fixed">
-    <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Success</h1>
-          <button class="px-4 py-2rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold break-words">
-          The task "{{ addedTasksTitle }}" is added successfully
-        </p>
-      </div>
-    </div>
-  </div> -->
+
   <div class="flex justify-center items-center">
     <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
       <div class="p-4">
@@ -417,8 +407,8 @@ function isTaskDetailModalOpen() {
     </div>
   </div>
 
+  <!-- filter -->
   <div class="flex justify-between mx-52 mt-5 items-center">
-    <!-- filter -->
     <div class="flex items-center">
       <div>
 
@@ -440,11 +430,11 @@ function isTaskDetailModalOpen() {
           </summary>
 
           <ul v-if="showFilterDropdown"
-            class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg w-56 mt-2 ring-1 ring-black ring-opacity-5">
+            class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg mt-2 ring-1 ring-black ring-opacity-5 w-auto">
             <template v-for="status in statuses" :key="status.id">
               <li>
                 <label :for="status.id"
-                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer">
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer checked:bg-orange-500 break-words">
                   <input type="checkbox" :id="status.id" :value="status.name" class="mr-2" v-model="selectedStatuses"
                     @change="applyFilter()">
                   {{ status.name }}
@@ -464,15 +454,27 @@ function isTaskDetailModalOpen() {
     </div>
 
 
-    <RouterLink :to="{ name: 'status' }">
-      <div class="btn font-bold">Manage Status</div>
-    </RouterLink>
+    <div class="flex">
+      <router-link :to="{ name: 'addtask' }">
+        <div class="bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
+          </svg>
+          Add Task
+        
+        </div>
+      </router-link>
+      <RouterLink :to="{ name: 'status' }">
+        <div class="btn font-bold">Manage Status</div>
+      </RouterLink>
+    </div>
   </div>
 
   <div class="overflow-x-auto flex justify-center">
     <table class="table w-3/4 mt-10 border-solid border-2 border-black">
       <thead>
-        <tr class="bg-orange-200 border-solid border-2 border-black text-xl text-black">
+        <tr class="bg-orange-200 
+         border-solid border-2 border-black text-xl text-black">
           <th class="w-20"></th>
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
@@ -562,8 +564,10 @@ function isTaskDetailModalOpen() {
     </table>
   </div>
 
+  <RouterView />
+
   <Teleport to="body">
-    <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
+    <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
       @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
 
@@ -578,7 +582,6 @@ function isTaskDetailModalOpen() {
 
   <router-link :to="{ name: 'addtask' }">
     <AddTaskModal @taskAdded="handleTaskAdded" />
-    <!-- <AddTaskModal  /> -->
   </router-link>
 </template>
 

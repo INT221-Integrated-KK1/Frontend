@@ -1,15 +1,31 @@
 <script setup>
 import { ref, watch, onMounted, computed} from "vue";
 import { getItemById, getItems } from "../libs/fetchUtils.js";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
+import NotFound from "@/views/NotFound.vue";
+
 const route = useRoute();
+const router = useRouter();
 const emit = defineEmits(['closed'])
+
 const props = defineProps({
   id: Number  
 });
 
 console.log("props.id", props.id);
+
+const routeId = ref(null);
+
+if (props.id === undefined) {
+  routeId.value = Number(route.params.id);
+  console.log("routeId", routeId);
+}
+
+const useId = ref(props.id || routeId);
+console.log("useId", useId.value);
+
+
 const task = ref(null);
 const timezoneOffset = new Date().getTimezoneOffset() * 60000;
 console.log(task);
@@ -19,7 +35,7 @@ const statusmanager = ref(new StatusManagement());
 onMounted(async () => {
   console.log("================")
   try {
-    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, props.id);
+    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, useId.value);
     console.log(task);
     console.log("========asas=================");
     const yeah = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
@@ -66,14 +82,14 @@ const formatToLocalTime = (dateTimeString) => {
 </script>
 
 <template>
-  <div class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="task" class="text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">
           <h1 class="font-bold text-2xl py-2 mb-2">Task Detail</h1>
           <h1 class="font-bold">Title :</h1>
           <div
-            class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3"
+            class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
             v-text="title"
           ></div>
         </div>
@@ -114,6 +130,7 @@ const formatToLocalTime = (dateTimeString) => {
       </div>
     </div>
   </div>
+  <NotFound v-if="task === undefined" />
 </template>
 
 <style scoped></style>

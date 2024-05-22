@@ -2,7 +2,6 @@
 import { onMounted, ref, reactive, computed } from "vue";
 import { getItemById } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import { StatusManagement } from "@/libs/StatusManagement.js";
 
 const { params } = useRoute();
 const id = Number(params.id);
@@ -10,7 +9,7 @@ const emit = defineEmits(['saveChanges', 'close'])
 
 const status = ref(null);
 const isLoaded = ref(false);
-const statusmanager = ref(new StatusManagement());
+
 const receivedProps = defineProps({
     taskDetailsProp: Object
 });
