@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, computed} from "vue";
+import { ref, onMounted, computed} from "vue";
 import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute, useRouter } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
@@ -13,34 +13,21 @@ const props = defineProps({
   id: Number  
 });
 
-console.log("props.id", props.id);
-
 const routeId = ref(null);
 
 if (props.id === undefined) {
   routeId.value = Number(route.params.id);
-  console.log("routeId", routeId);
 }
 
 const useId = ref(props.id || routeId);
-console.log("useId", useId.value);
-
-
 const task = ref(null);
-const timezoneOffset = new Date().getTimezoneOffset() * 60000;
-console.log(task);
-
 const statusmanager = ref(new StatusManagement());
 
 onMounted(async () => {
-  console.log("================")
   try {
     task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, useId.value);
-    console.log(task);
-    console.log("========asas=================");
-    const yeah = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
-    statusmanager.value.setStatuses(yeah)
-    console.log(statusmanager.value.getStatus());
+    const statusItem = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    statusmanager.value.setStatuses(statusItem)
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -53,7 +40,6 @@ const EmptyDescriptionText = "No Description Provided";
 const getTaskProp = (propName) => 
 computed(() => (task.value ? task.value[propName] : ""));
 
-const Id = getTaskProp("id");
 const title = getTaskProp("title");
 const description = getTaskProp("description");
 const assignees = getTaskProp("assignees");
@@ -61,10 +47,11 @@ const status = getTaskProp("status");
 const createdOn = computed(() => formatToLocalTime(task.value?.createdOn));
 const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn));
 
+// const timezoneOffset = new Date().getTimezoneOffset() * 60000;
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const formatToLocalTime = (dateTimeString) => {
   const dateTime = new Date(dateTimeString);
-  const localTime = new Date(dateTime - timezoneOffset);
+  // const localTime = new Date(dateTime - timezoneOffset);
   //return localTime.toLocaleString()
   const localDate = new Date(dateTime.getTime());
   console.log(localDate);

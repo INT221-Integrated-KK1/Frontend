@@ -37,15 +37,11 @@ const statusProp = reactive({
 });
 
 const initialTask = ref(JSON.stringify(statusProp));
-console.log("initialTask", initialTask);
-
 const isFormModified = computed(() => JSON.stringify(statusProp) !== initialTask.value);
-console.log("isFormModified", isFormModified.value);
 
 onMounted(async () => {
     try {
         const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
-        console.log(id);
         status.value = items;
         isLoaded.value = true;
     } catch (error) {

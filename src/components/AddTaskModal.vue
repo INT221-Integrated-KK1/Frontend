@@ -19,8 +19,6 @@ const checkWhiteSpace = (title) => {
 };
 
 const AddTask = async () => {
-
-  //Trim Title and Description
   const trimTitle = ref(title.value.trim());
   const trimDescription = ref(description.value.trim());
 
@@ -32,7 +30,6 @@ const AddTask = async () => {
   };
   const checkinput = ref(0);
 
-  // Validate Length
   if (trimTitle.value.length > 100) {
     alert("Title cannot contain more than 100 characters");
     checkinput.value += 1;
@@ -64,9 +61,6 @@ const AddTask = async () => {
 
     try {
       const items = await addItem(import.meta.env.VITE_BASE_TASK_URL, newItem);
-      console.log(newItem);
-      console.log(items);
-
       title.value = "";
       description.value = "";
       assignees.value = "";
@@ -102,7 +96,7 @@ onMounted(async () => {
     +
   </button>
 
-  <div v-if="$route.path === '/task/add' || showModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="$route.name === 'addtask' || showModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">

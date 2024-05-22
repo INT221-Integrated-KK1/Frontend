@@ -18,6 +18,7 @@ const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided";
 const props = reactive(props1.taskDetailsza);
 
+console.log(props.description);
 if (props.description === null) {
   props.description = "";
 }
@@ -36,9 +37,6 @@ let taskProp = reactive({
   updatedOn: props.updatedOn
 });
 
-console.log("props.status.id", props.status.id);
-
-console.log("taskProp", taskProp.status);
 const checkWhiteSpace = (title) => {
   return /^\s*$/.test(title);
 };
@@ -75,7 +73,6 @@ onMounted(async () => {
 const saveChanges = () => {
   if (isFormModified.value) {
     emit('saveChanges', taskProp, id);
-    console.table(taskProp);
   }
 }
 

@@ -3,17 +3,23 @@ import { ref, onMounted } from "vue";
 import { getItemById, getItems, deleteItemById, editItem, deleteAndTransfer } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
-const { params } = useRoute();
+import NotFound from "@/views/NotFound.vue";
+
+const route = useRoute();
 const tranferModal = ref(false);
 const confirmModal = ref(false);
-const id = Number(params.id);
+const id = Number(route.params.id);
+const task = ref(null);
 const statusmanager = ref(new StatusManagement());
 
 const emit = defineEmits(["taskNotfound", "close", "statusDeleted"]);
 const count = ref(0);
 const selectId = ref();
+
 onMounted(async () => {
     try {
+        task.value = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+        console.log(task.value);
         const taskItems = await getItems(import.meta.env.VITE_BASE_TASK_URL);
         const statusItems = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
         if (taskItems.some(task => task.status.id === id)) {
@@ -44,7 +50,6 @@ async function transferConfirm(transferId) {
             tranferModal.value = false;
             emit("taskNotfound")
         } else {
-            // emit("statusDeleted", id);
             transfer.value = 1;
             console.log(transfer);
             confirmModal.value = true;
@@ -82,7 +87,7 @@ async function DeleteStatus(deletedId) {
 </script>
 
 <template>
-    <div>
+    <div v-if="$route.name === 'deletestatus'">
         <div v-if="tranferModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
                 <div class="bg-white w-1/2 p-6 rounded shadow-lg">
@@ -143,6 +148,8 @@ async function DeleteStatus(deletedId) {
             </div>
         </div>
     </div>
+
+    <NotFound v-if="task === undefined" />
 </template>
 
 <style scoped></style>

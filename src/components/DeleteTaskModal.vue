@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { getItemById, deleteItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
+import NotFound from "@/views/NotFound.vue";
 
 const route = useRoute();
 const number = ref(0);
@@ -75,6 +76,8 @@ const deleteTask = async (deleteid) => {
       </div>
     </div>
   </div>
+  
+  <NotFound v-if="task === undefined" />
 </template>
 
 <style scoped></style>
