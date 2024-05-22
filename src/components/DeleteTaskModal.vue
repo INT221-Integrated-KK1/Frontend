@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { getItemById, deleteItemById } from "../libs/fetchUtils.js";
+import { getItemById, deleteItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
+import NotFound from "@/views/NotFound.vue";
 
 const route = useRoute();
 const number = ref(0);
@@ -29,12 +30,15 @@ onMounted(async () => {
 
 const deleteTask = async (deleteid) => {
   try {
-
-    await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
-    console.log("Deleted task:", deleteid);
-
+    const exist = await getItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
+    if (exist) {
+      await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
+      console.log("Deleted task:", deleteid);
+      emit("taskDeleted", deleteid);
+    } else {
+      emit("taskNotfound"); 
+    } 
     showModal.value = false;
-    emit("taskDeleted", deleteid);
   } catch (error) {
     console.error("Error deleting task:", error);
   }
@@ -72,6 +76,8 @@ const deleteTask = async (deleteid) => {
       </div>
     </div>
   </div>
+  
+  <NotFound v-if="task === undefined" />
 </template>
 
 <style scoped></style>

@@ -18,44 +18,25 @@ const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided";
 const props = reactive(props1.taskDetailsza);
 
-// if (props.title !== null) {
-//   props.title = props.title.trim()
-// }
-
-
-
-let taskProp = reactive({});
-console.log(props.title);
 console.log(props.description);
-console.log(props.assignees);
-if (props.title.trim().length > 100) {
-  alert("Title cannot contain more than 100 characters");
-}
-if (props.description !== null && props.description.length > 500) {
-  alert("Description cannot contain more than 500 characters");
-}
-if (props.assignees !== null && props.assignees.length > 30) {
-  alert("Assignees cannot contain more than 30 characters");
-} else {
-  if (props.description !== null) {
-    taskProp.description = props.description.trim(); // Modify existing property
-  }
-
-  if (props.assignees !== null) {
-    taskProp.assignees = props.assignees.trim(); // Modify existing property
-  }
-
-  taskProp.title = props.title.trim(); // Directly assign to existing object
-  taskProp.status = {
-    id: props.status.id,
-    name: props.status.name,
-    description: props.status.description
-  };
-  taskProp.createdOn = props.createdOn;
-  taskProp.updatedOn = props.updatedOn;
+if (props.description === null) {
+  props.description = "";
 }
 
-console.log("taskProp", taskProp.status.id);
+if (props.assignees === null) {
+  props.assignees = "";
+}
+
+let taskProp = reactive({
+  id: props.id,
+  title: props.title,
+  description: props.description,
+  assignees: props.assignees,
+  status: props.status.id,
+  createdOn: props.createdOn,
+  updatedOn: props.updatedOn
+});
+
 const checkWhiteSpace = (title) => {
   return /^\s*$/.test(title);
 };
@@ -92,7 +73,6 @@ onMounted(async () => {
 const saveChanges = () => {
   if (isFormModified.value) {
     emit('saveChanges', taskProp, id);
-    console.log("taskProp", taskProp);
   }
 }
 
@@ -118,7 +98,7 @@ const countOptionalCharacters = (text) => {
             v-model="taskProp.title">
           <span class="text-gray-500 text-sm"
             :class="{ 'text-red-500': taskProp.title.trim().length > 100 || taskProp.title.trim().length === 0 }">{{
-            taskProp.title.trim().length }} / 100 characters</span>
+    taskProp.title.trim().length }} / 100 characters</span>
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -143,7 +123,7 @@ const countOptionalCharacters = (text) => {
             {{ countOptionalCharacters(taskProp.assignees) }} / 30 characters</span>
           <h1 class="font-bold pt-3">Status :</h1>
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskProp.status">
-            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status">
+            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.id">
               {{ status.name }}
             </option>
           </select>

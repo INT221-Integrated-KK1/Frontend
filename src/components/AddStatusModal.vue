@@ -1,9 +1,7 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { addItem, getItems } from "../libs/fetchUtils.js";
 const showModal = ref(false);
-
-
 const name = ref("");
 const description = ref("");
 const emit = defineEmits(["statusAdded"]);
@@ -11,7 +9,6 @@ const emit = defineEmits(["statusAdded"]);
 const checkWhiteSpace = (title) => {
     return /^\s*$/.test(title);
 };
-
 
 const AddStatus = async () => {
     const trimStatusName = ref(name.value.trim());
@@ -23,7 +20,7 @@ const AddStatus = async () => {
     };
 
     const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
-    if (existingStatus.some((status) => status.name === newItem.name)) {
+    if (existingStatus.some((status) => status.name.toLowerCase() === newItem.name.toLowerCase())) {
         alert("Status name already exists");
         name.value = "";
         description.value = "";
@@ -59,8 +56,6 @@ const AddStatus = async () => {
     }
 
 };
-
-
 </script>
 
 <template>
@@ -70,7 +65,7 @@ const AddStatus = async () => {
         +
     </button>
 
-    <div v-if="showModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
+    <div v-if="$route.name === 'addstatus' || showModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
             <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
 
@@ -89,8 +84,7 @@ const AddStatus = async () => {
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         rows="4" placeholder="Description here" v-model="description" />
-                    <span class="text-gray-500 text-sm"
-                        :class="{ 'text-red-500': description.trim().length > 200 } ">{{
+                    <span class="text-gray-500 text-sm" :class="{ 'text-red-500': description.trim().length > 200 } ">{{
                         description.trim().length }} / 200 characters</span>
                 </div>
                 <hr class=" col-start-1 col-span-3" />

@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import AddStatusModal from "@/components/AddStatusModal.vue";
-import EditStatusModal from "./EditStatusModal.vue";
+import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 
 const statusmanager = ref(new StatusManagement());
@@ -21,7 +21,8 @@ onMounted(async () => {
     }
 });
 
-// add handler
+// ----------------------------------- add handler -----------------------------------
+
 const showNewTaskAdded = ref(false);
 const showNewTaskError = ref(false);
 const addedStatusTitle = ref("");
@@ -45,7 +46,8 @@ const handleStatusAdded = (items) => {
 };
 
 
-// edit handler
+// ----------------------------------- edit handler -----------------------------------
+
 const showUpdated = ref(false);
 const showUpdatedError = ref(false);
 const editModal = ref(false);
@@ -77,15 +79,13 @@ async function showEditModals(status) {
 
 const updatedStatusName = ref("");
 const saveChanges = async (statusProp, id) => {
-    console.log("statusProp", statusProp);
+
     updatedStatusName.value = statusProp.name.trim();
     if (statusProp.description === "") {
         statusProp.description = null;
     }
 
-
     const checkinput = ref(0);
-    console.log(statusProp);
 
     if (statusProp.name.length > 50) {
         alert("Name cannot contain more than 50 characters");
@@ -100,7 +100,6 @@ const saveChanges = async (statusProp, id) => {
         alert("Description cannot contain more than 200 characters");
         checkinput.value += 1;
     }
-
 
     const editedStatus = {
         id: id,
@@ -125,7 +124,6 @@ const saveChanges = async (statusProp, id) => {
                 closeEditModal();
             } else {
                 statusmanager.value.editStatus(id, { ...editedStatus });
-
                 closeEditModal();
                 showUpdated.value = true;
                 setTimeout(() => {
@@ -144,7 +142,8 @@ const saveChanges = async (statusProp, id) => {
 }
 const EmptyStyle = "italic text-slate-400 font-semibold";
 
-// delete handler
+// ----------------------------------- delete handler -----------------------------------
+
 const deleteModal = ref(false);
 const showDelete = ref(false);
 const showDeleteError = ref(false);
@@ -199,6 +198,8 @@ const handleStatusDeletedNotfound = () => {
 </script>
 
 <template>
+    
+    <!-- add status alert  -->
 
     <div class="flex justify-center items-center">
         <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
@@ -295,7 +296,8 @@ const handleStatusDeletedNotfound = () => {
         </RouterLink>
     </div>
 
-    <!-- demo table -->
+    <!-- table -->
+    
     <div class="overflow-x-auto flex justify-center">
         <table class="table w-3/4 mt-10 border-solid border-2 border-black">
             <thead>

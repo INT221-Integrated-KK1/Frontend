@@ -1,13 +1,12 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItems, getItemById, editItem } from "../libs/fetchUtils.js";
-import { TaskManagement } from "../libs/TaskManagement.js";
-import { StatusManagement } from "../libs/StatusManagement.js";
-import AddTaskModal from "./AddTaskModal.vue";
-import EditTaskModal from "./EditTaskModal.vue";
-import DeleteModal from "./DeleteModal.vue";
-import TaskDetail from "./TaskDetail.vue";
-
+import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
+import { TaskManagement } from "@/libs/TaskManagement.js";
+import { StatusManagement } from "@/libs/StatusManagement.js";
+import AddTaskModal from "@/components/AddTaskModal.vue";
+import EditTaskModal from "@/components/EditTaskModal.vue";
+import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
+import TaskDetail from "@/components/TaskDetail.vue";
 
 const taskmanager = ref(new TaskManagement());
 const statusmanager = ref(new StatusManagement());
@@ -24,10 +23,11 @@ const showUpdated = ref(false);
 const updatedTaskTitle = ref("");
 const showUpdatedError = ref(false);
 const showTaskDetail = ref(false)
-const idza = ref(null);
+const taskId = ref(null);
 const EmptyStyle = "italic text-slate-400 font-semibold";
 
 const statuses = ref([]);
+const emit = defineEmits(["AlertTaskAdded"]);
 
 onMounted(async () => {
   const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
@@ -35,10 +35,10 @@ onMounted(async () => {
   todo.value = items;
   statuses.value = statusItems;
   taskmanager.value.setTasks(items);
-  console.log("Received tasks:", items);
+  taskmanager.value.sortTask("default");
 });
 
-// add handler
+// ----------------------------------- add handler -----------------------------------
 
 async function handleTaskAdded(addedTasks) {
   if (addedTasks !== null) {
@@ -57,7 +57,7 @@ async function handleTaskAdded(addedTasks) {
   }
 };
 
-//delete handler
+// ----------------------------------- delete handler -----------------------------------
 
 async function showConfirmModals(task) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, task.id);
@@ -82,13 +82,14 @@ const handleTaskDeleted = (deletedid) => {
 
 const handleTaskDeletedNotfound = () => {
   console.log("Received task not found: ");
+  showDeleteModal.value = false;
   showDeletedError.value = true;
   setTimeout(() => {
     showDeletedError.value = false;
   }, 3000);
 };
 
-// edit handler
+// ----------------------------------- edit handler -----------------------------------
 
 const closeEditModal = () => {
   showEditModal.value = false;
@@ -102,13 +103,10 @@ async function editHandler(id) {
     console.log(items);
   } else {
     showUpdatedError.value = true;
+    setTimeout(() => {
+      showUpdatedError.value = false;
+    }, 3000);
   }
-}
-
-function taskDetailsHandler(id) {
-  console.log(id);
-  idza.value = id;
-  showTaskDetail.value = true;
 }
 
 const saveChanges = async (getTaskProp, id) => {
@@ -119,56 +117,51 @@ const saveChanges = async (getTaskProp, id) => {
   if (getTaskProp.title.length > 100) {
     alert("Title cannot contain more than 100 characters");
     checkinput.value += 1;
-  } 
-  
+    console.log("Title Alert:", getTaskProp.title.length);
+  }
+
   console.log(getTaskProp.description);
-  if (getTaskProp.description == null ||  getTaskProp.description == "" || getTaskProp.description == undefined){ 
-    }
+  if (getTaskProp.description == null || getTaskProp.description == "" || getTaskProp.description == undefined) {
+  }
   else if (getTaskProp.description.length > 500) {
     console.log(getTaskProp.description.length);
     alert("Description cannot contain more than 500 characters");
     checkinput.value += 1;
-  } 
-  
+    console.log("Description Alert:", getTaskProp.description.length);
+  }
 
-  if (getTaskProp === null || getTaskProp === "" || getTaskProp === undefined) {
-    
+
+  if (getTaskProp.assignees === null || getTaskProp.assignees === "" || getTaskProp.assignees === undefined) {
+
   } else if (getTaskProp.assignees.length > 30) {
-      alert("Assignees cannot contain more than 30 characters");
-      checkinput.value += 1;
-    }
-  
+    alert("Assignees cannot contain more than 30 characters");
+    checkinput.value += 1;
+    console.log("Assignees Alert:", getTaskProp.assignees.length);
+  }
 
   const editedTask = {
     id: id,
     title: getTaskProp.title,
     description: getTaskProp.description,
     assignees: getTaskProp.assignees,
-    status: {
-      id: getTaskProp.status.id,
-      name: getTaskProp.status.name,
-      description: getTaskProp.status.description
-    }
+    status: getTaskProp.status
   };
-  console.log("Edited task:", editedTask.status.id);
+  console.log("getTaskProp:", getTaskProp);
+  console.log("Edited task:", editedTask.status);
 
   updatedTaskTitle.value = getTaskProp.title.trim();
 
   const existingTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
   const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+  const editedTaskStatus = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, editedTask.status);
+
   if (!existingTask) {
     closeEditModal();
     showUpdatedError.value = true;
     setTimeout(() => {
       showUpdatedError.value = false;
     }, 3000);
-  } else if (!existingStatus.some((status) => status.id === editedTask.status.id)) {
-    closeEditModal();
-    showUpdatedError.value = true;
-    setTimeout(() => {
-      showUpdatedError.value = false;
-    }, 3000);
-  } else if (editedTask.status.name !== existingStatus.find((status) => status.id === editedTask.status.id).name) {
+  } else if (!existingStatus.some((status) => status.id === editedTask.status)) {
     closeEditModal();
     showUpdatedError.value = true;
     setTimeout(() => {
@@ -177,6 +170,7 @@ const saveChanges = async (getTaskProp, id) => {
   } else {
     try {
       const item = await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+      console.log(item);
       console.log(checkinput.value);
       if (checkinput.value > 0) {
         showUpdatedError.value = true;
@@ -185,46 +179,51 @@ const saveChanges = async (getTaskProp, id) => {
         }, 3000);
         closeEditModal();
       } else {
-      taskmanager.value.editTask(id, { ...editedTask });
-      console.log({ ...editedTask });
+        const ShowEditedTask = {
+          id: id,
+          title: getTaskProp.title,
+          description: getTaskProp.description,
+          assignees: getTaskProp.assignees,
+          status: {
+            id: getTaskProp.status,
+            name: editedTaskStatus.name
+          }
+        };
+        taskmanager.value.editTask(id, { ...ShowEditedTask });
+        console.log({ ...ShowEditedTask });
 
-      closeEditModal();
-      showUpdated.value = true;
-      setTimeout(() => {
-        showUpdated.value = false;
-      }, 3000);
-    }
+        closeEditModal();
+        showUpdated.value = true;
+        setTimeout(() => {
+          showUpdated.value = false;
+        }, 3000);
+      }
     }
     catch (error) {
       console.error("Error editing task:", error);
       showUpdatedError.value = true;
       setTimeout(() => {
         showUpdatedError.value = false;
-      }, 3000);
+      }, 3000);taskId
     }
   }
 }
 
 
-// status handler
+// ----------------------------------- task details handler -----------------------------------
 
-const getStatusClass = (status) => {
-  switch (status) {
-    case "No Status":
-      return { class: "bg-gray-200 text-gray-800 rounded" };
-    case "To Do":
-      return { class: "bg-red-200 text-red-800 rounded" };
-    case "Doing":
-      return { class: "bg-yellow-200 text-yellow-800 rounded" };
-    case "Done":
-      return { class: "bg-green-200 text-green-800 rounded" };
-    default:
-      return { class: "bg-gray-200 text-gray-800 rounded" };
-  }
-};
+function taskDetailsHandler(id) {
+  console.log(id);
+  taskId.value = id;
+  showTaskDetail.value = true;
+}
 
+function isTaskDetailModalOpen() {
+  showTaskDetail.value = false;
+  console.log("Task detail modal closed");
+}
 
-// sort handler
+// ----------------------------------- sort handler -----------------------------------
 
 const showDefaultSort = ref(true);
 const showAscSort = ref(false);
@@ -257,10 +256,8 @@ function handleSort() {
   }
 }
 
+// ----------------------------------- filter handler -----------------------------------
 
-
-
-// filter handler
 const showFilterDropdown = ref(false);
 const selectedStatuses = ref([]);
 
@@ -287,16 +284,31 @@ const applyFilter = async () => {
     taskmanager.value.setTasks(filteredTasks);
   }
 };
-// conflic area
-function isTaskDetailModalOpen() {
-  showTaskDetail.value = false;
-  console.log("Task detail modal closed");
-}
+
+// ----------------------------------- status handler -----------------------------------
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case "No Status":
+      return { class: "bg-gray-200 text-gray-800 rounded" };
+    case "To Do":
+      return { class: "bg-red-200 text-red-800 rounded" };
+    case "Doing":
+      return { class: "bg-yellow-200 text-yellow-800 rounded" };
+    case "Done":
+      return { class: "bg-green-200 text-green-800 rounded" };
+    default:
+      return { class: "bg-gray-200 text-gray-800 rounded" };
+  }
+};
+
+
 
 </script>
 
 <template>
   <!-- add task alert -->
+
   <div class="flex justify-center items-center">
     <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
       <div class="p-4">
@@ -384,8 +396,8 @@ function isTaskDetailModalOpen() {
     </div>
   </div>
 
+  <!-- filter -->
   <div class="flex justify-between mx-52 mt-5 items-center">
-    <!-- filter -->
     <div class="flex items-center">
       <div>
 
@@ -407,11 +419,11 @@ function isTaskDetailModalOpen() {
           </summary>
 
           <ul v-if="showFilterDropdown"
-            class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg w-56 mt-2 ring-1 ring-black ring-opacity-5">
+            class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg mt-2 ring-1 ring-black ring-opacity-5 w-[220px]">
             <template v-for="status in statuses" :key="status.id">
               <li>
                 <label :for="status.id"
-                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer">
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer checked:bg-orange-500  w-[200px] break-words">
                   <input type="checkbox" :id="status.id" :value="status.name" class="mr-2" v-model="selectedStatuses"
                     @change="applyFilter()">
                   {{ status.name }}
@@ -431,15 +443,29 @@ function isTaskDetailModalOpen() {
     </div>
 
 
-    <RouterLink :to="{ name: 'status' }">
-      <div class="btn font-bold">Manage Status</div>
-    </RouterLink>
+    <div class="flex">
+      <router-link :to="{ name: 'addtask' }">
+        <div class="bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
+          </svg>
+          Add Task
+
+        </div>
+      </router-link>
+      <RouterLink :to="{ name: 'status' }">
+        <div class="btn font-bold">Manage Status</div>
+      </RouterLink>
+    </div>
   </div>
 
+  <!-- table -->
+  
   <div class="overflow-x-auto flex justify-center">
     <table class="table w-3/4 mt-10 border-solid border-2 border-black">
       <thead>
-        <tr class="bg-orange-200 border-solid border-2 border-black text-xl text-black">
+        <tr class="bg-orange-200 
+         border-solid border-2 border-black text-xl text-black">
           <th class="w-20"></th>
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
@@ -529,8 +555,10 @@ function isTaskDetailModalOpen() {
     </table>
   </div>
 
+  <RouterView />
+
   <Teleport to="body">
-    <DeleteModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
+    <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
       @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
 
@@ -540,12 +568,11 @@ function isTaskDetailModalOpen() {
   </Teleport>
 
   <Teleport to="body">
-    <TaskDetail v-if="showTaskDetail" :id="idza" @closed="isTaskDetailModalOpen" />
+    <TaskDetail v-if="showTaskDetail" :id="taskId" @closed="isTaskDetailModalOpen" />
   </Teleport>
 
   <router-link :to="{ name: 'addtask' }">
     <AddTaskModal @taskAdded="handleTaskAdded" />
-    <!-- <AddTaskModal  /> -->
   </router-link>
 </template>
 

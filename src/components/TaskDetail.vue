@@ -1,30 +1,33 @@
 <script setup>
-import { ref, watch, onMounted, computed} from "vue";
+import { ref, onMounted, computed} from "vue";
 import { getItemById, getItems } from "../libs/fetchUtils.js";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
+import NotFound from "@/views/NotFound.vue";
+
 const route = useRoute();
+const router = useRouter();
 const emit = defineEmits(['closed'])
+
 const props = defineProps({
   id: Number  
 });
 
-console.log("props.id", props.id);
-const task = ref(null);
-const timezoneOffset = new Date().getTimezoneOffset() * 60000;
-console.log(task);
+const routeId = ref(null);
 
+if (props.id === undefined) {
+  routeId.value = Number(route.params.id);
+}
+
+const useId = ref(props.id || routeId);
+const task = ref(null);
 const statusmanager = ref(new StatusManagement());
 
 onMounted(async () => {
-  console.log("================")
   try {
-    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, props.id);
-    console.log(task);
-    console.log("========asas=================");
-    const yeah = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
-    statusmanager.value.setStatuses(yeah)
-    console.log(statusmanager.value.getStatus());
+    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, useId.value);
+    const statusItem = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    statusmanager.value.setStatuses(statusItem)
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -37,7 +40,6 @@ const EmptyDescriptionText = "No Description Provided";
 const getTaskProp = (propName) => 
 computed(() => (task.value ? task.value[propName] : ""));
 
-const Id = getTaskProp("id");
 const title = getTaskProp("title");
 const description = getTaskProp("description");
 const assignees = getTaskProp("assignees");
@@ -45,10 +47,11 @@ const status = getTaskProp("status");
 const createdOn = computed(() => formatToLocalTime(task.value?.createdOn));
 const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn));
 
+// const timezoneOffset = new Date().getTimezoneOffset() * 60000;
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const formatToLocalTime = (dateTimeString) => {
   const dateTime = new Date(dateTimeString);
-  const localTime = new Date(dateTime - timezoneOffset);
+  // const localTime = new Date(dateTime - timezoneOffset);
   //return localTime.toLocaleString()
   const localDate = new Date(dateTime.getTime());
   console.log(localDate);
@@ -66,14 +69,14 @@ const formatToLocalTime = (dateTimeString) => {
 </script>
 
 <template>
-  <div class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="task" class="text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">
           <h1 class="font-bold text-2xl py-2 mb-2">Task Detail</h1>
           <h1 class="font-bold">Title :</h1>
           <div
-            class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3"
+            class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
             v-text="title"
           ></div>
         </div>
@@ -114,6 +117,7 @@ const formatToLocalTime = (dateTimeString) => {
       </div>
     </div>
   </div>
+  <NotFound v-if="task === undefined" />
 </template>
 
 <style scoped></style>

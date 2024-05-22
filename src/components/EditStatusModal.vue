@@ -2,7 +2,6 @@
 import { onMounted, ref, reactive, computed } from "vue";
 import { getItemById } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import { StatusManagement } from "@/libs/StatusManagement.js";
 
 const { params } = useRoute();
 const id = Number(params.id);
@@ -10,20 +9,21 @@ const emit = defineEmits(['saveChanges', 'close'])
 
 const status = ref(null);
 const isLoaded = ref(false);
-const statusmanager = ref(new StatusManagement());
+
 const receivedProps = defineProps({
     taskDetailsProp: Object
 });
 const props = reactive(receivedProps.taskDetailsProp);
 console.log(props.name);
 
-// if (props.name !== null) {
-//   props.name = props.name.trim()
-// }
+
+if (props.description === null) {
+  props.description = "";
+}
 
 if (props.description !== null) {
-  props.description = props.description.trim()
-}
+    props.description = props.description.trim()
+} 
 
 const checkWhiteSpace = (title) => {
     return /^\s*$/.test(title);
@@ -37,15 +37,11 @@ const statusProp = reactive({
 });
 
 const initialTask = ref(JSON.stringify(statusProp));
-console.log("initialTask", initialTask);
-
 const isFormModified = computed(() => JSON.stringify(statusProp) !== initialTask.value);
-console.log("isFormModified", isFormModified.value);
 
 onMounted(async () => {
     try {
         const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
-        console.log(id);
         status.value = items;
         isLoaded.value = true;
     } catch (error) {

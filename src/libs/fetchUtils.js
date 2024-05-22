@@ -71,7 +71,7 @@ async function editItem(url, id, editItem) {
         ...editItem,
       }),
     });
-    const editedItem = await res.json();
+    const editedItem = await res.json(); 
     return editedItem;
   } catch (error) {
     console.log(`error: ${error}`);
