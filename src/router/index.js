@@ -4,12 +4,18 @@ import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
+import Login from "@/views/Login.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
       redirect: "/task",
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: Login,
     },
     {
       path: "/task",
@@ -59,7 +65,7 @@ const router = createRouter({
           component: DeleteStatusModal,
         },
       ],
-    },
+    },    
     {
       path: "/:catchAll(.*)",
       name: "NotFound",
