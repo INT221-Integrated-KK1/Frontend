@@ -7,9 +7,11 @@ import AddTaskModal from "@/components/AddTaskModal.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
 import TaskDetail from "@/components/TaskDetail.vue";
+import Sort from "@/components/Sort.vue";
+import Filter from "@/components/Filter.vue";
+import AlertBox from "@/components/AlertBox.vue";
 
 const taskmanager = ref(new TaskManagement());
-const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
 const taskDetails = ref({});
 const showEditModal = ref(false);
@@ -225,45 +227,29 @@ function isTaskDetailModalOpen() {
 
 // ----------------------------------- sort handler -----------------------------------
 
-const showDefaultSort = ref(true);
-const showAscSort = ref(false);
-const showDescSort = ref(false);
 const sortType = ref("asc");
 
 function handleSort() {
   const currentSortType = sortType.value;
-  if (currentSortType === "asc") {
-    console.log("Sorting tasks ascending");
-    taskmanager.value.sortTask("asc");
-    sortType.value = "desc";
-    showDefaultSort.value = false;
-    showAscSort.value = true;
-    showDescSort.value = false;
-  } else if (currentSortType === "desc") {
-    console.log("Sorting tasks descending");
-    taskmanager.value.sortTask("desc");
-    sortType.value = "default";
-    showDefaultSort.value = false;
-    showAscSort.value = false;
-    showDescSort.value = true;
-  } else {
-    console.log("Default:", sortType.value);
-    taskmanager.value.sortTask("default");
-    sortType.value = "asc";
-    showDefaultSort.value = true;
-    showAscSort.value = false;
-    showDescSort.value = false;
+  switch (currentSortType) {
+    case "asc":
+      taskmanager.value.sortTask("asc");
+      sortType.value = "desc";
+      break;
+    case "desc":
+      taskmanager.value.sortTask("desc");
+      sortType.value = "default";
+      break;
+    default:
+      taskmanager.value.sortTask("default");
+      sortType.value = "asc";
+      break;
   }
 }
-
 // ----------------------------------- filter handler -----------------------------------
 
-const showFilterDropdown = ref(false);
 const selectedStatuses = ref([]);
 
-const toggleFilterDropdown = () => {
-  showFilterDropdown.value = !showFilterDropdown.value;
-};
 
 const clearSelectedStatues = async () => {
   selectedStatuses.value = [];
@@ -272,7 +258,8 @@ const clearSelectedStatues = async () => {
   taskmanager.value.getTask();
 };
 
-const applyFilter = async () => {
+const applyFilter = async (filter) => {
+  selectedStatuses.value = filter;
   if (selectedStatuses.value.length === 0) {
     clearSelectedStatues();
   } else if (selectedStatuses.value.length > 0) {
@@ -307,141 +294,11 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
-  <!-- add task alert -->
-
-  <div class="flex justify-center items-center">
-    <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Success</h1>
-          <button @click="showNewTaskAdded = false" class="px-4 py-2rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold break-words">
-          The task "{{ addedTasksTitle }}" is added successfully
-        </p>
-      </div>
-    </div>
-  </div>
-
-
-
-  <div class="flex justify-center items-center">
-    <div v-if="showNewTaskError" class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Error</h1>
-          <button @click="showNewTaskError = false" class="px-4 py-2rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold">
-          An error occurred adding the new task
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- delete task alert -->
-  <div class="flex justify-center items-center">
-    <div v-if="showDeleted" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Success</h1>
-          <button @click="showDeleted = false" class="px-4 py-2rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold">The task has been deleted</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="flex justify-center items-center">
-    <div v-if="showDeletedError" class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Error</h1>
-          <button @click="showDeletedError = false" class="px-4 py-2rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold">
-          An error occurred, the task does not exist
-        </p>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- edit task alert -->
-
-  <div v-if="showUpdated" class="flex justify-center items-center">
-    <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Success</h1>
-          <button @click="showUpdated = false" class="px-4 py-2rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold break-words">The task "{{ updatedTaskTitle }}" is updated successfully
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <div v-if="showUpdatedError" class="flex justify-center items-center">
-    <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
-      <div class="p-4">
-        <div class="flex justify-between mb-3">
-          <h1 class="text-2xl font-bold">Error</h1>
-          <button @click="showUpdatedError = false" class="px-4 py-2 rounded">✖</button>
-        </div>
-        <p class="itbkk-message text-lg font-bold">
-          An error has occurred, the task does not exist
-        </p>
-      </div>
-    </div>
-  </div>
+  <AlertBox />
 
   <!-- filter -->
   <div class="flex justify-between mx-52 mt-5 items-center">
-    <div class="flex items-center">
-      <div>
-
-        <details class="dropdown mx-5">
-          <summary class="btn font-bold flex" @click="toggleFilterDropdown">
-            <div v-if="selectedStatuses.length > 0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
-                <path fill="#de5b23"
-                  d="M11 18q-.425 0-.712-.288T10 17t.288-.712T11 16h2q.425 0 .713.288T14 17t-.288.713T13 18zm-4-5q-.425 0-.712-.288T6 12t.288-.712T7 11h10q.425 0 .713.288T18 12t-.288.713T17 13zM4 8q-.425 0-.712-.288T3 7t.288-.712T4 6h16q.425 0 .713.288T21 7t-.288.713T20 8z" />
-              </svg>
-            </div>
-            <div v-if="selectedStatuses.length === 0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
-                <path fill="#888888"
-                  d="M11 18q-.425 0-.712-.288T10 17t.288-.712T11 16h2q.425 0 .713.288T14 17t-.288.713T13 18zm-4-5q-.425 0-.712-.288T6 12t.288-.712T7 11h10q.425 0 .713.288T18 12t-.288.713T17 13zM4 8q-.425 0-.712-.288T3 7t.288-.712T4 6h16q.425 0 .713.288T21 7t-.288.713T20 8z" />
-              </svg>
-            </div>
-            Filter
-          </summary>
-
-          <ul v-if="showFilterDropdown"
-            class="p-2 shadow menu dropdown-content z-10 bg-white rounded-lg mt-2 ring-1 ring-black ring-opacity-5 w-[220px]">
-            <template v-for="status in statuses" :key="status.id">
-              <li>
-                <label :for="status.id"
-                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer checked:bg-orange-500  w-[200px] break-words">
-                  <input type="checkbox" :id="status.id" :value="status.name" class="mr-2" v-model="selectedStatuses"
-                    @change="applyFilter()">
-                  {{ status.name }}
-                </label>
-              </li>
-            </template>
-          </ul>
-        </details>
-
-
-      </div>
-
-      <div class="btn btn-ghost flex font-bold text-sm cursor-pointer" v-if="selectedStatuses.length > 0"
-        @click="clearSelectedStatues">
-        Reset<span class="px-2">✖</span>
-      </div>
-    </div>
-
+    <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
 
     <div class="flex">
       <router-link :to="{ name: 'addtask' }">
@@ -460,7 +317,7 @@ const getStatusClass = (status) => {
   </div>
 
   <!-- table -->
-  
+
   <div class="overflow-x-auto flex justify-center">
     <table class="table w-3/4 mt-10 border-solid border-2 border-black">
       <thead>
@@ -470,30 +327,10 @@ const getStatusClass = (status) => {
           <th class="font-bold">Title</th>
           <th class="font-bold">Assignees</th>
           <th class="font-bold">
-            <div @click='handleSort(sortType)' class="cursor-pointer flex items-center ">
-              <span class="font-bold mr-2">Status</span>
-              <div v-if="showDefaultSort == true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <path fill="#9c9995"
-                    d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm12.9 8V3h-2v13h-3l4 5l4-5zm-8-3H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
-                </svg>
-              </div>
-              <div v-if="showAscSort == true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <path fill="#de5b23"
-                    d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm12.9 8V3h-2v13h-3l4 5l4-5zm-8-3H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
-                </svg>
-              </div>
-              <div v-if="showDescSort == true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <path fill="#de5b23"
-                    d="M4.869 11H2.667L6 3h2l3.333 8H9.131l-.41-1H5.28zm1.23-3h1.803L7 5.8zm15.9 0l-4-5l-4 5h3v13h2V8zm-11 5H3v2h4.855L3 19v2h8v-2H6.146L11 15z" />
-                </svg>
-              </div>
-            </div>
-
+            <Sort @click="handleSort" />
           </th>
           <th></th>
+
         </tr>
       </thead>
       <tbody>

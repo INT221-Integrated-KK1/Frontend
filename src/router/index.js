@@ -10,12 +10,13 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: "/task",
+      redirect: "/login",
     },
     {
       path: "/login",
       name: "login",
       component: Login,
+      redirect: '/task'
     },
     {
       path: "/task",
