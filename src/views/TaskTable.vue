@@ -10,26 +10,30 @@ import TaskDetail from "@/components/TaskDetail.vue";
 import Sort from "@/components/Sort.vue";
 import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
+import AddEditTaskModal from "@/components/AddEditTaskModal.vue";
 
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
 const taskDetails = ref({});
-const showEditModal = ref(false);
-const showDeleteModal = ref(false);
-const addedTasksTitle = ref("");
-const showNewTaskAdded = ref(false);
-const showNewTaskError = ref(false);
-const showDeleted = ref(false);
-const showDeletedError = ref(false);
-const showUpdated = ref(false);
-const updatedTaskTitle = ref("");
-const showUpdatedError = ref(false);
-const showTaskDetail = ref(false)
 const taskId = ref(null);
 const EmptyStyle = "italic text-slate-400 font-semibold";
 
 const statuses = ref([]);
-const emit = defineEmits(["AlertTaskAdded"]);
+
+const showEditModal = ref(false);
+const showDeleteModal = ref(false);
+const showTaskDetail = ref(false)
+
+const addedTitle = ref("");
+const updatedTitle = ref("");
+
+const tableType = "task";
+const showAdded = ref(false);
+const showAddedError = ref(false);
+const showDeleted = ref(false);
+const showDeletedError = ref(false);
+const showUpdated = ref(false);
+const showUpdatedError = ref(false);
 
 onMounted(async () => {
   const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
@@ -44,17 +48,17 @@ onMounted(async () => {
 
 async function handleTaskAdded(addedTasks) {
   if (addedTasks !== null) {
-    addedTasksTitle.value = addedTasks.title;
+    addedTitle.value = addedTasks.title;
     taskmanager.value.addTask({ ...addedTasks });
     todo.value = taskmanager.value.getTask();
-    showNewTaskAdded.value = true;
+    showAdded.value = true;
     setTimeout(() => {
-      showNewTaskAdded.value = false;
+      showAdded.value = false;
     }, 3000);
   } else {
-    showNewTaskError.value = true;
+    showAddedError.value = true;
     setTimeout(() => {
-      showNewTaskError.value = false;
+      showAddedError.value = false;
     }, 3000);
   }
 };
@@ -151,7 +155,7 @@ const saveChanges = async (getTaskProp, id) => {
   console.log("getTaskProp:", getTaskProp);
   console.log("Edited task:", editedTask.status);
 
-  updatedTaskTitle.value = getTaskProp.title.trim();
+  updatedTitle.value = getTaskProp.title.trim();
 
   const existingTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
   const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
@@ -294,12 +298,26 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
-  <AlertBox />
+  <AddEditTaskModal />
+
+  <!-- Alert -->
+  <AlertBox
+  :tableType="tableType"
+  :showAdded="showAdded"
+  :showAddedError="showAddedError"
+  :showDeleted="showDeleted"
+  :showDeletedError="showDeletedError"
+  :showUpdated="showUpdated"
+  :showUpdatedError="showUpdatedError"
+  :addedTitle="addedTitle"
+  :updatedTitle="updatedTitle"
+  />
 
   <!-- filter -->
   <div class="flex justify-between mx-52 mt-5 items-center">
     <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
 
+    <!-- add task -->
     <div class="flex">
       <router-link :to="{ name: 'addtask' }">
         <div class="bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
@@ -310,6 +328,8 @@ const getStatusClass = (status) => {
 
         </div>
       </router-link>
+
+      <!-- manage status -->
       <RouterLink :to="{ name: 'status' }">
         <div class="btn font-bold">Manage Status</div>
       </RouterLink>
