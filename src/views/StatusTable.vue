@@ -58,12 +58,11 @@ const closeEditModal = () => {
     editModal.value = false;
 };
 
-const taskDetails = ref({});
+
 async function showEditModals(status) {
     try {
         const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
         if (items !== undefined) {
-            taskDetails.value = items;
             editModal.value = true;
         } else {
             showUpdatedError.value = true;
@@ -160,8 +159,6 @@ async function showDeleteModals(status) {
         console.log(items);
         if (items !== undefined) {
             deleteModal.value = true;
-            taskDetails.value = items;
-            deleteModal.value = true;
         } else {
             showDeletedError.value = true;
             setTimeout(() => {
@@ -209,8 +206,7 @@ const handleStatusDeletedNotfound = () => {
     :showDeletedError="showDeletedError" 
     :showUpdated="showUpdated" 
     :showUpdatedError="showUpdatedError"
-    :addedTitle="addedTitle" 
-    :updatedTitle="updatedTitle" />
+    :addedTitle="addedTitle"  />
 
     
     <div class="flex justify-end mr-52 mt-5">
@@ -274,8 +270,7 @@ const handleStatusDeletedNotfound = () => {
         <AddStatusModal @statusAdded="handleStatusAdded" />
     </router-link>
     <Teleport to="body">
-        <EditStatusModal v-if="editModal == true" @close="closeEditModal" @saveChanges="saveChanges"
-            :taskDetailsProp="taskDetails" />
+        <EditStatusModal v-if="editModal" @close="closeEditModal" @saveChanges="saveChanges" />
     </Teleport>
     <Teleport to="body">
         <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted"

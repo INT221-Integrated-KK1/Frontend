@@ -209,7 +209,7 @@ const saveChanges = async (getTaskProp, id) => {
       showUpdatedError.value = true;
       setTimeout(() => {
         showUpdatedError.value = false;
-      }, 3000);taskId
+      }, 3000); taskId
     }
   }
 }
@@ -297,18 +297,12 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
+  <AddEditTaskModal />
+
   <!-- Alert -->
-  <AlertBox
-  :tableType="tableType"
-  :showAdded="showAdded"
-  :showAddedError="showAddedError"
-  :showDeleted="showDeleted"
-  :showDeletedError="showDeletedError"
-  :showUpdated="showUpdated"
-  :showUpdatedError="showUpdatedError"
-  :addedTitle="addedTitle"
-  :updatedTitle="updatedTitle"
-  />
+  <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError" :showDeleted="showDeleted"
+    :showDeletedError="showDeletedError" :showUpdated="showUpdated" :showUpdatedError="showUpdatedError"
+    :addedTitle="addedTitle" :updatedTitle="updatedTitle" />
 
   <!-- filter -->
   <div class="flex justify-between mx-52 mt-5 items-center">
@@ -417,8 +411,7 @@ const getStatusClass = (status) => {
   </Teleport>
 
   <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeEditModal()"
-      @saveChanges="saveChanges" />
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal()" @saveChanges="saveChanges" />
   </Teleport>
 
   <Teleport to="body">

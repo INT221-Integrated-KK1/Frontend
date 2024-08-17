@@ -1,47 +1,67 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from "vue";
-import { getItemById, getItems } from "../libs/fetchUtils.js";
+import { getItems, getItemById } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 
 const emit = defineEmits('close', 'saveChanges', 'status-updated');
 const { params } = useRoute();
 const id = Number(params.id);
+console.log(id);
+
 const statusmanager = ref(new StatusManagement());
-const task = ref(null);
 const isLoaded = ref(false);
-const props1 = defineProps({
-  taskDetailsza: Object
-});
-const EmptyStyle = "italic text-slate-400";
+
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided";
-const props = reactive(props1.taskDetailsza);
 
-console.log(props.description);
-if (props.description === null) {
-  props.description = "";
-}
-
-if (props.assignees === null) {
-  props.assignees = "";
-}
-
-let taskProp = reactive({
-  id: props.id,
-  title: props.title,
-  description: props.description,
-  assignees: props.assignees,
-  status: props.status.id,
-  createdOn: props.createdOn,
-  updatedOn: props.updatedOn
+const task = reactive({
+  id: 1,
+  title: "",
+  description: "",
+  assignees: "",
+  status: {
+    id: 1,
+    name: "",
+    description: ""
+  },
+  createdOn: "",
+  updatedOn: ""
 });
+
+onMounted(async () => {
+  try {
+    isLoaded.value = true;
+    const item = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+    const statusItem = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    statusmanager.value.setStatuses(statusItem)
+    task.id = item.id;
+    task.title = item.title;
+    task.description = item.description;
+    task.assignees = item.assignees;
+    task.status.id = item.status.id;
+    task.status.name = item.status.name;
+    task.status.description = item.status.description;
+    task.createdOn = item.createdOn;
+    task.updatedOn = item.updatedOn;
+  } catch (error) {
+    console.error("Error fetching task details:", error)
+  }
+});
+
+if (task.description === null) {
+  task.description = "";
+}
+
+if (task.assignees === null) {
+  task.assignees = "";
+}
 
 const checkWhiteSpace = (title) => {
   return /^\s*$/.test(title);
 };
 
-const initialTask = JSON.stringify(taskProp);
+const initialTask = JSON.stringify(task);
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const formatToLocalTime = (dateTimeString) => {
   const dateTime = new Date(dateTimeString)
@@ -56,23 +76,11 @@ const formatToLocalTime = (dateTimeString) => {
     hour12: false // Use 24-hour time format
   });
 };
-const isFormModified = computed(() => JSON.stringify(taskProp) !== initialTask);
-
-
-onMounted(async () => {
-  try {
-    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-    isLoaded.value = true;
-    const items = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
-    statusmanager.value.setStatuses(items);
-  } catch (error) {
-    console.error("Error fetching task details:", error)
-  }
-});
+const isFormModified = computed(() => JSON.stringify(task) !== initialTask);
 
 const saveChanges = () => {
   if (isFormModified.value) {
-    emit('saveChanges', taskProp, id);
+    emit('saveChanges', task, id);
   }
 }
 
@@ -94,11 +102,10 @@ const countOptionalCharacters = (text) => {
         <div class=" col-start-1 col-span-3">
           <h1 class="font-bold text-2xl py-2 mb-2">Edit Task </h1>
           <h1 class="font-bold mt-2">Title :</h1>
-          <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-            v-model="taskProp.title">
+          <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-model="task.title">
           <span class="text-gray-500 text-sm"
-            :class="{ 'text-red-500': taskProp.title.trim().length > 100 || taskProp.title.trim().length === 0 }">{{
-    taskProp.title.trim().length }} / 100 characters</span>
+            :class="{ 'text-red-500': task.title.trim().length > 100 || task.title.trim().length === 0 }">{{
+            task.title.trim().length }} / 100 characters</span>
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -106,35 +113,35 @@ const countOptionalCharacters = (text) => {
           <h1 class="font-bold">Description :</h1>
           <textarea
             class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words "
-            :class="{ EmptyStyle: taskProp.description === '' }" v-model="taskProp.description"
+            :class="{ EmptyStyle: task.description === '' }" v-model="task.description"
             :placeholder="EmptyDescriptionText"></textarea>
           <span class="text-gray-500 text-sm"
-            :class="{ 'text-red-500': countOptionalCharacters(taskProp.description) > 500 }">
-            {{ countOptionalCharacters(taskProp.description) }} / 500 characters</span>
+            :class="{ 'text-red-500': countOptionalCharacters(task.description) > 500 }">
+            {{ countOptionalCharacters(task.description) }} / 500 characters</span>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
           <textarea
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full  break-words"
-            :class="{ EmptyStyle: taskProp.assignees === '' }" v-model="taskProp.assignees"
+            :class="{ EmptyStyle: task.assignees === '' }" v-model="task.assignees"
             :placeholder="EmptyAssigneeText"></textarea>
-          <span class="text-gray-500 text-sm"
-            :class="{ 'text-red-500': countOptionalCharacters(taskProp.assignees) > 30 }">
-            {{ countOptionalCharacters(taskProp.assignees) }} / 30 characters</span>
+          <span class="text-gray-500 text-sm" :class="{ 'text-red-500': countOptionalCharacters(task.assignees) > 30 }">
+            {{ countOptionalCharacters(task.assignees) }} / 30 characters</span>
           <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="taskProp.status">
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="task.status.id">
             <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.id">
               {{ status.name }}
             </option>
           </select>
+          <h1 class="font-bold itbkk-timezone">Timezone : {{ task.status.id }}</h1>
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
-          <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(taskProp.createdOn) }}</h1>
-          <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(taskProp.updatedOn) }}</h1>
+          <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(task.createdOn) }}</h1>
+          <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(task.updatedOn) }}</h1>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
           <router-link to="/task">
             <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges"
-              :disabled="!isFormModified || checkWhiteSpace(taskProp.title)">
+              :disabled="!isFormModified || checkWhiteSpace(task.title)">
               Save
             </button>
           </router-link>
