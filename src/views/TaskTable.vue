@@ -10,10 +10,10 @@ import TaskDetail from "@/components/TaskDetail.vue";
 import Sort from "@/components/Sort.vue";
 import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
-import AddEditTaskModal from "@/components/AddEditTaskModal.vue";
 
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
+const taskDetails = ref({});
 
 const taskId = ref(null);
 const EmptyStyle = "italic text-slate-400 font-semibold";
@@ -104,6 +104,7 @@ const closeEditModal = () => {
 async function editHandler(id) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
   if (items !== undefined) {
+    taskDetails.value = items;
     showEditModal.value = true;
     console.log(items);
   } else {
@@ -149,7 +150,7 @@ const saveChanges = async (getTaskProp, id) => {
     title: getTaskProp.title,
     description: getTaskProp.description,
     assignees: getTaskProp.assignees,
-    status: getTaskProp.status.id
+    status: getTaskProp.status
   };
   console.log("getTaskProp:", getTaskProp);
   console.log("Edited task:", editedTask.status);
@@ -298,17 +299,9 @@ const getStatusClass = (status) => {
 
 <template>
   <!-- Alert -->
-  <AlertBox
-  :tableType="tableType"
-  :showAdded="showAdded"
-  :showAddedError="showAddedError"
-  :showDeleted="showDeleted"
-  :showDeletedError="showDeletedError"
-  :showUpdated="showUpdated"
-  :showUpdatedError="showUpdatedError"
-  :addedTitle="addedTitle"
-  :updatedTitle="updatedTitle"
-  />
+  <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError" :showDeleted="showDeleted"
+    :showDeletedError="showDeletedError" :showUpdated="showUpdated" :showUpdatedError="showUpdatedError"
+    :addedTitle="addedTitle" :updatedTitle="updatedTitle" />
 
   <!-- filter -->
   <div class="flex justify-between mx-52 mt-5 items-center">
@@ -417,7 +410,7 @@ const getStatusClass = (status) => {
   </Teleport>
 
   <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeEditModal()"
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal()" :taskDetailsza="taskDetails"
       @saveChanges="saveChanges" />
   </Teleport>
 
