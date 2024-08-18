@@ -11,6 +11,10 @@ let inputForm = reactive({
     password: ""
 });
 
+function checkInput() {
+    return inputForm.username === "" || inputForm.password === "";
+}
+
 async function loginHandler() {
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm.username, inputForm.password);
     if (data.status === 200) {
@@ -45,17 +49,18 @@ const showPassword = () => {
                     </label>
                     <div class="input-group itbkk-username">
                         <input type="text" class="input input-bordered w-full" v-model="inputForm.username"
-                            placeholder="Type your username" />
+                            placeholder="Type your username" :maxlength="50" />
                     </div>
                     <label class="label mt-4">
                         <span class="label-text text-xl font-bold">Password</span>
                     </label>
                     <div class="input-group itbkk-password">
                         <input type="password" class="input input-bordered w-full" id="password"
-                            v-model="inputForm.password" placeholder="Type your password" />
+                            v-model="inputForm.password" placeholder="Type your password" :maxlength="14" />
                         <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
                     </div>
-                    <button class="btn btn-primary mt-6 w-full" @click="loginHandler">Sign In</button>
+                    <button class="btn btn-primary mt-6 w-full" @click="loginHandler"
+                        :disabled="checkInput()">Sign In</button>
                 </div>
             </div>
 
