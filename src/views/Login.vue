@@ -1,6 +1,7 @@
 <script setup>
-import { reactive, ref } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { isAuthenticated } from "../libs/fetchUtils.js";
 
 const router = useRouter();
 const showLoginAlert = ref(false);
@@ -10,18 +11,14 @@ let inputForm = reactive({
     password: ""
 });
 
-let demoData = {
-    username: "admin",
-    password: "admin"
-};
-
-console.log(inputForm.username);
-
-const loginHandler = () => {
-    if (inputForm.username === demoData.username && inputForm.password === demoData.password) {
+async function loginHandler() {
+    const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm.username, inputForm.password);
+    if (data.status === 200) {
         router.push("/task");
-    } else {
+    } else if (data.status === 401) {
         showLoginAlert.value = true;
+    } else if (data.status === 500) {
+        alert("Internal Server Error");
     }
 };
 
@@ -34,7 +31,6 @@ const showPassword = () => {
     }
 
 }
-
 </script>
 
 <template>

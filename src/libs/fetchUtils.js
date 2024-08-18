@@ -91,4 +91,32 @@ async function deleteAndTransfer(url, id, transferId) {
     console.log(error);
   }
 }
-export { getItems, getItemById, deleteItemById, addItem, editItem, deleteAndTransfer };
+
+async function isAuthenticated(url, username, password) {
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    });
+    const response = await res.json();
+    return response;
+  } catch (error) {
+    console.log(`error: ${error}`);
+  }
+}
+
+export {
+  getItems,
+  getItemById,
+  deleteItemById,
+  addItem,
+  editItem,
+  deleteAndTransfer,
+  isAuthenticated,
+};
