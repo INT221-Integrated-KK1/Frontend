@@ -5,6 +5,7 @@ import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 import Login from "@/views/Login.vue";
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -73,5 +74,20 @@ const router = createRouter({
     }
   ],
 });
+
+
+
+// router.beforeEach(async (to, from, next) => {  
+
+//   const isAuthenticated = localStorage.getItem("isAuthenticated");
+//   console.log(isAuthenticated);
+ 
+//   if (!isAuthenticated && to.name !== 'Login') {
+//     next({ name: 'Login' })
+//   } else if (isAuthenticated && to.name === 'Login') {
+//     next({ name: 'task' })
+//   }
+
+// })
 
 export default router;
