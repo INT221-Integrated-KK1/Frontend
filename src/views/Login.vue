@@ -14,6 +14,10 @@ let inputForm = reactive({
 
 
 async function loginHandler() {
+    if (inputForm.username === "" || inputForm.password === "") {
+        alert("Please fill in the username and password");
+        return;
+    }
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
     if (data === "Login successful") {
         showLoginAlert.value = false;
@@ -60,7 +64,7 @@ const showPassword = () => {
                         <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
                     </div>
                     <button
-                        :class="inputForm.username === '' || inputForm.password === '' ? `btn btn-primary mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
+                        :class="inputForm.username === '' || inputForm.password === '' ? `btn btn-disabled   mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
                         @click="loginHandler">Sign In</button>
                 </div>
             </div>
