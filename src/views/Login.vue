@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
 
@@ -7,19 +7,14 @@ const router = useRouter();
 const showLoginAlert = ref(false);
 
 localStorage.setItem("isAuthenticated", false);
-
 let inputForm = reactive({
     username: "",
     password: ""
 });
 
-function checkInput() {
-    return inputForm.username === "" || inputForm.password === "";
-}
 
 async function loginHandler() {
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
-    console.log("data " + data);
     if (data === "Login successful") {
         showLoginAlert.value = false;
         localStorage.setItem("isAuthenticated", true);
@@ -52,20 +47,21 @@ const showPassword = () => {
                     <label class="label">
                         <span class="label-text text-xl font-bold">Username</span>
                     </label>
-                    <div class="input-group itbkk-username">
-                        <input type="text" class="input input-bordered w-full" v-model="inputForm.username"
-                            placeholder="Type your username" :maxlength="50" />
+                    <div class="input-group ">
+                        <input type="text" class="input input-bordered w-full itbkk-username"
+                            v-model="inputForm.username" placeholder="Type your username" :maxlength="50" />
                     </div>
                     <label class="label mt-4">
                         <span class="label-text text-xl font-bold">Password</span>
                     </label>
-                    <div class="input-group itbkk-password">
-                        <input type="password" class="input input-bordered w-full" id="password"
+                    <div class="input-group">
+                        <input type="password" class="input input-bordered w-full itbkk-password" id="password"
                             v-model="inputForm.password" placeholder="Type your password" :maxlength="14" />
                         <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
                     </div>
-                    <button class="btn btn-primary mt-6 w-full" @click="loginHandler"
-                        :disabled="checkInput()">Sign In</button>
+                    <button
+                        :class="inputForm.username === '' || inputForm.password === '' ? `btn btn-primary mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
+                        @click="loginHandler">Sign In</button>
                 </div>
             </div>
 
@@ -73,7 +69,7 @@ const showPassword = () => {
             <div v-if="showLoginAlert" class="bg-red-100 rounded-md border-2 border-red-500 fixed top-5">
                 <div class="p-4">
                     <div class="flex justify-between">
-                        <h1 class="text-xl font-bold mr-3">Username or Password is incorrect</h1>
+                        <h1 class="text-xl font-bold mr-3 itbkk-message">Username or Password is incorrect</h1>
                         <button class="px-4 py-2rounded" @click="showLoginAlert = false">✖</button>
                     </div>
                 </div>
