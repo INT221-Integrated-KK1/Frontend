@@ -6,6 +6,8 @@ import { isAuthenticated } from "../libs/fetchUtils.js";
 const router = useRouter();
 const showLoginAlert = ref(false);
 
+localStorage.setItem("isAuthenticated", false);
+
 let inputForm = reactive({
     username: "",
     password: ""
@@ -16,13 +18,16 @@ function checkInput() {
 }
 
 async function loginHandler() {
-    const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm.username, inputForm.password);
-    if (data.status === 200) {
-        router.push("/task");
-    } else if (data.status === 401) {
+    const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
+    console.log("data " + data);
+    if (data === "Login successful") {
+        showLoginAlert.value = false;
+        localStorage.setItem("isAuthenticated", true);
+    } else if (data === "Username or Password is incorrect") {
         showLoginAlert.value = true;
-    } else if (data.status === 500) {
-        alert("Internal Server Error");
+        localStorage.setItem("isAuthenticated", false);
+    } else {
+        alert("Something went wrong: " + data);
     }
 };
 

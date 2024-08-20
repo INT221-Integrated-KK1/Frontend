@@ -1,12 +1,12 @@
-import router from '../router/index.js'
+import router from "../router/index.js";
 
 async function getItems(url) {
   try {
-    const data = await fetch(url)
-    const items = await data.json()
-    return items
+    const data = await fetch(url);
+    const items = await data.json();
+    return items;
   } catch (error) {
-    console.log(`error: ${error}`)
+    console.log(`error: ${error}`);
   }
 }
 async function getItemById(url, id) {
@@ -19,7 +19,7 @@ async function getItemById(url, id) {
       // 404 error
       if (data.status === 404) {
         //window.alert('The requested task does not exist');
-         router.go(-1);
+        router.go(-1);
       }
       // other errors
       console.error(`Error fetching task details: ${data.status}`);
@@ -34,9 +34,9 @@ async function getItemById(url, id) {
 async function deleteItemById(url, id) {
   try {
     const res = await fetch(`${url}/${id}`, {
-      method: 'DELETE'
-    })
-    return res.status
+      method: "DELETE",
+    });
+    return res.status;
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -50,11 +50,11 @@ async function addItem(url, newItem) {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        ...newItem
-      })
-    })
-    const addedItem = await res.json()
-    return addedItem
+        ...newItem,
+      }),
+    });
+    const addedItem = await res.json();
+    return addedItem;
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -71,7 +71,7 @@ async function editItem(url, id, editItem) {
         ...editItem,
       }),
     });
-    const editedItem = await res.json(); 
+    const editedItem = await res.json();
     return editedItem;
   } catch (error) {
     console.log(`error: ${error}`);
@@ -92,7 +92,7 @@ async function deleteAndTransfer(url, id, transferId) {
   }
 }
 
-async function isAuthenticated(url, username, password) {
+async function isAuthenticated(url, input) {
   try {
     const res = await fetch(url, {
       method: "POST",
@@ -100,11 +100,11 @@ async function isAuthenticated(url, username, password) {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        username: username,
-        password: password,
+        ...input,
       }),
     });
-    const response = await res.json();
+    const response = await res.text();
+    console.log("response " + response);
     return response;
   } catch (error) {
     console.log(`error: ${error}`);
