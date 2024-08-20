@@ -77,17 +77,17 @@ const router = createRouter({
 
 
 
-router.beforeEach(async (to, from, next) => {  
+// router.beforeEach(async (to, from, next) => {  
 
-  const isAuthenticated = localStorage.getItem("isAuthenticated");
-  console.log(isAuthenticated);
+//   const isAuthenticated = localStorage.getItem("isAuthenticated");
+//   console.log(isAuthenticated);
  
-  if (!isAuthenticated && to.name !== 'Login') {
-    next({ name: 'Login' })
-  } else if (isAuthenticated && to.name === 'Login') {
-    next({ name: 'task' })
-  }
+//   if (!isAuthenticated && to.name !== 'Login') {
+//     next({ name: 'Login' })
+//   } else if (isAuthenticated && to.name === 'Login') {
+//     next({ name: 'task' })
+//   }
 
-})
+// })
 
 export default router;
