@@ -2,17 +2,18 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
-
+import { isAuthen } from "@/stores/authen.js";
 const router = useRouter();
 const showLoginAlert = ref(false);
 
-localStorage.setItem("isAuthenticated", false);
 let inputForm = reactive({
     username: "",
     password: ""
 });
 
+const authenStore = isAuthen();
 
+localStorage.setItem("token", false);
 async function loginHandler() {
     if (inputForm.username === "" || inputForm.password === "") {
         alert("Please fill in the username and password");
@@ -21,13 +22,16 @@ async function loginHandler() {
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
     if (data === "Login successful") {
         showLoginAlert.value = false;
-        localStorage.setItem("isAuthenticated", true);
+        router.push("/task");
+        authenStore.setIsAuthenticated(true);
     } else if (data === "Username or Password is incorrect") {
-        showLoginAlert.value = true;
-        localStorage.setItem("isAuthenticated", false);
+        showLoginAlert.value = true; 
+        authenStore.setIsAuthenticated(false);
     } else {
         alert("Something went wrong: " + data);
     }
+
+
 };
 
 const showPassword = () => {
@@ -67,6 +71,7 @@ const showPassword = () => {
                         :class="inputForm.username === '' || inputForm.password === '' ? `btn btn-disabled   mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
                         @click="loginHandler">Sign In</button>
                 </div>
+
             </div>
 
 
