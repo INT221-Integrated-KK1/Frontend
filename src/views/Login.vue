@@ -2,18 +2,16 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
-import { isAuthen } from "@/stores/authen.js";
+import { Authentication } from "@/stores/Authentication.js";
 const router = useRouter();
 const showLoginAlert = ref(false);
+const authenStore = Authentication();
 
 let inputForm = reactive({
     username: "",
     password: ""
 });
 
-const authenStore = isAuthen();
-
-localStorage.setItem("token", false);
 async function loginHandler() {
     if (inputForm.username === "" || inputForm.password === "") {
         alert("Please fill in the username and password");
@@ -30,8 +28,6 @@ async function loginHandler() {
     } else {
         alert("Something went wrong: " + data);
     }
-
-
 };
 
 const showPassword = () => {

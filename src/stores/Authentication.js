@@ -1,8 +1,9 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { ref } from "vue";
 
-const isAuthen = defineStore("isAuthenticated", () => {
+const Authentication = defineStore("isAuthenticated", () => {
   const isAuthenticated = ref(false);
+
   const getIsAuthenticated = () => {
     return isAuthenticated.value;
   };
@@ -18,7 +19,7 @@ const isAuthen = defineStore("isAuthenticated", () => {
   };
 });
 
-export { isAuthen };
+export { Authentication };
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(isAuthen, import.meta.hot));
+  import.meta.hot.accept(acceptHMRUpdate(Authentication, import.meta.hot));
 }

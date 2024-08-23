@@ -1,11 +1,12 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { Authentication } from "@/stores/Authentication.js";
 import TaskDetail from "@/components/TaskDetail.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 import Login from "@/views/Login.vue";
-import { isAuthen }  from "@/stores/authen.js";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -78,7 +79,7 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
-  const authenStore = isAuthen();
+  const authenStore = Authentication();
   const isAuthenticated = authenStore.getIsAuthenticated();
   if (to.name !== "login" && !isAuthenticated) next({ name: "login" });
   else next();
