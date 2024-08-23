@@ -1,12 +1,87 @@
 <script setup>
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import { isAuthenticated } from "../libs/fetchUtils.js";
+import { Authentication } from "@/stores/Authentication.js";
+const router = useRouter();
+const showLoginAlert = ref(false);
+const authenStore = Authentication();
 
+let inputForm = reactive({
+    username: "",
+    password: ""
+});
+
+async function loginHandler() {
+    if (inputForm.username === "" || inputForm.password === "") {
+        alert("Please fill in the username and password");
+        return;
+    }
+    const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
+    if (data === "Login successful") {
+        showLoginAlert.value = false;
+        router.push("/task");
+        authenStore.setIsAuthenticated(true);
+    } else if (data === "Username or Password is incorrect") {
+        showLoginAlert.value = true; 
+        authenStore.setIsAuthenticated(false);
+    } else {
+        alert("Something went wrong: " + data);
+    }
+};
+
+const showPassword = () => {
+    let password = document.getElementById("password");
+    if (password.type === "password") {
+        password.type = "text";
+    } else {
+        password.type = "password";
+    }
+
+}
 </script>
 
 <template>
-    <h1>Login</h1>
+    <div class="text-black fixed z-10 inset-0 overflow-y-auto">
+        <div class=" bg-slate-200 min-h-screen flex items-center justify-center">
+            <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
+                <h1 class="text-3xl font-bold text-center mb-10">Welcome To ITB-KK</h1>
 
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-xl font-bold">Username</span>
+                    </label>
+                    <div class="input-group ">
+                        <input type="text" class="input input-bordered w-full itbkk-username"
+                            v-model="inputForm.username" placeholder="Type your username" :maxlength="50" />
+                    </div>
+                    <label class="label mt-4">
+                        <span class="label-text text-xl font-bold">Password</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="password" class="input input-bordered w-full itbkk-password" id="password"
+                            v-model="inputForm.password" placeholder="Type your password" :maxlength="14" />
+                        <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
+                    </div>
+                    <button
+                        :class="inputForm.username === '' || inputForm.password === '' ? `btn btn-disabled   mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
+                        @click="loginHandler">Sign In</button>
+                </div>
+
+            </div>
+
+
+            <div v-if="showLoginAlert" class="bg-red-100 rounded-md border-2 border-red-500 fixed top-5">
+                <div class="p-4">
+                    <div class="flex justify-between">
+                        <h1 class="text-xl font-bold mr-3 itbkk-message">Username or Password is incorrect</h1>
+                        <button class="px-4 py-2rounded" @click="showLoginAlert = false">✖</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
