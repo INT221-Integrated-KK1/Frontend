@@ -41,7 +41,7 @@ const transfer = ref(0)
 async function transferConfirm(transferId) {
     if (transferId != undefined) {
         confirmModal.value = true;
-        tranferModal.value = false; 
+        tranferModal.value = false;
         const exist = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
         console.log(exist);
         const item = await deleteAndTransfer(import.meta.env.VITE_BASE_STATUS_URL, id, transferId);

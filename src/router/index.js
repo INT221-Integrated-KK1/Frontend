@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { Authentication } from "@/stores/Authentication.js";
 import TaskDetail from "@/components/TaskDetail.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
@@ -6,12 +7,13 @@ import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 import Login from "@/views/Login.vue";
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
-      redirect: "/task",
+      redirect: "/login",
     },
     {
       path: "/login",
@@ -66,28 +68,21 @@ const router = createRouter({
           component: DeleteStatusModal,
         },
       ],
-    },    
+    },
     {
       path: "/:catchAll(.*)",
       name: "NotFound",
       component: () => import("@/views/NotFound.vue"),
-    }
+    },
   ],
 });
 
 
-
-// router.beforeEach(async (to, from, next) => {  
-
-//   const isAuthenticated = localStorage.getItem("isAuthenticated");
-//   console.log(isAuthenticated);
- 
-//   if (!isAuthenticated && to.name !== 'Login') {
-//     next({ name: 'Login' })
-//   } else if (isAuthenticated && to.name === 'Login') {
-//     next({ name: 'task' })
-//   }
-
-// })
+router.beforeEach((to, from, next) => {
+  const authenStore = Authentication();
+  const isAuthenticated = authenStore.getIsAuthenticated();
+  if (to.name !== "login" && !isAuthenticated) next({ name: "login" });
+  else next();
+});
 
 export default router;

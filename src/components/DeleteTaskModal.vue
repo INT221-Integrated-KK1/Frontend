@@ -36,8 +36,8 @@ const deleteTask = async (deleteid) => {
       console.log("Deleted task:", deleteid);
       emit("taskDeleted", deleteid);
     } else {
-      emit("taskNotfound"); 
-    } 
+      emit("taskNotfound");
+    }
     showModal.value = false;
   } catch (error) {
     console.error("Error deleting task:", error);
@@ -76,7 +76,7 @@ const deleteTask = async (deleteid) => {
       </div>
     </div>
   </div>
-  
+
   <NotFound v-if="task === undefined" />
 </template>
 

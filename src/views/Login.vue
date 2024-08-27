@@ -2,29 +2,35 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
+import { Authentication } from "@/stores/Authentication.js";
 
+import AlertBox from "@/components/AlertBox.vue";
 const router = useRouter();
 const showLoginAlert = ref(false);
+const authenStore = Authentication();
 
-localStorage.setItem("isAuthenticated", false);
 let inputForm = reactive({
-    username: "",
+    userName: "",
     password: ""
 });
 
-
 async function loginHandler() {
-    if (inputForm.username === "" || inputForm.password === "") {
+    if (inputForm.userName === "" || inputForm.password === "") {
         alert("Please fill in the username and password");
         return;
     }
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
-    if (data === "Login successful") {
+    console.log(data);
+    if (data.detail === "Login Successful") {
         showLoginAlert.value = false;
-        localStorage.setItem("isAuthenticated", true);
-    } else if (data === "Username or Password is incorrect") {
-        showLoginAlert.value = true;
-        localStorage.setItem("isAuthenticated", false);
+        router.push("/task");
+        authenStore.setIsAuthenticated(true);
+    } else if (data.message === "Username or Password is incorrect") {
+        showLoginAlert.value = true; 
+        setTimeout(() => {
+            showLoginAlert.value = false;
+        }, 3000);
+        authenStore.setIsAuthenticated(false);
     } else {
         alert("Something went wrong: " + data);
     }
@@ -43,7 +49,7 @@ const showPassword = () => {
 
 <template>
     <div class="text-black fixed z-10 inset-0 overflow-y-auto">
-        <div class=" bg-slate-200 min-h-screen flex items-center justify-center">
+        <div class="bg-slate-200 min-h-screen flex items-center justify-center">
             <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
                 <h1 class="text-3xl font-bold text-center mb-10">Welcome To ITB-KK</h1>
 
@@ -53,7 +59,7 @@ const showPassword = () => {
                     </label>
                     <div class="input-group ">
                         <input type="text" class="input input-bordered w-full itbkk-username"
-                            v-model="inputForm.username" placeholder="Type your username" :maxlength="50" />
+                            v-model="inputForm.userName" placeholder="Type your username" :maxlength="50" />
                     </div>
                     <label class="label mt-4">
                         <span class="label-text text-xl font-bold">Password</span>
@@ -64,21 +70,13 @@ const showPassword = () => {
                         <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
                     </div>
                     <button
-                        :class="inputForm.username === '' || inputForm.password === '' ? `btn btn-disabled   mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
+                        :class="inputForm.userName === '' || inputForm.password === '' ? `btn btn-disabled   mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
                         @click="loginHandler">Sign In</button>
                 </div>
+
             </div>
 
-
-            <div v-if="showLoginAlert" class="bg-red-100 rounded-md border-2 border-red-500 fixed top-5">
-                <div class="p-4">
-                    <div class="flex justify-between">
-                        <h1 class="text-xl font-bold mr-3 itbkk-message">Username or Password is incorrect</h1>
-                        <button class="px-4 py-2rounded" @click="showLoginAlert = false">✖</button>
-                    </div>
-                </div>
-            </div>
-
+            <AlertBox :showLoginAlert="showLoginAlert" />
         </div>
     </div>
 </template>

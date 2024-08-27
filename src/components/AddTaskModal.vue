@@ -114,15 +114,15 @@ onMounted(async () => {
           <h1 class="font-bold">Description :</h1>
           <textarea class="itbkk-description p-2 border-solid border-2 border-grey w-full h-[14rem] break-words"
             placeholder="Description here" v-model="description" />
-          <span class="text-gray-500 text-sm" :class="{ 'text-red-500': description.trim().length > 500}">{{
-            description.trim().length }} / 500 characters</span>
+          <span class="text-gray-500 text-sm" :class="{ 'text-red-500': description.trim().length > 500 }">{{
+    description.trim().length }} / 500 characters</span>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
           <textarea class="itbkk-assignees p-2 border-solid border-2 border-grey w-full break-words"
             placeholder="Assignees here" v-model.trim="assignees" />
           <span class="text-gray-500 text-sm" :class="{ 'text-red-500': assignees.trim().length > 30 }">{{
-            assignees.trim().length }} / 30 characters</span>
+    assignees.trim().length }} / 30 characters</span>
           <h1 class="font-bold pt-3">Status :</h1>
 
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status">
