@@ -18,12 +18,12 @@ console.log(props.name);
 
 
 if (props.description === null) {
-  props.description = "";
+    props.description = "";
 }
 
 if (props.description !== null) {
     props.description = props.description.trim()
-} 
+}
 
 const checkWhiteSpace = (title) => {
     return /^\s*$/.test(title);
@@ -59,7 +59,7 @@ const EditStatus = () => {
 const countOptionalCharacters = (text) => {
     if (text === null || text === undefined) {
         text = "";
-        return text.trim().length ;
+        return text.trim().length;
     } else {
         return text.trim().length;
     }
@@ -77,13 +77,13 @@ const countOptionalCharacters = (text) => {
                         placeholder="Name here" v-model="statusProp.name" />
                     <span class="text-gray-500 text-sm"
                         :class="{ 'text-red-500': statusProp.name.trim().length > 50 || statusProp.name.trim().length === 0 }">{{
-                        statusProp.name.trim().length }} / 50 characters</span>
+        statusProp.name.trim().length }} / 50 characters</span>
                     <h1 class="font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         rows="4" placeholder="Description here" v-model="statusProp.description" />
                     <span :class="{ 'text-red-500': countOptionalCharacters(statusProp.description) > 200 }"
-                        class="text-gray-500 text-sm">{{ countOptionalCharacters(statusProp.description)}} / 200
+                        class="text-gray-500 text-sm">{{ countOptionalCharacters(statusProp.description) }} / 200
                         characters
                     </span>
                 </div>

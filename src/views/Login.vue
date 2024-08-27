@@ -3,6 +3,8 @@ import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
 import { Authentication } from "@/stores/Authentication.js";
+
+import AlertBox from "@/components/AlertBox.vue";
 const router = useRouter();
 const showLoginAlert = ref(false);
 const authenStore = Authentication();
@@ -24,6 +26,9 @@ async function loginHandler() {
         authenStore.setIsAuthenticated(true);
     } else if (data === "Username or Password is incorrect") {
         showLoginAlert.value = true; 
+        setTimeout(() => {
+            showLoginAlert.value = false;
+        }, 3000);
         authenStore.setIsAuthenticated(false);
     } else {
         alert("Something went wrong: " + data);
@@ -43,7 +48,7 @@ const showPassword = () => {
 
 <template>
     <div class="text-black fixed z-10 inset-0 overflow-y-auto">
-        <div class=" bg-slate-200 min-h-screen flex items-center justify-center">
+        <div class="bg-gradient-to-tr from-violet-500 to-orange-300 min-h-screen flex items-center justify-center">
             <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
                 <h1 class="text-3xl font-bold text-center mb-10">Welcome To ITB-KK</h1>
 
@@ -70,16 +75,7 @@ const showPassword = () => {
 
             </div>
 
-
-            <div v-if="showLoginAlert" class="bg-red-100 rounded-md border-2 border-red-500 fixed top-5">
-                <div class="p-4">
-                    <div class="flex justify-between">
-                        <h1 class="text-xl font-bold mr-3 itbkk-message">Username or Password is incorrect</h1>
-                        <button class="px-4 py-2rounded" @click="showLoginAlert = false">✖</button>
-                    </div>
-                </div>
-            </div>
-
+            <AlertBox :showLoginAlert="showLoginAlert" />
         </div>
     </div>
 </template>

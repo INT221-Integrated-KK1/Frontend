@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed} from "vue";
+import { ref, onMounted, computed } from "vue";
 import { getItemById, getItems } from "../libs/fetchUtils.js";
 import { useRoute, useRouter } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
@@ -10,7 +10,7 @@ const router = useRouter();
 const emit = defineEmits(['closed'])
 
 const props = defineProps({
-  id: Number  
+  id: Number
 });
 
 const routeId = ref(null);
@@ -37,8 +37,8 @@ const EmptyStyle = "italic text-slate-400";
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided";
 
-const getTaskProp = (propName) => 
-computed(() => (task.value ? task.value[propName] : ""));
+const getTaskProp = (propName) =>
+  computed(() => (task.value ? task.value[propName] : ""));
 
 const title = getTaskProp("title");
 const description = getTaskProp("description");
@@ -75,18 +75,14 @@ const formatToLocalTime = (dateTimeString) => {
         <div class="col-start-1 col-span-3">
           <h1 class="font-bold text-2xl py-2 mb-2">Task Detail</h1>
           <h1 class="font-bold">Title :</h1>
-          <div
-            class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-            v-text="title"
-          ></div>
+          <div class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-text="title"></div>
         </div>
         <hr class="col-start-1 col-span-3" />
         <div class="col-start-1 col-span-2">
           <h1 class="font-bold">Description :</h1>
           <div
             class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words"
-            :class="description === null ? EmptyStyle : ''"
-          >
+            :class="description === null ? EmptyStyle : ''">
             {{ description === null ? EmptyDescriptionText : description }}
           </div>
         </div>
@@ -94,13 +90,12 @@ const formatToLocalTime = (dateTimeString) => {
           <h1 class="font-bold">Assignees :</h1>
           <div
             class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full break-words"
-            :class="assignees === null ? EmptyStyle : ''" 
-          >
+            :class="assignees === null ? EmptyStyle : ''">
             {{ assignees === null ? EmptyAssigneeText : assignees }}
           </div>
           <h1 class="font-bold">Status :</h1>
-         <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status" disabled>
-      
+          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status" disabled>
+
             <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status">
               {{ status.name }}
             </option>

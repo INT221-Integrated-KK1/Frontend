@@ -5,7 +5,9 @@ import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import AddStatusModal from "@/components/AddStatusModal.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
+import AlertBox from "@/components/AlertBox.vue";
 
+const tableType = "status";
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
 const isDefault = (status) => status.name === "No Status";
@@ -23,19 +25,19 @@ onMounted(async () => {
 
 // ----------------------------------- add handler -----------------------------------
 
-const showNewTaskAdded = ref(false);
-const showNewTaskError = ref(false);
-const addedStatusTitle = ref("");
+const showAdded = ref(false);
+const showAddedError = ref(false);
+const addedTitle = ref("");
 
 const handleStatusAdded = (items) => {
     if (items !== undefined) {
         statusmanager.value.addStatus(items);
         todo.value = statusmanager.value.getStatus();
-        showNewTaskAdded.value = true;
+        showAdded.value = true;
         setTimeout(() => {
-            showNewTaskAdded.value = false;
+            showAdded.value = false;
         }, 3000);
-        addedStatusTitle.value = items.name;
+        addedTitle.value = items.name;
     } else {
         showUpdatedError.value = true;
         setTimeout(() => {
@@ -145,8 +147,8 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
 // ----------------------------------- delete handler -----------------------------------
 
 const deleteModal = ref(false);
-const showDelete = ref(false);
-const showDeleteError = ref(false);
+const showDeleted = ref(false);
+const showDeletedError = ref(false);
 
 const closeDeleteModal = () => {
     deleteModal.value = false;
@@ -161,16 +163,16 @@ async function showDeleteModals(status) {
             taskDetails.value = items;
             deleteModal.value = true;
         } else {
-            showDeleteError.value = true;
+            showDeletedError.value = true;
             setTimeout(() => {
-                showDeleteError.value = false;
+                showDeletedError.value = false;
             }, 3000);
         }
     } catch (error) {
         console.log(error);
-        showDeleteError.value = true;
+        showDeletedError.value = true;
         setTimeout(() => {
-            showDeleteError.value = false;
+            showDeletedError.value = false;
         }, 3000);
     }
 };
@@ -180,114 +182,28 @@ const handleStatusDeleted = (deletedid) => {
     console.log(deletedid);
     todo.value = statusmanager.value.getStatus();
     deleteModal.value = false;
-    showDelete.value = true;
+    showDeleted.value = true;
     setTimeout(() => {
-        showDelete.value = false;
+        showDeleted.value = false;
     }, 3000);
 }
 
 
 const handleStatusDeletedNotfound = () => {
     console.log("Received status not found: ");
-    showDeleteError.value = true;
+    showDeletedError.value = true;
     setTimeout(() => {
-        showDeleteError.value = false;
+        showDeletedError.value = false;
     }, 3000);
 };
 
 </script>
 
 <template>
-    
-    <!-- add status alert  -->
-
-    <div class="flex justify-center items-center">
-        <div v-if="showNewTaskAdded" class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-            <div class="p-4">
-                <div class="flex justify-between mb-3">
-                    <h1 class="text-2xl font-bold">Success</h1>
-                    <button @click="showNewTaskAdded = false" class="px-4 py-2rounded">✖</button>
-                </div>
-                <p class="itbkk-message text-lg font-bold break-words">
-                    The status "{{ addedStatusTitle }}" is added successfully
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="flex justify-center items-center">
-        <div v-if="showNewTaskError" class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
-            <div class="p-4">
-                <div class="flex justify-between mb-3">
-                    <h1 class="text-2xl font-bold">Error</h1>
-                    <button @click="showNewTaskError = false" class="px-4 py-2rounded">✖</button>
-                </div>
-                <p class="itbkk-message text-lg font-bold break-words">
-                    An error occurred adding the new status
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- edit status alert -->
-
-    <div v-if="showUpdated" class="flex justify-center items-center">
-        <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-            <div class="p-4">
-                <div class="flex justify-between mb-3">
-                    <h1 class="text-2xl font-bold">Success</h1>
-                    <button @click="showUpdated = false" class="px-4 py-2rounded">✖</button>
-                </div>
-                <p class="itbkk-message text-lg font-bold break-words">The status "{{ updatedStatusName }}" is updated
-                    successfully
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div v-if="showUpdatedError" class="flex justify-center items-center">
-        <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
-            <div class="p-4">
-                <div class="flex justify-between mb-3">
-                    <h1 class="text-2xl font-bold">Error</h1>
-                    <button @click="showUpdatedError = false" class="px-4 py-2 rounded">✖</button>
-                </div>
-                <p class="itbkk-message text-lg font-bold">
-                    An error has occurred, the status does not exist
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- delete status alert -->
-
-    <div v-if="showDelete" class="flex justify-center items-center">
-        <div class="bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
-            <div class="p-4">
-                <div class="flex justify-between mb-3">
-                    <h1 class="text-2xl font-bold">Success</h1>
-                    <button @click="showDelete = false" class="px-4 py-2rounded">✖</button>
-                </div>
-                <p class="itbkk-message text-lg font-bold break-words">The status is deleted
-                    successfully
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div v-if="showDeleteError" class="flex justify-center items-center">
-        <div class="bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
-            <div class="p-4">
-                <div class="flex justify-between mb-3">
-                    <h1 class="text-2xl font-bold">Error</h1>
-                    <button @click="showDeleteError = false" class="px-4 py-2 rounded">✖</button>
-                </div>
-                <p class="itbkk-message text-lg font-bold">
-                    An error has occurred, the status does not exist
-                </p>
-            </div>
-        </div>
-    </div>
+    <!-- Alert -->
+    <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError" :showDeleted="showDeleted"
+        :showDeletedError="showDeletedError" :showUpdated="showUpdated" :showUpdatedError="showUpdatedError"
+        :addedTitle="addedTitle" :updatedTitle="updatedTitle" />
 
 
     <div class="flex justify-end mr-52 mt-5">
@@ -297,7 +213,7 @@ const handleStatusDeletedNotfound = () => {
     </div>
 
     <!-- table -->
-    
+
     <div class="overflow-x-auto flex justify-center">
         <table class="table w-3/4 mt-10 border-solid border-2 border-black">
             <thead>
@@ -331,7 +247,7 @@ const handleStatusDeletedNotfound = () => {
                             <br>
                             <span>{{ status.description.substring(151, 200) }}</span>
                         </div>
-                        <div v-else>{{ status.description === null || status.description === "" ? "No Description Provided" : status.description }}</div>
+                        <div v-else>{{ status.description === null || status.description === "" ? "No Description   Provided" : status.description }}</div>
                     </td>
 
                     <td v-if="isDefault(status) == false">
