@@ -103,7 +103,7 @@ async function isAuthenticated(url, input) {
         ...input,
       }),
     });
-    const response = await res.text();
+    const response = await  res.json();
     console.log("response " + response);
     return response;
   } catch (error) {

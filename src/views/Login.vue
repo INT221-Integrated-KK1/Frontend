@@ -10,21 +10,22 @@ const showLoginAlert = ref(false);
 const authenStore = Authentication();
 
 let inputForm = reactive({
-    username: "",
+    userName: "",
     password: ""
 });
 
 async function loginHandler() {
-    if (inputForm.username === "" || inputForm.password === "") {
+    if (inputForm.userName === "" || inputForm.password === "") {
         alert("Please fill in the username and password");
         return;
     }
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
-    if (data === "Login successful") {
+    console.log(data);
+    if (data.detail === "Login Successful") {
         showLoginAlert.value = false;
         router.push("/task");
         authenStore.setIsAuthenticated(true);
-    } else if (data === "Username or Password is incorrect") {
+    } else if (data.message === "Username or Password is incorrect") {
         showLoginAlert.value = true; 
         setTimeout(() => {
             showLoginAlert.value = false;
@@ -48,7 +49,7 @@ const showPassword = () => {
 
 <template>
     <div class="text-black fixed z-10 inset-0 overflow-y-auto">
-        <div class="bg-gradient-to-tr from-violet-500 to-orange-300 min-h-screen flex items-center justify-center">
+        <div class="bg-slate-200 min-h-screen flex items-center justify-center">
             <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
                 <h1 class="text-3xl font-bold text-center mb-10">Welcome To ITB-KK</h1>
 
@@ -58,7 +59,7 @@ const showPassword = () => {
                     </label>
                     <div class="input-group ">
                         <input type="text" class="input input-bordered w-full itbkk-username"
-                            v-model="inputForm.username" placeholder="Type your username" :maxlength="50" />
+                            v-model="inputForm.userName" placeholder="Type your username" :maxlength="50" />
                     </div>
                     <label class="label mt-4">
                         <span class="label-text text-xl font-bold">Password</span>
@@ -69,7 +70,7 @@ const showPassword = () => {
                         <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
                     </div>
                     <button
-                        :class="inputForm.username === '' || inputForm.password === '' ? `btn btn-disabled   mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
+                        :class="inputForm.userName === '' || inputForm.password === '' ? `btn btn-disabled   mt-6 w-full itbkk-button-signin disabled` : `btn btn-primary mt-6 w-full itbkk-button-signin`"
                         @click="loginHandler">Sign In</button>
                 </div>
 
