@@ -21,11 +21,11 @@ async function loginHandler() {
     }
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
     console.log(data);
-    if (data.detail === "Login Successful") {
+    if (data.access_token) {
         showLoginAlert.value = false;
         router.push("/task");
         authenStore.setIsAuthenticated(true);
-    } else if (data.message === "Username or Password is incorrect") {
+    } else if (data.message === "Username or Password is incorrect.") {
         showLoginAlert.value = true; 
         setTimeout(() => {
             showLoginAlert.value = false;
