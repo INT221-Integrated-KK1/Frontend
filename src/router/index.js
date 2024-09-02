@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { Authentication } from "@/stores/Authentication.js";
 import TaskDetail from "@/components/TaskDetail.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
@@ -79,9 +78,7 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
-  const authenStore = Authentication();
-  const isAuthenticated = authenStore.getIsAuthenticated();
-  if (to.name !== "login" && !isAuthenticated) next({ name: "login" });
+  if (to.name !== "login" && !localStorage.getItem('token')) next({ name: "login" });
   else next();
 });
 
