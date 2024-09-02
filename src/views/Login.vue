@@ -2,13 +2,12 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
-import { Authentication } from "@/stores/Authentication.js";
+import { jwtDecode } from "jwt-decode"
+
 
 import AlertBox from "@/components/AlertBox.vue";
 const router = useRouter();
 const showLoginAlert = ref(false);
-const authenStore = Authentication();
-
 let inputForm = reactive({
     userName: "",
     password: ""
@@ -20,17 +19,17 @@ async function loginHandler() {
         return;
     }
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
-    console.log(data);
     if (data.access_token) {
         showLoginAlert.value = false;
         router.push("/task");
-        authenStore.setIsAuthenticated(true);
+        localStorage.setItem('token', data.access_token);
+        const decoded = jwtDecode(data.access_token);
+        localStorage.setItem('user', decoded.name);
     } else if (data.message === "Username or Password is incorrect.") {
         showLoginAlert.value = true; 
         setTimeout(() => {
             showLoginAlert.value = false;
         }, 3000);
-        authenStore.setIsAuthenticated(false);
     } else {
         alert("Something went wrong: " + data);
     }
@@ -66,7 +65,8 @@ const showPassword = () => {
                     </label>
                     <div class="input-group">
                         <input type="password" class="input input-bordered w-full itbkk-password" id="password"
-                            v-model="inputForm.password" placeholder="Type your password" :maxlength="14" />
+                            v-model="inputForm.password" placeholder="Type your password" :maxlength="14"
+                            autocomplete="on" />
                         <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
                     </div>
                     <button
