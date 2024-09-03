@@ -2,8 +2,14 @@ import router from "../router/index.js";
 
 async function getItems(url) {
   try {
-    const data = await fetch(url);
-    const items = await data.json();
+    const token = localStorage.getItem("token");
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const items = await response.json();
     return items;
   } catch (error) {
     console.log(`error: ${error}`);
@@ -11,7 +17,13 @@ async function getItems(url) {
 }
 async function getItemById(url, id) {
   try {
-    const data = await fetch(`${url}/${id}`);
+    const token = localStorage.getItem("token");
+    const data = await fetch(`${url}/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     if (data.ok) {
       const item = await data.json();
       return item;
@@ -32,9 +44,13 @@ async function getItemById(url, id) {
 }
 
 async function deleteItemById(url, id) {
+  const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${url}/${id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return res.status;
   } catch (error) {
@@ -43,10 +59,12 @@ async function deleteItemById(url, id) {
 }
 
 async function addItem(url, newItem) {
+  const token = localStorage.getItem("token");
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
@@ -61,10 +79,12 @@ async function addItem(url, newItem) {
 }
 
 async function editItem(url, id, editItem) {
+  const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${url}/${id}`, {
       method: "PUT",
       headers: {
+        Authorization: `Bearer ${token}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
@@ -79,9 +99,13 @@ async function editItem(url, id, editItem) {
 }
 
 async function deleteAndTransfer(url, id, transferId) {
+  const token = localStorage.getItem("token");
   try {
     const response = await fetch(`${url}/${id}/${transferId}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     if (!response.ok) {
       throw new Error(`Failed to delete and transfer item: ${response.status}`);
@@ -91,7 +115,6 @@ async function deleteAndTransfer(url, id, transferId) {
     console.log(error);
   }
 }
-
 async function isAuthenticated(url, input) {
   try {
     const res = await fetch(url, {
@@ -103,7 +126,7 @@ async function isAuthenticated(url, input) {
         ...input,
       }),
     });
-    const response = await  res.json();
+    const response = await res.json();
     console.log("response " + response);
     return response;
   } catch (error) {
