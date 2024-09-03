@@ -79,7 +79,7 @@ async function addItem(url, newItem) {
 }
 
 async function editItem(url, id, editItem) {
-  
+
   const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${url}/${id}`, {
@@ -100,7 +100,6 @@ async function editItem(url, id, editItem) {
 }
 
 async function deleteAndTransfer(url, id, transferId) {
-  
   const token = localStorage.getItem("token");
   try {
     const response = await fetch(`${url}/${id}/${transferId}`, {
@@ -128,7 +127,7 @@ async function isAuthenticated(url, input) {
         ...input,
       }),
     });
-    const response = await  res.json();
+    const response = await res.json();
     console.log("response " + response);
     return response;
   } catch (error) {
