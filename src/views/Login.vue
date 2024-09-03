@@ -5,6 +5,7 @@ import { isAuthenticated } from "../libs/fetchUtils.js";
 // import { jwtDecode } from "jwt-decode"
 
 
+
 import AlertBox from "@/components/AlertBox.vue";
 const router = useRouter();
 const showLoginAlert = ref(false);
@@ -66,6 +67,7 @@ const showPassword = () => {
                     <div class="input-group">
                         <input type="password" class="input input-bordered w-full itbkk-password" id="password"
                             v-model="inputForm.password" placeholder="Type your password" :maxlength="14"/>
+
                         <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
                     </div>
                     <button

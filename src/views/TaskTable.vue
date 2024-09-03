@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
 import { TaskManagement } from "@/libs/TaskManagement.js";
-import { StatusManagement } from "@/libs/StatusManagement.js";
 import AddTaskModal from "@/components/AddTaskModal.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
@@ -10,7 +9,6 @@ import TaskDetail from "@/components/TaskDetail.vue";
 import Sort from "@/components/Sort.vue";
 import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
-
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
 const taskDetails = ref({});
@@ -306,7 +304,6 @@ const getStatusClass = (status) => {
   <!-- filter -->
   <div class="flex justify-between mx-52 mt-5 items-center">
     <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
-
     <!-- add task -->
     <div class="flex">
       <router-link :to="{ name: 'addtask' }">
@@ -328,8 +325,8 @@ const getStatusClass = (status) => {
 
   <!-- table -->
 
-  <div class="overflow-x-auto flex justify-center">
-    <table class="table w-3/4 mt-10 border-solid border-2 border-black">
+  <div class="overflow-x-auto flex justify-center ">
+    <table class="table w-3/4 mt-5 border-solid border-2 rounded-m border-black">
       <thead>
         <tr class="bg-orange-200 
          border-solid border-2 border-black text-xl text-black">

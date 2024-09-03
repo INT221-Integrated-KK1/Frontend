@@ -79,6 +79,7 @@ async function addItem(url, newItem) {
 }
 
 async function editItem(url, id, editItem) {
+
   const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${url}/${id}`, {
@@ -133,6 +134,7 @@ async function isAuthenticated(url, input) {
     console.log(`error: ${error}`);
   }
 }
+
 
 export {
   getItems,

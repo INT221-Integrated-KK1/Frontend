@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { Authentication } from "@/stores/Authentication.js";
 import TaskDetail from "@/components/TaskDetail.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
@@ -76,6 +75,7 @@ const router = createRouter({
     },
   ],
 });
+
 
 
 
