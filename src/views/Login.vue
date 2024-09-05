@@ -2,11 +2,9 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
-// import { jwtDecode } from "jwt-decode"
-
-
-
+import { jwtDecode } from "jwt-decode"
 import AlertBox from "@/components/AlertBox.vue";
+
 const router = useRouter();
 const showLoginAlert = ref(false);
 let inputForm = reactive({
@@ -24,8 +22,9 @@ async function loginHandler() {
         showLoginAlert.value = false;
         router.push("/task");
         localStorage.setItem('token', data.access_token);
-        // const decoded = jwtDecode(data.access_token);
-        // localStorage.setItem('user', decoded.name);
+        const decode = jwtDecode(data.access_token);
+        localStorage.setItem('username', decode.name);
+        localStorage.setItem('tokenexp', decode.exp);
     } else if (data.message === "Username or Password is incorrect.") {
         showLoginAlert.value = true;
         setTimeout(() => {
@@ -43,8 +42,9 @@ const showPassword = () => {
     } else {
         password.type = "password";
     }
-
 }
+
+
 </script>
 
 <template>

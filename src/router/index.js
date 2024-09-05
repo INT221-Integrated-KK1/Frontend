@@ -6,7 +6,6 @@ import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 import Login from "@/views/Login.vue";
 
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -77,6 +76,18 @@ const router = createRouter({
 });
 
 
-
+router.beforeEach((to, from, next) => {
+  const isTokenExpire = localStorage.getItem("tokenexp");
+  if (isTokenExpire) {
+    const tokenExpire = new Date(isTokenExpire);
+    const now = new Date();
+    if (tokenExpire < now) {
+      localStorage.clear();
+    }
+  }
+  if (to.name !== "login" && !localStorage.getItem("token"))
+    next({ name: "login" });
+  else next();
+});
 
 export default router;

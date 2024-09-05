@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
+import Header from "@/components/Header.vue";
 import AddStatusModal from "@/components/AddStatusModal.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
@@ -200,6 +201,7 @@ const handleStatusDeletedNotfound = () => {
 </script>
 
 <template>
+    <Header />
     <!-- Alert -->
     <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError" :showDeleted="showDeleted"
         :showDeletedError="showDeletedError" :showUpdated="showUpdated" :showUpdatedError="showUpdatedError"
