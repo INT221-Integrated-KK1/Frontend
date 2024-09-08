@@ -18,14 +18,15 @@ async function loginHandler() {
         return;
     }
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
+    const decode = jwtDecode(data.access_token);
+    localStorage.setItem('username', decode.name);
+    localStorage.setItem('tokenexp', decode.exp);
     if (data.access_token) {
         showLoginAlert.value = false;
         router.push("/task");
         localStorage.setItem('token', data.access_token);
-        const decode = jwtDecode(data.access_token);
-        localStorage.setItem('username', decode.name);
-        localStorage.setItem('tokenexp', decode.exp);
-    } else if (data.message === "Username or Password is incorrect.") {
+        console.log(data.access_token);
+    } else if (data.message === "Username or Password is incorrect." || decode === undefined || decode === null) {
         showLoginAlert.value = true;
         setTimeout(() => {
             showLoginAlert.value = false;
@@ -66,7 +67,7 @@ const showPassword = () => {
                     </label>
                     <div class="input-group">
                         <input type="password" class="input input-bordered w-full itbkk-password" id="password"
-                            v-model="inputForm.password" placeholder="Type your password" :maxlength="14"/>
+                            v-model="inputForm.password" placeholder="Type your password" :maxlength="14" />
 
                         <input type="checkbox" class="mt-4" @click="showPassword"> Show Password
                     </div>
