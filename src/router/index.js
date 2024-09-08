@@ -5,6 +5,7 @@ import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 import Login from "@/views/Login.vue";
+import Board from "@/views/Board.vue";
 
 
 const router = createRouter({
@@ -18,6 +19,11 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: Login,
+    },
+    {
+      path: "/board",
+      name: "board",
+      component: Board,
     },
     {
       path: "/task",
