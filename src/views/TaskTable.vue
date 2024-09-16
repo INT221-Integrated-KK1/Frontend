@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
 import { TaskManagement } from "@/libs/TaskManagement.js";
+import Header from "@/components/Header.vue";
 import AddTaskModal from "@/components/AddTaskModal.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
@@ -296,6 +297,7 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
+  <Header />
   <!-- Alert -->
   <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError" :showDeleted="showDeleted"
     :showDeletedError="showDeletedError" :showUpdated="showUpdated" :showUpdatedError="showUpdatedError"
