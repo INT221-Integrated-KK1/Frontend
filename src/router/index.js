@@ -26,6 +26,10 @@ const router = createRouter({
       component: Board,
     },
     {
+      path: '/board/add',
+      component: Board, 
+    },
+    {
       path: "/task",
       name: "task",
       component: () => import("@/views/TaskTable.vue"),
