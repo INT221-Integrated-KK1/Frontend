@@ -2,7 +2,7 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
-// import { jwtDecode } from "jwt-decode"
+import { jwtDecode } from "jwt-decode"
 
 
 
@@ -24,8 +24,9 @@ async function loginHandler() {
         showLoginAlert.value = false;
         router.push("/task");
         localStorage.setItem('token', data.access_token);
-        // const decoded = jwtDecode(data.access_token);
-        // localStorage.setItem('user', decoded.name);
+        
+        const decoded = jwtDecode(data.access_token);
+        localStorage.setItem('user', decoded.name);
     } else if (data.message === "Username or Password is incorrect.") {
         showLoginAlert.value = true;
         setTimeout(() => {

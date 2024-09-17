@@ -1,14 +1,16 @@
 <script setup>
-import { ref } from 'vue';
-import { computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
+// Emit events to parent component
+const emit = defineEmits(['close', 'save-board']);
 
-const emit = defineEmits(['close']);
+const name = localStorage.getItem('user');
 
-const boardName = ref('');
+// Set default board name
+const boardName = ref(`${name} personal board`);
 const errorMessage = ref('');
 
-
+// Validate the input to ensure it meets the criteria
 const isValid = computed(() => {
   if (boardName.value.trim() === '') {
     errorMessage.value = 'Board name cannot be empty';
@@ -21,23 +23,26 @@ const isValid = computed(() => {
   return true;
 });
 
-
+// Save the board and emit the board name to the parent component
 const saveBoard = () => {
   if (isValid.value) {
-    console.log('Board saved:', boardName.value); 
+    emit('save-board', boardName.value); // Emit the board name to parent
     closeModal();
   }
 };
 
-
+// Close the modal and reset form fields
 const closeModal = () => {
-  boardName.value = '';
+  boardName.value = 'itkkk.olarn personal board'; // Reset to default value
   errorMessage.value = '';
   emit('close');
 };
 
-
+// Calculate the character count
 const characterCount = computed(() => boardName.value.length);
+
+// Check if Save button should be enabled or disabled
+const isSaveButtonDisabled = computed(() => boardName.value.trim() === '');
 </script>
 
 <template>
@@ -54,20 +59,24 @@ const characterCount = computed(() => boardName.value.length);
         placeholder="Enter board name"
       />
 
-    
+      <!-- Show character count in format x/120 -->
       <p class="text-gray-600 mb-2">{{ characterCount }}/120</p>
 
-      
+      <!-- Display error message if there's an issue -->
       <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
 
       <div class="flex justify-end space-x-4">
-        <button @click="saveBoard" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 itbkk-button-ok">Save</button>
-        <button @click="closeModal" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 itbkk-button-cancel">Cancel</button>
+        <!-- Disable Save button if board name is empty -->
+        <button 
+          @click="saveBoard" 
+          :disabled="isSaveButtonDisabled"
+          class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
+          Save
+        </button>
+        <button @click="closeModal" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
