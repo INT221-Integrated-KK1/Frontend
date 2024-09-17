@@ -1,6 +1,5 @@
 <script setup>
 import router from '@/router';
-
 const name = localStorage.getItem('username');
 
 function signout() {
