@@ -79,9 +79,11 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const haveToken = localStorage.getItem("token");
+  // typeof haveToken === "string"
+  console.log(typeof haveToken);
 
   if (haveToken) {
-    if (haveToken.split(".").length !== 3 || !jwtDecode(localStorage.getItem("token"))) {
+    if (haveToken.split(".").length !== 3 || typeof haveToken !== "string") {
       localStorage.clear();
     } else {
       try {
@@ -92,6 +94,7 @@ router.beforeEach((to, from, next) => {
           localStorage.clear();
         }
       } catch (error) {
+        console.log(error);
         localStorage.clear();
       }
     }
