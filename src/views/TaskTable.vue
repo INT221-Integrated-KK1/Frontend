@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
 import { TaskManagement } from "@/libs/TaskManagement.js";
+import Header from "@/components/Header.vue";
 import AddTaskModal from "@/components/AddTaskModal.vue";
 import EditTaskModal from "@/components/EditTaskModal.vue";
 import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
@@ -11,7 +12,6 @@ import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
-const taskDetails = ref({});
 
 const taskId = ref(null);
 const EmptyStyle = "italic text-slate-400 font-semibold";
@@ -102,7 +102,6 @@ const closeEditModal = () => {
 async function editHandler(id) {
   const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
   if (items !== undefined) {
-    taskDetails.value = items;
     showEditModal.value = true;
     console.log(items);
   } else {
@@ -148,7 +147,7 @@ const saveChanges = async (getTaskProp, id) => {
     title: getTaskProp.title,
     description: getTaskProp.description,
     assignees: getTaskProp.assignees,
-    status: getTaskProp.status
+    status: getTaskProp.status.id
   };
   console.log("getTaskProp:", getTaskProp);
   console.log("Edited task:", editedTask.status);
@@ -296,6 +295,7 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
+  <Header />
   <!-- Alert -->
   <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError" :showDeleted="showDeleted"
     :showDeletedError="showDeletedError" :showUpdated="showUpdated" :showUpdatedError="showUpdatedError"
@@ -407,8 +407,7 @@ const getStatusClass = (status) => {
   </Teleport>
 
   <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeEditModal()" :taskDetailsza="taskDetails"
-      @saveChanges="saveChanges" />
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal()" @saveChanges="saveChanges" />
   </Teleport>
 
   <Teleport to="body">

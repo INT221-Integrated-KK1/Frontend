@@ -9,8 +9,14 @@ async function getItems(url) {
         Authorization: `Bearer ${token}`,
       },
     });
-    const items = await response.json();
-    return items;
+    if (response.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+      console.error(`Error fetching items: ${response.status}`);
+    } else if (response.ok) {
+      const items = await response.json();
+      return items;
+    }
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -32,6 +38,10 @@ async function getItemById(url, id) {
       if (data.status === 404) {
         //window.alert('The requested task does not exist');
         router.go(-1);
+      } else if (data.status === 401) {
+        localStorage.clear();
+        router.push("/login");
+        console.error(`Error fetching task details: ${data.status}`);
       }
       // other errors
       console.error(`Error fetching task details: ${data.status}`);
@@ -52,7 +62,13 @@ async function deleteItemById(url, id) {
         Authorization: `Bearer ${token}`,
       },
     });
-    return res.status;
+    if (res.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+      console.error(`Error fetching items: ${response.status}`);
+    } else if (res.ok) {
+      return res.status;
+    }
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -71,15 +87,21 @@ async function addItem(url, newItem) {
         ...newItem,
       }),
     });
-    const addedItem = await res.json();
-    return addedItem;
+
+    if (res.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+      console.error(`Error fetching items: ${response.status}`);
+    } else if (res.ok) {
+      const addedItem = await res.json();
+      return addedItem;
+    }
   } catch (error) {
     console.log(`error: ${error}`);
   }
 }
 
 async function editItem(url, id, editItem) {
-
   const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${url}/${id}`, {
@@ -92,8 +114,14 @@ async function editItem(url, id, editItem) {
         ...editItem,
       }),
     });
-    const editedItem = await res.json();
-    return editedItem;
+    if (res.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+      console.error(`Error fetching items: ${response.status}`);
+    } else if (res.ok) {
+      const editedItem = await res.json();
+      return editedItem;
+    }
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -108,10 +136,15 @@ async function deleteAndTransfer(url, id, transferId) {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+      console.error(`Error fetching items: ${response.status}`);
+    } else if (!response.ok) {
       throw new Error(`Failed to delete and transfer item: ${response.status}`);
+    } else if (res.ok) {
+      return response.status;
     }
-    return response.status; // Assuming you only need the status code
   } catch (error) {
     console.log(error);
   }
@@ -128,13 +161,15 @@ async function isAuthenticated(url, input) {
       }),
     });
     const response = await res.json();
-    console.log("response " + response);
+    if (response.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+    }
     return response;
   } catch (error) {
     console.log(`error: ${error}`);
   }
 }
-
 
 export {
   getItems,

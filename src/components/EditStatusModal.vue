@@ -3,26 +3,43 @@ import { onMounted, ref, reactive, computed } from "vue";
 import { getItemById } from "../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 
-const { params } = useRoute();
-const id = Number(params.id);
+
 const emit = defineEmits(['saveChanges', 'close'])
 
-const status = ref(null);
+const { params } = useRoute();
+const id = Number(params.id);
+console.log(id);
+
 const isLoaded = ref(false);
 
-const receivedProps = defineProps({
-    taskDetailsProp: Object
+const status = reactive({
+    id: 1,
+    name: "",
+    description: ""
 });
-const props = reactive(receivedProps.taskDetailsProp);
-console.log(props.name);
+console.log(status);
 
+onMounted(async () => {
+    try {
+        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+        status.id = items.id;
+        status.name = items.name;
+        status.description = items.description;
+        console.log(status.id);
+        console.log(status.name);
 
-if (props.description === null) {
-    props.description = "";
+        isLoaded.value = true;
+    } catch (error) {
+        console.error("Error fetching task details:", error)
+    }
+});
+
+if (status.name === null) {
+    status.name = "";
 }
 
-if (props.description !== null) {
-    props.description = props.description.trim()
+if (status.description === null) {
+    status.description = "";
 }
 
 const checkWhiteSpace = (title) => {
@@ -30,29 +47,15 @@ const checkWhiteSpace = (title) => {
 };
 
 
-const statusProp = reactive({
-    id: props.id,
-    name: props.name.trim(),
-    description: props.description
-});
+const initialTask = ref(JSON.stringify(status));
+const isFormModified = computed(() => JSON.stringify(status) !== initialTask.value);
 
-const initialTask = ref(JSON.stringify(statusProp));
-const isFormModified = computed(() => JSON.stringify(statusProp) !== initialTask.value);
 
-onMounted(async () => {
-    try {
-        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
-        status.value = items;
-        isLoaded.value = true;
-    } catch (error) {
-        console.error("Error fetching task details:", error)
-    }
-});
 
 const EditStatus = () => {
     if (isFormModified.value) {
         isLoaded.value = false;
-        emit('saveChanges', statusProp, id);
+        emit('saveChanges', status, id);
     }
 }
 
@@ -74,16 +77,16 @@ const countOptionalCharacters = (text) => {
                     <h1 class="font-bold text-2xl py-2 mb-2">Edit new status</h1>
                     <h1 class="font-bold mt-2">Name : <span class="text-red-600">*</span></h1>
                     <input class="itbkk-status-name p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        placeholder="Name here" v-model="statusProp.name" />
+                        placeholder="Name here" v-model="status.name" />
                     <span class="text-gray-500 text-sm"
-                        :class="{ 'text-red-500': statusProp.name.trim().length > 50 || statusProp.name.trim().length === 0 }">{{
-        statusProp.name.trim().length }} / 50 characters</span>
+                        :class="{ 'text-red-500': status.name.trim().length > 50 || status.name.trim().length === 0 }">{{
+                            status.name.trim().length }} / 50 characters</span>
                     <h1 class="font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-                        rows="4" placeholder="Description here" v-model="statusProp.description" />
-                    <span :class="{ 'text-red-500': countOptionalCharacters(statusProp.description) > 200 }"
-                        class="text-gray-500 text-sm">{{ countOptionalCharacters(statusProp.description) }} / 200
+                        rows="4" placeholder="Description here" v-model="status.description" />
+                    <span :class="{ 'text-red-500': countOptionalCharacters(status.description) > 200 }"
+                        class="text-gray-500 text-sm">{{ countOptionalCharacters(status.description) }} / 200
                         characters
                     </span>
                 </div>
@@ -91,7 +94,7 @@ const countOptionalCharacters = (text) => {
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
                         <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
-                            @click="EditStatus" :disabled="!isFormModified || checkWhiteSpace(statusProp.name)">
+                            @click="EditStatus" :disabled="!isFormModified || checkWhiteSpace(status.name)">
                             Save
                         </button>
                     </router-link>

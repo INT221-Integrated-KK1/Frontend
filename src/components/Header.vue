@@ -1,9 +1,13 @@
 <script setup>
 import router from '@/router';
+const name = localStorage.getItem('username');
 
-const name = localStorage.getItem('user');
-
-
+function signout() {
+    localStorage.removeItem('username');
+    localStorage.removeItem('token');
+    localStorage.clear();
+    router.push({ name: 'login' });
+}
 </script>
 
 <template>

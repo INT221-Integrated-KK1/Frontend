@@ -7,7 +7,8 @@ import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 import Login from "@/views/Login.vue";
 import Board from "@/views/Board.vue";
 
-
+import { jwtDecode } from "jwt-decode";
+import { onMounted } from "vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -85,6 +86,37 @@ const router = createRouter({
       component: () => import("@/views/NotFound.vue"),
     },
   ],
+});
+
+
+router.beforeEach((to, from, next) => {
+  const haveToken = localStorage.getItem("token");
+  // typeof haveToken === "string"
+  console.log(typeof haveToken);
+
+  if (haveToken) {
+    if (haveToken.split(".").length !== 3 || typeof haveToken !== "string") {
+      localStorage.clear();
+    } else {
+      try {
+        const decodedToken = jwtDecode(haveToken);
+        const tokenExpire = new Date(decodedToken.exp * 1000);
+        const now = new Date();
+        if (tokenExpire < now) {
+          localStorage.clear();
+        }
+      } catch (error) {
+        console.log(error);
+        localStorage.clear();
+      }
+    }
+  } else {
+    localStorage.clear();
+  }
+
+  if (to.name !== "login" && !localStorage.getItem("token"))
+    next({ name: "login" });
+  else next();
 });
 
 export default router;

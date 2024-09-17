@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
+import Header from "@/components/Header.vue";
 import AddStatusModal from "@/components/AddStatusModal.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
@@ -58,12 +59,11 @@ const closeEditModal = () => {
     editModal.value = false;
 };
 
-const taskDetails = ref({});
-async function showEditModals(status) {
+
+async function showEditModals(id) {
     try {
-        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
+        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
         if (items !== undefined) {
-            taskDetails.value = items;
             editModal.value = true;
         } else {
             showUpdatedError.value = true;
@@ -160,8 +160,6 @@ async function showDeleteModals(status) {
         console.log(items);
         if (items !== undefined) {
             deleteModal.value = true;
-            taskDetails.value = items;
-            deleteModal.value = true;
         } else {
             showDeletedError.value = true;
             setTimeout(() => {
@@ -200,10 +198,11 @@ const handleStatusDeletedNotfound = () => {
 </script>
 
 <template>
+    <Header />
     <!-- Alert -->
     <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError" :showDeleted="showDeleted"
         :showDeletedError="showDeletedError" :showUpdated="showUpdated" :showUpdatedError="showUpdatedError"
-        :addedTitle="addedTitle" :updatedTitle="updatedTitle" />
+        :addedTitle="addedTitle" />
 
 
     <div class="flex justify-end mr-52 mt-5">
@@ -252,7 +251,7 @@ const handleStatusDeletedNotfound = () => {
 
                     <td v-if="isDefault(status) == false">
                         <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }">
-                            <button class="btn mr-5 h-12" @click="showEditModals(status)">edit</button>
+                            <button class="btn mr-5 h-12" @click="showEditModals(status.id)">edit</button>
                         </RouterLink>
                         <RouterLink :to="{ name: 'deletestatus', params: { id: status.id } }">
                             <button class="btn h-12" @click="showDeleteModals(status)">delete</button>
@@ -267,8 +266,7 @@ const handleStatusDeletedNotfound = () => {
         <AddStatusModal @statusAdded="handleStatusAdded" />
     </router-link>
     <Teleport to="body">
-        <EditStatusModal v-if="editModal == true" @close="closeEditModal" @saveChanges="saveChanges"
-            :taskDetailsProp="taskDetails" />
+        <EditStatusModal v-if="editModal" @close="closeEditModal" @saveChanges="saveChanges" />
     </Teleport>
     <Teleport to="body">
         <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted"
