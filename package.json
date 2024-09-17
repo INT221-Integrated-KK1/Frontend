@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base /kk1/",
+    "build": "vite build --base=/kk1/",
     "preview": "vite preview",
     "cy:open": "cypress open",
     "test:e2e": "start-server-and-test preview http://localhost:5173 'cypress run --e2e'",
