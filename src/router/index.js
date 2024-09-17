@@ -5,6 +5,8 @@ import DeleteTaskModal from "@/components/DeleteTaskModal.vue";
 import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 import Login from "@/views/Login.vue";
+import Board from "@/views/Board.vue";
+
 import { jwtDecode } from "jwt-decode";
 import { onMounted } from "vue";
 
@@ -19,6 +21,15 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: Login,
+    },
+    {
+      path: "/board",
+      name: "board",
+      component: Board,
+    },
+    {
+      path: '/board/add',
+      component: Board, 
     },
     {
       path: "/task",
@@ -76,6 +87,7 @@ const router = createRouter({
     },
   ],
 });
+
 
 router.beforeEach((to, from, next) => {
   const haveToken = localStorage.getItem("token");

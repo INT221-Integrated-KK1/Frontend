@@ -3,6 +3,7 @@ import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
 import { jwtDecode } from "jwt-decode"
+
 import AlertBox from "@/components/AlertBox.vue";
 
 const router = useRouter();
@@ -31,7 +32,9 @@ async function loginHandler() {
         router.push("/task");
         localStorage.setItem('token', data.access_token);
         console.log(data.access_token);
+        
     } else if (data.message === "Username or Password is incorrect." || data === undefined) {
+
         showLoginAlert.value = true;
         setTimeout(() => {
             showLoginAlert.value = false;
