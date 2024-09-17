@@ -18,15 +18,20 @@ async function loginHandler() {
         return;
     }
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
-    const decode = jwtDecode(data.access_token);
-    localStorage.setItem('username', decode.name);
-    localStorage.setItem('tokenexp', decode.exp);
+    try {
+        const decode = jwtDecode(data.access_token);
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('username', decode.name);
+    } catch (error) {
+        console.error("Error fetching task details:", error)
+        localStorage.clear();
+    }
     if (data.access_token) {
         showLoginAlert.value = false;
         router.push("/task");
         localStorage.setItem('token', data.access_token);
         console.log(data.access_token);
-    } else if (data.message === "Username or Password is incorrect." || decode === undefined || decode === null) {
+    } else if (data.message === "Username or Password is incorrect." || data === undefined) {
         showLoginAlert.value = true;
         setTimeout(() => {
             showLoginAlert.value = false;

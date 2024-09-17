@@ -1,5 +1,14 @@
 <script setup>
+import router from '@/router';
+
 const name = localStorage.getItem('username');
+
+function signout() {
+    localStorage.removeItem('username');
+    localStorage.removeItem('token');
+    localStorage.clear();
+    router.push({ name: 'login' });
+}
 </script>
 
 <template>
@@ -8,7 +17,7 @@ const name = localStorage.getItem('username');
         <div class="flex justify-end">
             <div class="itbkk-fullname text-center text-xl font-bold mr-5">{{ name }}</div>
             <RouterLink :to="{ name: 'login' }">
-                <div class="text-center text-lg font-bold mr-5 hover:text-cyan-500">log out</div>
+                <div class="text-center text-lg font-bold mr-5 hover:text-cyan-500" :click="signout">sign out</div>
             </RouterLink>
         </div>
     </div>

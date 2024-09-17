@@ -6,6 +6,7 @@ import EditStatusModal from "@/components/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
 import Login from "@/views/Login.vue";
 import { jwtDecode } from "jwt-decode";
+import { onMounted } from "vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -77,24 +78,25 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const isTokenExpire = localStorage.getItem("tokenexp");
-  if (isTokenExpire) {
-    const tokenExpire = new Date(isTokenExpire * 1000);
-    const now = new Date();
-    console.log("token exp: " + tokenExpire, " now: " + now);
-    if (tokenExpire < now) {
+  const haveToken = localStorage.getItem("token");
+
+  if (haveToken) {
+    if (haveToken.split(".").length !== 3 || !jwtDecode(localStorage.getItem("token"))) {
       localStorage.clear();
+    } else {
+      try {
+        const decodedToken = jwtDecode(haveToken);
+        const tokenExpire = new Date(decodedToken.exp * 1000);
+        const now = new Date();
+        if (tokenExpire < now) {
+          localStorage.clear();
+        }
+      } catch (error) {
+        localStorage.clear();
+      }
     }
   } else {
     localStorage.clear();
-  }
-
-  const isTokenWellFormed = localStorage.getItem("token");
-  if (isTokenWellFormed) {
-    const decodedToken = jwtDecode(isTokenWellFormed);
-    if (decodedToken === null || decodedToken === undefined || decodedToken === "") {
-      localStorage.clear();
-    }
   }
 
   if (to.name !== "login" && !localStorage.getItem("token"))
