@@ -4,7 +4,7 @@ import { ref, computed, onMounted } from 'vue';
 // Emit events to parent component
 const emit = defineEmits(['close', 'save-board']);
 
-const name = localStorage.getItem('user');
+const name = localStorage.getItem('username');
 
 // Set default board name
 const boardName = ref(`${name} personal board`);

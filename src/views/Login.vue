@@ -29,7 +29,7 @@ async function loginHandler() {
     }
     if (data.access_token) {
         showLoginAlert.value = false;
-        router.push("/task");
+        router.push("/board");
         localStorage.setItem('token', data.access_token);
         console.log(data.access_token);
         

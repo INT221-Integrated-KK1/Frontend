@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import AddBoardModal from '@/components/AddBoardModal.vue';
+import Header from '@/components/Header.vue';
 
 // State to store whether modal is shown and to track list of boards
 const showModal = ref(false);
@@ -39,6 +40,7 @@ watch(route, (newRoute) => {
 </script>
 
 <template>
+  <Header />
   <h1 class="text-5xl text-center font-bold mt-10">Board List</h1>
 
   <div class="flex justify-end mt-5 mr-32">
