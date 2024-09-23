@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, reactive, computed } from "vue";
-import { getItemById } from "../libs/fetchUtils.js";
+import { getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 
 

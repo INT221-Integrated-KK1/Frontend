@@ -2,8 +2,7 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { isAuthenticated } from "../libs/fetchUtils.js";
-import { jwtDecode } from "jwt-decode"
-
+import VueJwtDecode from "vue-jwt-decode";
 import AlertBox from "@/components/AlertBox.vue";
 
 const router = useRouter();
@@ -20,8 +19,9 @@ async function loginHandler() {
     }
     const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
     try {
-        const decode = jwtDecode(data.access_token);
+        let decode = VueJwtDecode.decode(data.access_token);
         localStorage.setItem('token', data.access_token);
+        localStorage.setItem('decode', decode);
         localStorage.setItem('username', decode.name);
     } catch (error) {
         console.error("Error fetching task details:", error)
@@ -52,6 +52,9 @@ const showPassword = () => {
         password.type = "password";
     }
 }
+
+let test = VueJwtDecode.decode("aaaaaaaaaaaa");
+console.log("test", test);  
 
 
 </script>

@@ -3,9 +3,9 @@ import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import Header from "@/components/Header.vue";
-import AddStatusModal from "@/components/AddStatusModal.vue";
-import EditStatusModal from "@/components/EditStatusModal.vue";
-import DeleteStatusModal from "@/components/DeleteStatusModal.vue";
+import AddStatusModal from "@/components/modals/status/AddStatusModal.vue";
+import EditStatusModal from "@/components/modals/status/EditStatusModal.vue";
+import DeleteStatusModal from "@/components/modals/status/DeleteStatusModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
 
 const tableType = "status";

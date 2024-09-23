@@ -1,11 +1,14 @@
 <script setup>
-import router from '@/router';
-const name = localStorage.getItem('username');
+import { useRouter } from 'vue-router';
+import { useBoardStore } from '@/stores/useBoardStore';
+const router = useRouter();
 
-function signout() {
-    localStorage.removeItem('username');
-    localStorage.removeItem('token');
+const name = localStorage.getItem('username');
+const boardStore = useBoardStore();
+
+function signOut() {
     localStorage.clear();
+    boardStore.removeAllBoards();
     router.push({ name: 'login' });
 }
 </script>
@@ -15,9 +18,9 @@ function signout() {
         <div class="text-center text-xl font-bold">📋 Welcome to ITBKK-KANBAN</div>
         <div class="flex justify-end">
             <div class="itbkk-fullname text-center text-xl font-bold mr-5">{{ name }}</div>
-            <RouterLink :to="{ name: 'login' }">
-                <div class="text-center text-lg font-bold mr-5 hover:text-cyan-500" :click="signout">sign out</div>
-            </RouterLink>
+            <button @click="signOut" class="text-center text-lg font-bold mr-5 hover:text-cyan-500">
+                Sign Out
+            </button>
         </div>
     </div>
 </template>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import { getItemById, getItems } from "../libs/fetchUtils.js";
+import { getItemById, getItems } from "@/libs/fetchUtils.js";
 import { useRoute, useRouter } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import NotFound from "@/views/NotFound.vue";

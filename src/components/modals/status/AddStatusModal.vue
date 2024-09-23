@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { addItem, getItems } from "../libs/fetchUtils.js";
+import { addItem, getItems } from "@/libs/fetchUtils.js";
 const showModal = ref(false);
 const name = ref("");
 const description = ref("");
@@ -78,14 +78,14 @@ const AddStatus = async () => {
                         placeholder="Name here" v-model="name" />
                     <span class="text-gray-500 text-sm"
                         :class="{ 'text-red-500': name.trim().length > 50 || name.trim().length === 0 }"> {{
-        name.trim().length }} / 50 characters </span>
+                            name.trim().length }} / 50 characters </span>
 
                     <h1 class=" font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         rows="4" placeholder="Description here" v-model="description" />
                     <span class="text-gray-500 text-sm" :class="{ 'text-red-500': description.trim().length > 200 }">{{
-        description.trim().length }} / 200 characters</span>
+                        description.trim().length }} / 200 characters</span>
                 </div>
                 <hr class=" col-start-1 col-span-3" />
 
