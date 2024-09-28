@@ -65,7 +65,7 @@ onMounted(async () => {
     </div>
   </div>
 
-  <router-view @save-board="handleBoardAdded()" />
+  <router-view @save-board="handleBoardAdded" />
 </template>
 
 <style scoped></style>
