@@ -12,7 +12,8 @@ import VueJwtDecode from "vue-jwt-decode";
 import NotFound from "@/views/NotFound.vue";
 import Login from "@/views/Login.vue";
 import Board from "@/views/Board.vue";
-
+import TaskTable from "@/views/TaskTable.vue";
+import StatusTable from "@/views/StatusTable.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,9 +40,9 @@ const router = createRouter({
       ],
     },
     {
-      path: "/task",
+      path: "/board/:id",
       name: "task",
-      component: () => import("@/views/TaskTable.vue"),
+      component: TaskTable,
       children: [
         {
           path: ":id",
@@ -66,22 +67,22 @@ const router = createRouter({
       ],
     },
     {
-      path: "/status/manage",
+      path: "/board/:id/status",
       name: "status",
-      component: () => import("@/views/StatusTable.vue"),
+      component: StatusTable,
       children: [
         {
-          path: "/status/add",
+          path: "add",
           name: "addstatus",
           component: AddStatusModal,
         },
         {
-          path: "/status/:id/edit",
+          path: ":id/edit",
           name: "editstatus",
           component: EditStatusModal,
         },
         {
-          path: "/status/:id/delete",
+          path: ":id/delete",
           name: "deletestatus",
           component: DeleteStatusModal,
         },

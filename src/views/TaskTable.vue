@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
 import { TaskManagement } from "@/libs/TaskManagement.js";
-import Header from "@/components/Header.vue";
 import Sidebar from "@/components/Sidebar.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
 import EditTaskModal from "@/components/modals/task/EditTaskModal.vue";
@@ -11,6 +10,8 @@ import TaskDetail from "@/components/modals/task/TaskDetail.vue";
 import Sort from "@/components/Sort.vue";
 import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
+import { useRoute } from 'vue-router'; 
+
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
 
@@ -34,9 +35,18 @@ const showDeletedError = ref(false);
 const showUpdated = ref(false);
 const showUpdatedError = ref(false);
 
+
+const { params } = useRoute();
+const id = params.id;
+console.log(id);
+
+
+
 onMounted(async () => {
-  const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-  const statusItems = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+  const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${id}/tasks`;
+  const items = await getItems(taskUrl);
+  const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${id}/statuses`;
+  const statusItems = await getItems(statusUrl);
   todo.value = items;
   statuses.value = statusItems;
   taskmanager.value.setTasks(items);
@@ -303,12 +313,11 @@ const getStatusClass = (status) => {
     </div>
 
     <div class="w-screen">
-      <Header />
       <!-- Alert -->
       <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError"
         :showDeleted="showDeleted" :showDeletedError="showDeletedError" :showUpdated="showUpdated"
         :showUpdatedError="showUpdatedError" :addedTitle="addedTitle" :updatedTitle="updatedTitle" />
-
+      <h1 class="text-5xl text-center font-bold mt-10">Board</h1>
       <!-- filter -->
       <div class="flex justify-between mx-52 mt-5 items-center">
         <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
@@ -406,27 +415,27 @@ const getStatusClass = (status) => {
           </tbody>
         </table>
       </div>
-      </div>  
     </div>
+  </div>
 
-      <RouterView />
+  <RouterView />
 
-      <Teleport to="body">
-        <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
-          @taskNotfound="handleTaskDeletedNotfound" />
-      </Teleport>
+  <Teleport to="body">
+    <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
+      @taskNotfound="handleTaskDeletedNotfound" />
+  </Teleport>
 
-      <Teleport to="body">
-        <EditTaskModal v-if="showEditModal" @close="closeEditModal()" @saveChanges="saveChanges" />
-      </Teleport>
+  <Teleport to="body">
+    <EditTaskModal v-if="showEditModal" @close="closeEditModal()" @saveChanges="saveChanges" />
+  </Teleport>
 
-      <Teleport to="body">
-        <TaskDetail v-if="showTaskDetail" :id="taskId" @closed="isTaskDetailModalOpen" />
-      </Teleport>
+  <Teleport to="body">
+    <TaskDetail v-if="showTaskDetail" :id="taskId" @closed="isTaskDetailModalOpen" />
+  </Teleport>
 
-      <router-link :to="{ name: 'addtask' }">
-        <AddTaskModal @taskAdded="handleTaskAdded" />
-      </router-link>
+  <!-- <router-link :to="{ name: 'addtask' }"> -->
+    <AddTaskModal @taskAdded="handleTaskAdded" />
+  <!-- </router-link> -->
 </template>
 
 

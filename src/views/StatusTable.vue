@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
-import Header from "@/components/Header.vue";
+import Sidebar from "@/components/Sidebar.vue";
 import AddStatusModal from "@/components/modals/status/AddStatusModal.vue";
 import EditStatusModal from "@/components/modals/status/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/modals/status/DeleteStatusModal.vue";
@@ -198,68 +198,73 @@ const handleStatusDeletedNotfound = () => {
 </script>
 
 <template>
-    <Header />
-    <!-- Alert -->
-    <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError" :showDeleted="showDeleted"
-        :showDeletedError="showDeletedError" :showUpdated="showUpdated" :showUpdatedError="showUpdatedError"
-        :addedTitle="addedTitle" />
+    <div class="flex">
+        <div>
+            <Sidebar />
+        </div>
+
+        <!-- Alert -->
+        <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError"
+            :showDeleted="showDeleted" :showDeletedError="showDeletedError" :showUpdated="showUpdated"
+            :showUpdatedError="showUpdatedError" :addedTitle="addedTitle" />
 
 
-    <div class="flex justify-end mr-52 mt-5">
-        <RouterLink :to="{ name: 'task' }">
-            <div class="btn ">Home</div>
-        </RouterLink>
-    </div>
+        <div class="flex justify-end mr-52 mt-5">
+            <RouterLink :to="{ name: 'task' }">
+                <div class="btn ">Home</div>
+            </RouterLink>
+        </div>
 
-    <!-- table -->
+        <!-- table -->
 
-    <div class="overflow-x-auto flex justify-center">
-        <table class="table w-3/4 mt-10 border-solid border-2 border-black">
-            <thead>
-                <tr class="bg-orange-200 border-solid border-2 border-black text-xl text-black">
-                    <th class="w-20"></th>
-                    <th class="font-bold">Name</th>
-                    <th class="font-bold">Description</th>
-                    <th class="font-bold">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(status, index) in statusmanager.getStatus()" :key="index"
-                    class="border-solid border-2 border-black h-16">
-                    <th class="font-semibold text-center">{{ index + 1 }}</th>
-                    <td>
-                        <div v-if="status.name && status.name.length > 10">
-                            <span>{{ status.name.substring(0, 25) }}</span>
-                            <br>
-                            <span>{{ status.name.substring(26, 50) }}</span>
-                        </div>
-                        <div v-else>{{ status.name }}</div>
-                    </td>
-                    <td class="break-words"
-                        :class="status.description === null || status.description === '' ? EmptyStyle : ''">
-                        <div v-if="status.description && status.description.length > 50">
-                            <span>{{ status.description.substring(0, 50) }}</span>
-                            <br>
-                            <span>{{ status.description.substring(51, 100) }}</span>
-                            <br>
-                            <span>{{ status.description.substring(101, 150) }}</span>
-                            <br>
-                            <span>{{ status.description.substring(151, 200) }}</span>
-                        </div>
-                        <div v-else>{{ status.description === null || status.description === "" ? "No Description   Provided" : status.description }}</div>
-                    </td>
+        <div class="overflow-x-auto flex justify-center">
+            <table class="table w-3/4 mt-10 border-solid border-2 border-black">
+                <thead>
+                    <tr class="bg-orange-200 border-solid border-2 border-black text-xl text-black">
+                        <th class="w-20"></th>
+                        <th class="font-bold">Name</th>
+                        <th class="font-bold">Description</th>
+                        <th class="font-bold">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(status, index) in statusmanager.getStatus()" :key="index"
+                        class="border-solid border-2 border-black h-16">
+                        <th class="font-semibold text-center">{{ index + 1 }}</th>
+                        <td>
+                            <div v-if="status.name && status.name.length > 10">
+                                <span>{{ status.name.substring(0, 25) }}</span>
+                                <br>
+                                <span>{{ status.name.substring(26, 50) }}</span>
+                            </div>
+                            <div v-else>{{ status.name }}</div>
+                        </td>
+                        <td class="break-words"
+                            :class="status.description === null || status.description === '' ? EmptyStyle : ''">
+                            <div v-if="status.description && status.description.length > 50">
+                                <span>{{ status.description.substring(0, 50) }}</span>
+                                <br>
+                                <span>{{ status.description.substring(51, 100) }}</span>
+                                <br>
+                                <span>{{ status.description.substring(101, 150) }}</span>
+                                <br>
+                                <span>{{ status.description.substring(151, 200) }}</span>
+                            </div>
+                            <div v-else>{{ status.description === null || status.description === "" ? "No Description Provided" : status.description }}</div>
+                        </td>
 
-                    <td v-if="isDefault(status) == false">
-                        <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }">
-                            <button class="btn mr-5 h-12" @click="showEditModals(status.id)">edit</button>
-                        </RouterLink>
-                        <RouterLink :to="{ name: 'deletestatus', params: { id: status.id } }">
-                            <button class="btn h-12" @click="showDeleteModals(status)">delete</button>
-                        </RouterLink>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        <td v-if="isDefault(status) == false">
+                            <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }">
+                                <button class="btn mr-5 h-12" @click="showEditModals(status.id)">edit</button>
+                            </RouterLink>
+                            <RouterLink :to="{ name: 'deletestatus', params: { id: status.id } }">
+                                <button class="btn h-12" @click="showDeleteModals(status)">delete</button>
+                            </RouterLink>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <router-link :to="{ name: 'addstatus' }">

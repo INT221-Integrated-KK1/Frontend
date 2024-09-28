@@ -2,18 +2,14 @@ import { defineStore, acceptHMRUpdate } from "pinia";
 import { ref, watch } from "vue";
 
 const useBoardStore = defineStore("board", () => {
-  const boards = ref(JSON.parse(localStorage.getItem("boards")) || []);
-
-  watch(
-    boards,
-    (newBoards) => {
-      localStorage.setItem("boards", JSON.stringify(newBoards));
-    },
-    { deep: true }
-  );
+  const boards = ref([]);
 
   const addBoard = (board) => {
     boards.value.push(board);
+  };
+
+  const setBoards = (newBoards) => {
+    boards.value = newBoards;
   };
 
   const getBoardById = (id) => {
@@ -31,6 +27,7 @@ const useBoardStore = defineStore("board", () => {
   return {
     boards,
     addBoard,
+    setBoards,
     getBoardById,
     getBoards,
     removeAllBoards,
