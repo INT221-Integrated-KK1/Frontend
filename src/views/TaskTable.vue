@@ -417,7 +417,7 @@ const getStatusClass = (status) => {
     </div>
   </div>
 
-  <!-- <RouterView /> -->
+  <RouterView />
 
   <Teleport to="body">
     <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
@@ -428,9 +428,9 @@ const getStatusClass = (status) => {
     <EditTaskModal v-if="showEditModal" @close="closeEditModal()" @saveChanges="saveChanges" />
   </Teleport>
 
-  <!-- <Teleport to="body">
+  <Teleport to="body">
     <TaskDetail v-if="showTaskDetail" @closed="isTaskDetailModalOpen" />
-  </Teleport> -->
+  </Teleport>
 
   <AddTaskModal @taskAdded="handleTaskAdded" />
 

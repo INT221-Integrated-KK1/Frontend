@@ -70,23 +70,23 @@ const router = createRouter({
       path: "/board/:boardId/status",
       name: "status",
       component: StatusTable,
-      // children: [
-      //   {
-      //     path: "add",
-      //     name: "addstatus",
-      //     component: AddStatusModal,
-      //   },
-      //   {
-      //     path: ":id/edit",
-      //     name: "editstatus",
-      //     component: EditStatusModal,
-      //   },
-      //   {
-      //     path: ":id/delete",
-      //     name: "deletestatus",
-      //     component: DeleteStatusModal,
-      //   },
-      // ],
+      children: [
+        {
+          path: "add",
+          name: "addstatus",
+          component: AddStatusModal,
+        },
+        {
+          path: ":id/edit",
+          name: "editstatus",
+          component: EditStatusModal,
+        },
+        {
+          path: ":id/delete",
+          name: "deletestatus",
+          component: DeleteStatusModal,
+        },
+      ],
     },
     {
       path: "/:catchAll(.*)",

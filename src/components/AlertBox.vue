@@ -31,7 +31,7 @@ const props = defineProps({
 
     <!-- add alert -->
     <div v-if="showAdded" class="flex justify-center items-center">
-        <div class=" z-index-0 bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+        <div class="absolute bottom-0 z-40 bg-green-100 rounded-md my-10 w-[1000px] border-2 border-green-500">
             <div class="p-4">
                 <div class="flex justify-between mb-3">
                     <h1 class="text-2xl font-bold">Success</h1>
@@ -44,8 +44,8 @@ const props = defineProps({
         </div>
     </div>
 
-    <div class="flex justify-center items-center">
-        <div v-if="showAddedError" class="fixed bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+    <div v-if="showAddedError" class="flex justify-center items-center">
+        <div class="absolute bottom-0 z-40 bg-red-100 rounded-md my-10 w-[1000px] border-2 border-red-500">
             <div class="p-4">
                 <div class="flex justify-between mb-3">
                     <h1 class="text-2xl font-bold">Error</h1>
@@ -59,8 +59,8 @@ const props = defineProps({
     </div>
 
     <!-- delete alert -->
-    <div class="flex justify-center items-center">
-        <div v-if="showDeleted" class="fixed bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+    <div v-if="showDeleted" class="flex justify-center items-center">
+        <div class="absolute bottom-0 z-40 bg-green-100 rounded-md my-10 w-[1000px] border-2 border-green-500">
             <div class="p-4">
                 <div class="flex justify-between mb-3">
                     <h1 class="text-2xl font-bold">Success</h1>
@@ -72,8 +72,8 @@ const props = defineProps({
         </div>
     </div>
 
-    <div class="flex justify-center items-center">
-        <div v-if="showDeletedError" class="fixed bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+    <div v-if="showDeletedError" class="flex justify-center items-center">
+        <div class="absolute bottom-0 z-40 bg-red-100 rounded-md my-10 w-[1000px] border-2 border-red-500">
             <div class="p-4">
                 <div class="flex justify-between mb-3">
                     <h1 class="text-2xl font-bold">Error</h1>
@@ -89,7 +89,7 @@ const props = defineProps({
 
     <!-- edit alert -->
     <div v-if="showUpdated" class="flex justify-center items-center">
-        <div class="fixed bg-green-100 rounded-md mt-10 w-[1000px] border-2 border-green-500">
+        <div class="absolute bottom-0 z-40 bg-green-100 rounded-md my-10 w-[1000px] border-2 border-green-500">
             <div class="p-4">
                 <div class="flex justify-between mb-3">
                     <h1 class="text-2xl font-bold">Success</h1>
@@ -104,7 +104,7 @@ const props = defineProps({
     </div>
 
     <div v-if="showUpdatedError" class="flex justify-center items-center">
-        <div class="fixed bg-red-100 rounded-md mt-10 w-[1000px] border-2 border-red-500">
+        <div class="absolute bottom-0 z-40 bg-red-100 rounded-md my-10 w-[1000px] border-2 border-red-500">
             <div class="p-4">
                 <div class="flex justify-between mb-3">
                     <h1 class="text-2xl font-bold">Error</h1>

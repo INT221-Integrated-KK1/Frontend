@@ -3,15 +3,14 @@ import { ref, computed } from 'vue';
 import { addItem } from '@/libs/fetchUtils';
 import { useBoardStore } from '@/stores/useBoardStore';
 
-// import { BoardManagement } from '@/libs/BoardManagement';
+import { BoardManagement } from '@/libs/BoardManagement';
 import router from '@/router';
-
 const boardStore = useBoardStore();
 
 const emit = defineEmits(['save-board']);
 const name = localStorage.getItem('username');
 
-// const boardmanager = ref(new BoardManagement());
+const boardmanager = ref(new BoardManagement());
 
 const boardName = ref(`${name} personal board`);
 const errorMessage = ref('');
@@ -42,11 +41,10 @@ async function saveBoard() {
     const boardsinput = boardName.value;
     try {
       const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput });
-      boardStore.addBoard(items);
-      // boardmanager.value.addBoard(items);
+      boardmanager.value.addBoard(items);
       console.log("items", items);
       console.log('Board saved:', boardName.value);
-      
+
       emit('save-board', items);
 
       if (items.status === 401) {
@@ -60,13 +58,13 @@ async function saveBoard() {
     closeModal();
   }
 };
-
+console.log('aaaaaaaaaaaa');
 
 </script>
 
 <template>
-  <div v-if="$route.name === 'addboard' "
-    class="itbkk-modal-new z-index fixed inset-0 flex items-center justify-center bg-black/[.05]">
+  <div v-if="$route.name === 'addboard'"
+    class="itbkk-modal-new z-40 fixed inset-0 flex items-center justify-center bg-black/[.05]">
     <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
       <h2 class="text-2xl font-bold mb-5 text-green-800">New Board</h2>
 

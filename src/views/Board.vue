@@ -2,31 +2,27 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
-import AddBoardModal from '@/components/modals/board/AddBoardModal.vue';
-import TaskTable from '@/views/TaskTable.vue';
 import { getItems } from '@/libs/fetchUtils';
 import { BoardManagement } from '@/libs/BoardManagement';
-// import { useBoardStore } from '@/stores/useBoardStore';
 const router = useRouter();
-
-// const boardStore = useBoardStore();
-
+const emit = defineEmits(['save-board-sidebar']);
 const boardmanager = ref(new BoardManagement());
 const boards = ref([]);
 
 function handleBoardAdded(addBoard) {
   console.log('Board added:', addBoard);
   boardmanager.value.addBoard(addBoard);
+  emit('save-board-sidebar', addBoard);
 }
 
 const openModal = () => {
-  router.push("/board/add");
+  console.log('Opening modal');
+  router.push({ name: 'addboard' });
 };
 
 onMounted(async () => {
   try {
     const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-    // boards.value = boardStore.setBoards(items);
     boardmanager.value.setBoards(items);
     boards.value = items;
   } catch (error) {
@@ -51,22 +47,23 @@ onMounted(async () => {
           + Add New Board
         </div>
 
-        <div v-for="(board, index) in boards" :key="index"
-          @click="router.push({ name: 'task', params: { boardId: board.id } })"
-          class="card bg-base-100 w-auto h-auto shadow-xl transition transform hover:scale-105 duration-300 ease-in-out">
-          <figure>
-            <img src="@/assets/board-bg.jpg" alt="board" class="w-full h-20" />
-          </figure>
-          
-          <div class="card-title text-base font-semibold p-3 overflow-auto">
-            {{ board.name }}
+        <div v-for="(board, index) in boards" :key="index">
+          <div @click="router.push({ name: 'task', params: { boardId: board.id } })"
+            class="card bg-base-100 w-auto h-auto shadow-xl transition transform hover:scale-105 duration-300 ease-in-out">
+            <figure>
+              <img src="@/assets/board-bg.jpg" alt="board" class="w-full h-20" />
+            </figure>
+
+            <div class="card-title text-base font-semibold p-3 overflow-auto">
+              {{ board.name }}
+            </div>
           </div>
         </div>
+        <router-view @save-board="handleBoardAdded" />
       </div>
     </div>
   </div>
 
-  <router-view @save-board="handleBoardAdded" />
 </template>
 
 <style scoped></style>
