@@ -1,14 +1,22 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { getItems } from "../libs/fetchUtils.js";
+import { useRoute } from "vue-router";
 
 const statuses = ref([]);
 const selectedStatuses = ref([]);
 const showFilterDropdown = ref(false);
 const emit = defineEmits(['filter', 'reset']);
 
+const { params } = useRoute();
+const boardId = params.boardId;
+const taskId = Number(params.taskId);
+
+
+const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 onMounted(async () => {
-    statuses.value = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    statuses.value = await getItems(statusUrl);
 });
 
 const toggleFilterDropdown = () => {

@@ -40,53 +40,53 @@ const router = createRouter({
       ],
     },
     {
-      path: "/board/:id",
+      path: "/board/:boardId",
       name: "task",
       component: TaskTable,
       children: [
         {
-          path: ":id",
+          path: "task/:taskId",
           name: "taskdetail",
           component: TaskDetail,
         },
         {
-          path: "add",
+          path: "task/add",
           name: "addtask",
           component: AddTaskModal,
         },
         {
-          path: ":id/delete",
+          path: "task/:taskId/delete",
           name: "deleteTask",
           component: DeleteTaskModal,
         },
         {
-          path: ":id/edit",
+          path: "task/:taskId/edit",
           name: "editTaskModal",
           component: EditTaskModal,
         },
       ],
     },
     {
-      path: "/board/:id/status",
+      path: "/board/:boardId/status",
       name: "status",
       component: StatusTable,
-      children: [
-        {
-          path: "add",
-          name: "addstatus",
-          component: AddStatusModal,
-        },
-        {
-          path: ":id/edit",
-          name: "editstatus",
-          component: EditStatusModal,
-        },
-        {
-          path: ":id/delete",
-          name: "deletestatus",
-          component: DeleteStatusModal,
-        },
-      ],
+      // children: [
+      //   {
+      //     path: "add",
+      //     name: "addstatus",
+      //     component: AddStatusModal,
+      //   },
+      //   {
+      //     path: ":id/edit",
+      //     name: "editstatus",
+      //     component: EditStatusModal,
+      //   },
+      //   {
+      //     path: ":id/delete",
+      //     name: "deletestatus",
+      //     component: DeleteStatusModal,
+      //   },
+      // ],
     },
     {
       path: "/:catchAll(.*)",
@@ -98,8 +98,6 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const haveToken = localStorage.getItem("token");
-  console.log(typeof haveToken);
-
   if (haveToken) {
     if (haveToken.split(".").length !== 3 || typeof haveToken !== "string") {
       localStorage.clear();

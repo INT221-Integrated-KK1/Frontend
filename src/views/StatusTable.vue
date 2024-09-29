@@ -7,18 +7,26 @@ import AddStatusModal from "@/components/modals/status/AddStatusModal.vue";
 import EditStatusModal from "@/components/modals/status/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/modals/status/DeleteStatusModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
+import { useRoute } from 'vue-router';
+const { params } = useRoute();
+const boardId = params.boardId;
+console.log(boardId);
 
 const tableType = "status";
 const statusmanager = ref(new StatusManagement());
 const todo = ref([]);
 const isDefault = (status) => status.name === "No Status";
 
-
+const statusUrl = `import.meta.env.VITE_BASE_STATUS_URL/${boardId}/statuses`;
 onMounted(async () => {
     try {
-        const items = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+        // const item = await getItemById(taskUrl, id);
+        // const statusItem = await getItems(statusUrl);
+        const items = await getItems(statusUrl);
         todo.value = items;
         statusmanager.value.setStatuses(items);
+        console.log(statusmanager.value.getStatus());
+        
     } catch (error) {
         console.error("Error fetching tasks:", error);
     }
@@ -48,7 +56,6 @@ const handleStatusAdded = (items) => {
 
 };
 
-
 // ----------------------------------- edit handler -----------------------------------
 
 const showUpdated = ref(false);
@@ -62,7 +69,7 @@ const closeEditModal = () => {
 
 async function showEditModals(id) {
     try {
-        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+        const items = await getItemById(statusUrl, id);
         if (items !== undefined) {
             editModal.value = true;
         } else {
@@ -108,7 +115,7 @@ const saveChanges = async (statusProp, id) => {
         name: statusProp.name,
         description: statusProp.description
     };
-    const existingStatus = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+    const existingStatus = await getItemById(statusUrl, id);
     if (!existingStatus) {
         closeEditModal();
         showUpdatedError.value = true;
@@ -117,7 +124,7 @@ const saveChanges = async (statusProp, id) => {
         }, 3000);
     } else {
         try {
-            const item = await editItem(import.meta.env.VITE_BASE_STATUS_URL, id, editedStatus);
+            const item = await editItem(statusUrl, id, editedStatus);
             if (checkinput.value > 0) {
                 showUpdatedError.value = true;
                 setTimeout(() => {
@@ -156,7 +163,7 @@ const closeDeleteModal = () => {
 
 async function showDeleteModals(status) {
     try {
-        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, status.id);
+        const items = await getItemById(statusUrl, status.id);
         console.log(items);
         if (items !== undefined) {
             deleteModal.value = true;
@@ -210,7 +217,7 @@ const handleStatusDeletedNotfound = () => {
 
 
         <div class="flex justify-end mr-52 mt-5">
-            <RouterLink :to="{ name: 'task' }">
+            <RouterLink :to="{ name: 'task', params: { boardId: params.boardId } }">
                 <div class="btn ">Home</div>
             </RouterLink>
         </div>
@@ -254,12 +261,12 @@ const handleStatusDeletedNotfound = () => {
                         </td>
 
                         <td v-if="isDefault(status) == false">
-                            <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }">
+                            <!-- <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }"> -->
                                 <button class="btn mr-5 h-12" @click="showEditModals(status.id)">edit</button>
-                            </RouterLink>
-                            <RouterLink :to="{ name: 'deletestatus', params: { id: status.id } }">
+                            <!-- </RouterLink> -->
+                            <!-- <RouterLink :to="{ name: 'deletestatus', params: { id: status.id } }"> -->
                                 <button class="btn h-12" @click="showDeleteModals(status)">delete</button>
-                            </RouterLink>
+                            <!-- </RouterLink> -->
                         </td>
                     </tr>
                 </tbody>
@@ -267,7 +274,7 @@ const handleStatusDeletedNotfound = () => {
         </div>
     </div>
 
-    <router-link :to="{ name: 'addstatus' }">
+    <!-- <router-link :to="{ name: 'addstatus' }">
         <AddStatusModal @statusAdded="handleStatusAdded" />
     </router-link>
     <Teleport to="body">
@@ -276,7 +283,7 @@ const handleStatusDeletedNotfound = () => {
     <Teleport to="body">
         <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted"
             @taskNotfound="handleStatusDeletedNotfound()" />
-    </Teleport>
+    </Teleport> -->
 
 </template>
 

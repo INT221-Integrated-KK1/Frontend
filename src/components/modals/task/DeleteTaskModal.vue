@@ -7,14 +7,21 @@ import NotFound from "@/views/NotFound.vue";
 const route = useRoute();
 const number = ref(0);
 const showModal = ref(false);
-const id = Number(route.params.id);
+
+const { params } = useRoute();
+const boardId = params.boardId;
+const taskId = Number(params.taskId);
+console.log(taskId);
+
 const task = ref(null);
 const title = ref("");
 const emit = defineEmits(["taskDeleted", "close", "taskNotfound"]);
 
+const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 onMounted(async () => {
   try {
-    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+    task.value = await getItemById(taskUrl, taskId);
     number.value = task.value.id;
     console.log(task.value);
     title.value = task.value.title;
@@ -30,9 +37,9 @@ onMounted(async () => {
 
 const deleteTask = async (deleteid) => {
   try {
-    const exist = await getItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
+    const exist = await getItemById(taskUrl, deleteid);
     if (exist) {
-      await deleteItemById(import.meta.env.VITE_BASE_TASK_URL, deleteid);
+      await deleteItemById(taskUrl, deleteid);
       console.log("Deleted task:", deleteid);
       emit("taskDeleted", deleteid);
     } else {
@@ -59,13 +66,13 @@ const deleteTask = async (deleteid) => {
             </p>
 
             <div class="text-right">
-              <router-link to="/task">
+              <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
                 <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                  @click="deleteTask(route.params.id)">
+                  @click="deleteTask(taskId)">
                   Confirm
                 </button>
               </router-link>
-              <router-link to="/task">
+              <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
                 <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
                   Cancel
                 </button>

@@ -52,11 +52,12 @@ onMounted(async () => {
         </div>
 
         <div v-for="(board, index) in boards" :key="index"
-          @click="router.push({ name: 'task', params: { id: board.id } })"
+          @click="router.push({ name: 'task', params: { boardId: board.id } })"
           class="card bg-base-100 w-auto h-auto shadow-xl transition transform hover:scale-105 duration-300 ease-in-out">
           <figure>
             <img src="@/assets/board-bg.jpg" alt="board" class="w-full h-20" />
           </figure>
+          
           <div class="card-title text-base font-semibold p-3 overflow-auto">
             {{ board.name }}
           </div>

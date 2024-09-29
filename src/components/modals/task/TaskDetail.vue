@@ -1,32 +1,43 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { getItemById, getItems } from "@/libs/fetchUtils.js";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import NotFound from "@/views/NotFound.vue";
 
-const route = useRoute();
-const router = useRouter();
 const emit = defineEmits(['closed'])
 
-const props = defineProps({
-  id: Number
-});
-
-const routeId = ref(null);
-
-if (props.id === undefined) {
-  routeId.value = Number(route.params.id);
-}
-
-const useId = ref(props.id || routeId);
 const task = ref(null);
 const statusmanager = ref(new StatusManagement());
+const route = useRoute();
+const { params } = useRoute();
+const routeId = ref(null);
+
+const props = defineProps({
+  taskId: Number
+});
+
+if (props.id === undefined) {
+  routeId.value = Number(route.params.taskId);
+  console.log("Route ID:", routeId.value);
+  
+}
+const boardId = params.boardId;
+const taskId = params.taskId ? Number(params.taskId) : routeId.value;
+console.log("Task ID:", taskId);
+
+console.log(taskId);
+console.log(boardId);
+
+const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 
 onMounted(async () => {
   try {
-    task.value = await getItemById(import.meta.env.VITE_BASE_TASK_URL, useId.value);
-    const statusItem = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    console.log(taskId);
+    const item = await getItemById(taskUrl, taskId);
+    task.value = item;
+    const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)
   } catch (error) {
     console.error("Error fetching task details:", error);
@@ -69,7 +80,7 @@ const formatToLocalTime = (dateTimeString) => {
 </script>
 
 <template>
-  <div v-if="task" class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div  class="text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">

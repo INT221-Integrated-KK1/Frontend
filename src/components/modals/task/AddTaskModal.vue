@@ -15,8 +15,7 @@ const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-
 const statusmanager = ref(new StatusManagement());
 
 const { params } = useRoute();
-const id = params.id;
-console.log(id);
+const boardId = params.boardId;
 
 
 const emit = defineEmits(["taskAdded"]);
@@ -66,7 +65,7 @@ const AddTask = async () => {
   } else {
 
     try {
-      const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${id}/tasks`;
+      const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
       const items = await addItem(url, newItem);
       title.value = "";
       description.value = "";
@@ -84,12 +83,12 @@ const AddTask = async () => {
 
   }
 };
-
 onMounted(async () => {
   try {
-    const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${id}/statuses`;
+    const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
     const items = await getItems(url);
     statusmanager.value.setStatuses(items);
+    status.value = items[0].id;
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
@@ -136,14 +135,14 @@ onMounted(async () => {
           </select>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
-          <router-link :to="({ name: 'task' })">
+          <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button @click="AddTask"
               :class="title === '' || title === ' ' ? disabled : 'itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 '"
               :disabled="checkWhiteSpace(title)">
               Save
             </button>
           </router-link>
-          <router-link :to="({ name: 'task'})">
+          <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white" @click="showModal = false">
               Cancel
             </button>

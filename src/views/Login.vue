@@ -55,11 +55,6 @@ const showPassword = () => {
         isPasswordToggle.value = false;
     }
 }
-
-let test = VueJwtDecode.decode("aaaaaaaaaaaa");
-console.log("test", test);
-
-
 </script>
 
 <template>

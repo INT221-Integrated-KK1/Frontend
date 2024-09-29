@@ -10,7 +10,7 @@ import TaskDetail from "@/components/modals/task/TaskDetail.vue";
 import Sort from "@/components/Sort.vue";
 import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
-import { useRoute } from 'vue-router'; 
+import { useRoute } from 'vue-router';
 
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
@@ -37,15 +37,13 @@ const showUpdatedError = ref(false);
 
 
 const { params } = useRoute();
-const id = params.id;
-console.log(id);
+const boardId = params.boardId;
+console.log(boardId);
 
-
-
+const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 onMounted(async () => {
-  const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${id}/tasks`;
   const items = await getItems(taskUrl);
-  const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${id}/statuses`;
   const statusItems = await getItems(statusUrl);
   todo.value = items;
   statuses.value = statusItems;
@@ -75,7 +73,7 @@ async function handleTaskAdded(addedTasks) {
 // ----------------------------------- delete handler -----------------------------------
 
 async function showConfirmModals(task) {
-  const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, task.id);
+  const items = await getItemById(taskUrl, task.id);
   console.log(task.id);
   showDeleteModal.value = true;
   console.log(items);
@@ -111,7 +109,7 @@ const closeEditModal = () => {
 };
 
 async function editHandler(id) {
-  const items = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
+  const items = await getItemById(taskUrl, id);
   if (items !== undefined) {
     showEditModal.value = true;
     console.log(items);
@@ -165,9 +163,9 @@ const saveChanges = async (getTaskProp, id) => {
 
   updatedTitle.value = getTaskProp.title.trim();
 
-  const existingTask = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-  const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
-  const editedTaskStatus = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, editedTask.status);
+  const existingTask = await getItemById(taskUrl, id);
+  const existingStatus = await getItems(statusUrl);
+  const editedTaskStatus = await getItemById(statusUrl, editedTask.status);
 
   if (!existingTask) {
     closeEditModal();
@@ -183,7 +181,7 @@ const saveChanges = async (getTaskProp, id) => {
     }, 3000);
   } else {
     try {
-      const item = await editItem(import.meta.env.VITE_BASE_TASK_URL, id, editedTask);
+      const item = await editItem(taskUrl, id, editedTask);
       console.log(item);
       console.log(checkinput.value);
       if (checkinput.value > 0) {
@@ -226,16 +224,16 @@ const saveChanges = async (getTaskProp, id) => {
 
 // ----------------------------------- task details handler -----------------------------------
 
-function taskDetailsHandler(id) {
-  console.log(id);
-  taskId.value = id;
-  showTaskDetail.value = true;
-}
+// function taskDetailsHandler(id) {
+//   console.log(id);
+//   taskId.value = id;
+//   showTaskDetail.value = true;
+// }
 
-function isTaskDetailModalOpen() {
-  showTaskDetail.value = false;
-  console.log("Task detail modal closed");
-}
+// function isTaskDetailModalOpen() {
+//   showTaskDetail.value = false;
+//   console.log("Task detail modal closed");
+// }
 
 // ----------------------------------- sort handler -----------------------------------
 
@@ -265,7 +263,7 @@ const selectedStatuses = ref([]);
 
 const clearSelectedStatues = async () => {
   selectedStatuses.value = [];
-  const items = await getItems(import.meta.env.VITE_BASE_TASK_URL);
+  const items = await getItems(taskUrl);
   taskmanager.value.setTasks(items);
   taskmanager.value.getTask();
 };
@@ -334,7 +332,7 @@ const getStatusClass = (status) => {
           </router-link>
 
           <!-- manage status -->
-          <RouterLink :to="{ name: 'status' }">
+          <RouterLink :to="{ name: 'status', params: { boardId: params.boardId } }">
             <div class="btn font-bold">Manage Status</div>
           </RouterLink>
         </div>
@@ -364,8 +362,8 @@ const getStatusClass = (status) => {
 
               <th class="font-semibold text-center">{{ index + 1 }}</th>
 
-              <router-link :to="{ name: 'taskdetail', params: { id: task.id } }">
-                <td @click="taskDetailsHandler(task.id)" class="itbkk-title cursor-pointer">
+              <router-link :to="{ name: 'taskdetail', params: { boardId: params.boardId, taskId: task.id } }">
+                <td class="itbkk-title cursor-pointer">
                   <span class=" block py-2 text-center">{{ task.title }}</span>
                 </td>
               </router-link>
@@ -381,7 +379,8 @@ const getStatusClass = (status) => {
               </td>
 
               <div class="flex justify-center">
-                <router-link :to="{ name: 'editTaskModal', params: { id: task.id } }">
+                <router-link :to="{ name: 'editTaskModal', params: { boardId: params.boardId, taskId: task.id } }">
+
                   <td class="itbkk-button-action" @click="editHandler(task.id)">
                     <span class="itbkk-button-edit block  p-2 text-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -396,7 +395,7 @@ const getStatusClass = (status) => {
                   </td>
                 </router-link>
 
-                <router-link :to="{ name: 'deleteTask', params: { id: task.id } }">
+                <router-link :to="{ name: 'deleteTask', params: { taskId: task.id } }">
                   <td class="itbkk-button-action" @click="showConfirmModals(task)">
                     <span class="itbkk-button-delete block p-2 text-center" :id="task.id">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -418,7 +417,7 @@ const getStatusClass = (status) => {
     </div>
   </div>
 
-  <RouterView />
+  <!-- <RouterView /> -->
 
   <Teleport to="body">
     <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
@@ -429,13 +428,12 @@ const getStatusClass = (status) => {
     <EditTaskModal v-if="showEditModal" @close="closeEditModal()" @saveChanges="saveChanges" />
   </Teleport>
 
-  <Teleport to="body">
-    <TaskDetail v-if="showTaskDetail" :id="taskId" @closed="isTaskDetailModalOpen" />
-  </Teleport>
+  <!-- <Teleport to="body">
+    <TaskDetail v-if="showTaskDetail" @closed="isTaskDetailModalOpen" />
+  </Teleport> -->
 
-  <!-- <router-link :to="{ name: 'addtask' }"> -->
-    <AddTaskModal @taskAdded="handleTaskAdded" />
-  <!-- </router-link> -->
+  <AddTaskModal @taskAdded="handleTaskAdded" />
+
 </template>
 
 

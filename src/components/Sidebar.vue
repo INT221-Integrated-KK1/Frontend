@@ -18,19 +18,21 @@ const OpenBoard = () => {
 const boardmanager = ref(new BoardManagement());
 
 const name = localStorage.getItem('username');
+function handleBoardAdded(addBoard) {
+    boardmanager.value.addBoard(addBoard);
+}
+
 function signOut() {
     localStorage.clear();
-    // boardStore.removeAllBoards();
     router.push({ name: 'login' });
 }
-// const boards = ref([]);
-// const boardStore = useBoardStore();
 
-
+const boards = ref([]);
 onMounted(async () => {
     try {
         const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
         boardmanager.value.setBoards(items);
+        boards.value = items;
     } catch (error) {
         console.error('Error fetching boards:', error);
     }
@@ -60,17 +62,18 @@ onMounted(async () => {
                 <hr class=" border-2 border-zinc-950 mb-2 " />
 
                 <div class="font-bold text-lg hover:text-white" role="button" @click="OpenBoard">Home</div>
-                <div class="">
-                    <div class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">Board List</div>
-                    <ul v-for="(board, index) in boardmanager.getBoards()" :key="index"
-                        @click="router.push({ name: 'task', params: { id: board.id } })" class="rounded-box w-52">
-                        <li>
-                            <a class="menu font-semibold hover:text-white overflow-hidden">
-                                {{ board.name }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+
+                <div class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">Board List</div>
+                <ul v-for="(board, index) in boards" :key="index" class="rounded-box w-52">
+                    <li>
+                        <div 
+                            @click="router.push({ name: 'task', params: { boardId: board.id } })"
+                            class="menu font-semibold hover:text-white overflow-hidden">
+                            {{ board.name }}
+                        </div>
+                    </li>
+                </ul>
+
                 <div class="flex flex-row fixed bottom-0 bg-slate-200 p-5 py-2 rounded-t-2xl w-auto">
                     <div>
                         <div class="itbkk-fullname flex items-center text-md font-bold ">
@@ -107,6 +110,8 @@ onMounted(async () => {
             </div>
         </div>
     </transition>
+
+    <router-view @save-board="handleBoardAdded" />
 </template>
 
 <style scoped>
