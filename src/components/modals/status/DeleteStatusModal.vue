@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItemById, getItems, deleteItemById, editItem, deleteAndTransfer } from "../libs/fetchUtils.js";
+import { getItemById, getItems, deleteItemById, editItem, deleteAndTransfer } from "../../../libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import NotFound from "@/views/NotFound.vue";
@@ -15,13 +15,15 @@ const statusmanager = ref(new StatusManagement());
 const emit = defineEmits(["taskNotfound", "close", "statusDeleted"]);
 const count = ref(0);
 const selectId = ref();
-
+const boardId = route.params.boardId;
+const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 onMounted(async () => {
     try {
-        task.value = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+        task.value = await getItemById(statusUrl, id);
         console.log(task.value);
-        const taskItems = await getItems(import.meta.env.VITE_BASE_TASK_URL);
-        const statusItems = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+        const taskItems = await getItems(taskUrl);
+        const statusItems = await getItems(statusUrl);
         if (taskItems.some(task => task.status.id === id)) {
             count.value = taskItems.filter(task => task.status.id === id).length;
             tranferModal.value = true;
@@ -42,9 +44,9 @@ async function transferConfirm(transferId) {
     if (transferId != undefined) {
         confirmModal.value = true;
         tranferModal.value = false;
-        const exist = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+        const exist = await getItemById(statusUrl, id);
         console.log(exist);
-        const item = await deleteAndTransfer(import.meta.env.VITE_BASE_STATUS_URL, id, transferId);
+        const item = await deleteAndTransfer(statusUrl, id, transferId);
         if (item === undefined) {
             confirmModal.value = false;
             tranferModal.value = false;
@@ -64,9 +66,9 @@ async function transferConfirm(transferId) {
 
 async function DeleteStatus(deletedId) {
     try {
-        const exist = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, deletedId);
+        const exist = await getItemById(statusUrl, deletedId);
         if (exist) {
-            const item = await deleteItemById(import.meta.env.VITE_BASE_STATUS_URL, deletedId);
+            const item = await deleteItemById(statusUrl, deletedId);
             statusmanager.value.deleteStatus(deletedId);
             emit("statusDeleted", deletedId);
         } else if (transfer.value === 1) {

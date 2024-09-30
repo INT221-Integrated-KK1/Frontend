@@ -1,6 +1,14 @@
 <script setup>
 import { ref } from "vue";
-import { addItem, getItems } from "../libs/fetchUtils.js";
+import { addItem, getItems } from "@/libs/fetchUtils.js";
+import { useRoute } from "vue-router";
+
+const { params } = useRoute();
+const id = Number(params.id);
+console.log(id);
+const boardId = params.boardId;
+const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const showModal = ref(false);
 const name = ref("");
 const description = ref("");
@@ -19,7 +27,7 @@ const AddStatus = async () => {
         description: trimStatusDescription.value
     };
 
-    const existingStatus = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    const existingStatus = await getItems(statusUrl);
     if (existingStatus.some((status) => status.name.toLowerCase() === newItem.name.toLowerCase())) {
         alert("Status name already exists");
         name.value = "";
@@ -44,7 +52,7 @@ const AddStatus = async () => {
         showModal.value = false;
     } else {
         try {
-            const items = await addItem(import.meta.env.VITE_BASE_STATUS_URL, newItem);
+            const items = await addItem(statusUrl, newItem);
             name.value = "";
             description.value = "";
             showModal.value = false;
@@ -59,12 +67,6 @@ const AddStatus = async () => {
 </script>
 
 <template>
-
-    <button @click="showModal = true"
-        class="itbkk-button-add right-3 bottom-3 p-4 px-6 text-lg fixed bg-green-500 text-white hover:bg-green-600 rounded-full">
-        +
-    </button>
-
     <div v-if="$route.name === 'addstatus' || showModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
             <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
@@ -78,14 +80,14 @@ const AddStatus = async () => {
                         placeholder="Name here" v-model="name" />
                     <span class="text-gray-500 text-sm"
                         :class="{ 'text-red-500': name.trim().length > 50 || name.trim().length === 0 }"> {{
-        name.trim().length }} / 50 characters </span>
+                            name.trim().length }} / 50 characters </span>
 
                     <h1 class=" font-bold mt-2">Description : </h1>
                     <textarea
                         class="itbkk-status-description p-2 border-solid border-2 border-grey w-full mb-3 break-words"
                         rows="4" placeholder="Description here" v-model="description" />
                     <span class="text-gray-500 text-sm" :class="{ 'text-red-500': description.trim().length > 200 }">{{
-        description.trim().length }} / 200 characters</span>
+                        description.trim().length }} / 200 characters</span>
                 </div>
                 <hr class=" col-start-1 col-span-3" />
 

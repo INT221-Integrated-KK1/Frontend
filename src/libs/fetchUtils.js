@@ -98,6 +98,7 @@ async function addItem(url, newItem) {
     }
   } catch (error) {
     console.log(`error: ${error}`);
+    return { status: 401, message: "Unauthorized" };
   }
 }
 

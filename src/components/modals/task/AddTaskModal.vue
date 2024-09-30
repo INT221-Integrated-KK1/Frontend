@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { getItems, addItem } from "../libs/fetchUtils.js";
+import { getItems, addItem } from "@/libs/fetchUtils.js";
 import { StatusManagement } from "@/libs/StatusManagement";
+import { useRoute } from 'vue-router'; 
 
 const title = ref("");
 const description = ref("");
@@ -12,6 +13,10 @@ const showModal = ref(false);
 const disabled = "itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 disabled";
 
 const statusmanager = ref(new StatusManagement());
+
+const { params } = useRoute();
+const boardId = params.boardId;
+
 
 const emit = defineEmits(["taskAdded"]);
 const checkWhiteSpace = (title) => {
@@ -60,7 +65,8 @@ const AddTask = async () => {
   } else {
 
     try {
-      const items = await addItem(import.meta.env.VITE_BASE_TASK_URL, newItem);
+      const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+      const items = await addItem(url, newItem);
       title.value = "";
       description.value = "";
       assignees.value = "";
@@ -77,11 +83,12 @@ const AddTask = async () => {
 
   }
 };
-
 onMounted(async () => {
   try {
-    const items = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+    const items = await getItems(url);
     statusmanager.value.setStatuses(items);
+    status.value = items[0].id;
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
@@ -91,12 +98,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <button @click="showModal = true"
-    class="itbkk-button-add right-3 bottom-3 p-4 px-6 text-lg fixed bg-green-500 text-white hover:bg-green-600 rounded-full">
-    +
-  </button>
 
-  <div v-if="$route.name === 'addtask' || showModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="$route.name === 'addtask' || showModal" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">
@@ -115,14 +118,14 @@ onMounted(async () => {
           <textarea class="itbkk-description p-2 border-solid border-2 border-grey w-full h-[14rem] break-words"
             placeholder="Description here" v-model="description" />
           <span class="text-gray-500 text-sm" :class="{ 'text-red-500': description.trim().length > 500 }">{{
-    description.trim().length }} / 500 characters</span>
+            description.trim().length }} / 500 characters</span>
         </div>
         <div class="col-start-3 col-span-1">
           <h1 class="font-bold">Assignees :</h1>
           <textarea class="itbkk-assignees p-2 border-solid border-2 border-grey w-full break-words"
             placeholder="Assignees here" v-model.trim="assignees" />
           <span class="text-gray-500 text-sm" :class="{ 'text-red-500': assignees.trim().length > 30 }">{{
-    assignees.trim().length }} / 30 characters</span>
+            assignees.trim().length }} / 30 characters</span>
           <h1 class="font-bold pt-3">Status :</h1>
 
           <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="status">
@@ -132,14 +135,14 @@ onMounted(async () => {
           </select>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
-          <router-link to="/task">
+          <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button @click="AddTask"
               :class="title === '' || title === ' ' ? disabled : 'itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 '"
               :disabled="checkWhiteSpace(title)">
               Save
             </button>
           </router-link>
-          <router-link to="/task">
+          <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white" @click="showModal = false">
               Cancel
             </button>

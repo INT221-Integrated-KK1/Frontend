@@ -1,13 +1,14 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from "vue";
-import { getItems, getItemById } from "../libs/fetchUtils.js";
+import { getItems, getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 
 const emit = defineEmits('close', 'saveChanges', 'status-updated');
 const { params } = useRoute();
-const id = Number(params.id);
-console.log(id);
+const boardId = params.boardId;
+const taskId = Number(params.taskId);
+console.log(taskId);
 
 const statusmanager = ref(new StatusManagement());
 const isLoaded = ref(false);
@@ -29,11 +30,16 @@ const task = reactive({
   updatedOn: ""
 });
 
+const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+
 onMounted(async () => {
   try {
     isLoaded.value = true;
-    const item = await getItemById(import.meta.env.VITE_BASE_TASK_URL, id);
-    const statusItem = await getItems(import.meta.env.VITE_BASE_STATUS_URL);
+    const item = await getItemById(taskUrl, taskId);
+    console.log(item);
+    
+    const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)
     task.id = item.id;
     task.title = item.title;
@@ -80,7 +86,7 @@ const isFormModified = computed(() => JSON.stringify(task) !== initialTask);
 
 const saveChanges = () => {
   if (isFormModified.value) {
-    emit('saveChanges', task, id);
+    emit('saveChanges', task, taskId);
   }
 }
 
@@ -96,7 +102,7 @@ const countOptionalCharacters = (text) => {
 </script>
 
 <template>
-  <div v-if="isLoaded" class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="isLoaded" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class=" col-start-1 col-span-3">
@@ -105,7 +111,7 @@ const countOptionalCharacters = (text) => {
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-model="task.title">
           <span class="text-gray-500 text-sm"
             :class="{ 'text-red-500': task.title.trim().length > 100 || task.title.trim().length === 0 }">{{
-              task.title.trim().length }} / 100 characters</span>
+            task.title.trim().length }} / 100 characters</span>
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -133,19 +139,19 @@ const countOptionalCharacters = (text) => {
               {{ status.name }}
             </option>
           </select>
-          <h1 class="font-bold itbkk-timezone">Timezone : {{ task.status.id }}</h1>
+
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
           <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(task.createdOn) }}</h1>
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(task.updatedOn) }}</h1>
         </div>
         <div class="flex justify-end mt-4 col-start-3">
-          <router-link to="/task">
+          <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges"
               :disabled="!isFormModified || checkWhiteSpace(task.title)">
               Save
             </button>
           </router-link>
-          <router-link to="/task">
+          <router-link :to="({ name: 'task', params: {boardId: params.boardId}})">
             <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
               Close
             </button>

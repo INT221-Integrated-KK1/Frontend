@@ -1,65 +1,69 @@
 <script setup>
-import { ref, watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import AddBoardModal from '@/components/AddBoardModal.vue';
-import Header from '@/components/Header.vue';
-
-// State to store whether modal is shown and to track list of boards
-const showModal = ref(false);
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import Sidebar from '@/components/Sidebar.vue';
+import { getItems } from '@/libs/fetchUtils';
+import { BoardManagement } from '@/libs/BoardManagement';
 const router = useRouter();
-const route = useRoute();
-const boards = ref([]); // List to store the created boards
+const emit = defineEmits(['save-board-sidebar']);
+const boardmanager = ref(new BoardManagement());
+const boards = ref([]);
 
-// Open modal and change the route to /board/add
+// function handleBoardAdded(addBoard) {
+//   console.log('Board added:', addBoard);
+//   boardmanager.value.addBoard(addBoard);
+// }
+
 const openModal = () => {
-  router.push('/board/add');
+  console.log('Opening modal');
+  router.push({ name: 'addboard' });
 };
 
-// Close modal and reset route to /board
-const closeModal = () => {
-  showModal.value = false;
-  router.push('/board');
-};
-
-// Handle saving the board name and add it to the list of boards
-const handleSaveBoard = (boardName) => {
-  if (boardName) {
-    boards.value.push(boardName);
-  }
-  closeModal();
-};
-
-// Watch route changes to handle opening/closing modal
-watch(route, (newRoute) => {
-  if (newRoute.path === '/board/add') {
-    showModal.value = true;
-  } else {
-    showModal.value = false;
+onMounted(async () => {
+  try {
+    const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+    boardmanager.value.setBoards(items);
+    boards.value = items;
+  } catch (error) {
+    console.error('Error fetching boards:', error);
   }
 });
+
 </script>
 
 <template>
-  <Header />
-  <h1 class="text-5xl text-center font-bold mt-10">Board List</h1>
+  <div class="flex ">
+    <div>
+      <Sidebar />
+    </div>
 
-  <div class="flex justify-end mt-5 mr-32">
-    <button @click="openModal" class="bg-gray-500 text-white px-4 py-2 rounded transition transform hover:scale-105">
-      Create personal board
-    </button>
-  </div>
+    <div class="w-screen bg-slate-50 ">
 
-  <!-- List of boards as cards -->
-  <div v-if="boards.length" class="mt-10 mx-32 grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div v-for="(board, index) in boards" :key="index"
-      class="bg-white shadow-md rounded-lg p-4 cursor-pointer transition transform hover:scale-105 hover:bg-gray-300 duration-300 ease-in-out">
-      <h3 class="text-xl font-bold">{{ board }}</h3>
+      <h1 class="text-5xl text-center font-bold mt-10">Board List</h1>
+      <div class="mt-10 mx-32 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div @click="openModal"
+          class="itbkk-button-create rounded-xl p-4 cursor-pointer transition transform hover:scale-105  duration-300 ease-in-out text-xl font-semibold text-center flex items-center justify-center h-32 w-auto border-dashed border-2 border-slate-400">
+          + Add New Board
+        </div>
+
+        <div v-for="(board, index) in boards" :key="index">
+          <div @click="router.push({ name: 'task', params: { boardId: board.id } })"
+            class="card bg-base-100 w-auto h-auto shadow-xl transition transform hover:scale-105 duration-300 ease-in-out">
+            <figure>
+              <img src="@/assets/board-bg.jpg" alt="board" class="w-full h-20" />
+            </figure>
+
+            <div class="card-title text-base font-semibold p-3 overflow-auto">
+              {{ board.name }}
+            </div>
+          </div>
+        </div>
+        <router-view  />
+        <!-- <router-view @save-board="handleBoardAdded" /> -->
+      </div>
     </div>
   </div>
 
-  <p v-else class="text-center mt-10">No boards available. Please create one!</p>
-
-  <AddBoardModal v-if="showModal" @close="closeModal" @save-board="handleSaveBoard" />
 </template>
 
 <style scoped></style>

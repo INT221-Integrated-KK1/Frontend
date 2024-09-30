@@ -17,7 +17,8 @@
     "jwt-decode": "^4.0.0",
     "pinia": "^2.2.2",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue-jwt-decode": "^0.1.0",
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

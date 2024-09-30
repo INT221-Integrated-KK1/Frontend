@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, reactive, computed } from "vue";
-import { getItemById } from "../libs/fetchUtils.js";
+import { getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 
 
@@ -9,7 +9,9 @@ const emit = defineEmits(['saveChanges', 'close'])
 const { params } = useRoute();
 const id = Number(params.id);
 console.log(id);
-
+const boardId = params.boardId;
+const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const isLoaded = ref(false);
 
 const status = reactive({
@@ -21,7 +23,7 @@ console.log(status);
 
 onMounted(async () => {
     try {
-        const items = await getItemById(import.meta.env.VITE_BASE_STATUS_URL, id);
+        const items = await getItemById(statusUrl, id);
         status.id = items.id;
         status.name = items.name;
         status.description = items.description;
