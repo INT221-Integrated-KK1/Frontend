@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { isAuthenticated } from "../libs/fetchUtils.js";
+import { getItems, isAuthenticated } from "../libs/fetchUtils.js";
 import VueJwtDecode from "vue-jwt-decode";
 import AlertBox from "@/components/AlertBox.vue";
 
@@ -29,7 +29,20 @@ async function loginHandler() {
     }
     if (data.access_token) {
         showLoginAlert.value = false;
-        router.push("/board");
+        try {
+            const board = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+            if (board.length < 1) {
+                router.push("/board");
+            } else {
+                router.push({ name: "task", params: { boardId: board[0].id } });
+                console.log(board[0].id);
+                
+            }
+        } catch (error) {
+            console.error("Error fetching task details:", error)
+            localStorage.clear();
+        }
+
         localStorage.setItem('token', data.access_token);
         console.log(data.access_token);
 

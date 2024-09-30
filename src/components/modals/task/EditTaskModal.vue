@@ -102,7 +102,7 @@ const countOptionalCharacters = (text) => {
 </script>
 
 <template>
-  <div v-if="isLoaded" class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="isLoaded" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class=" col-start-1 col-span-3">
@@ -111,7 +111,7 @@ const countOptionalCharacters = (text) => {
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-model="task.title">
           <span class="text-gray-500 text-sm"
             :class="{ 'text-red-500': task.title.trim().length > 100 || task.title.trim().length === 0 }">{{
-              task.title.trim().length }} / 100 characters</span>
+            task.title.trim().length }} / 100 characters</span>
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -139,7 +139,7 @@ const countOptionalCharacters = (text) => {
               {{ status.name }}
             </option>
           </select>
-      
+
           <h1 class="font-bold itbkk-timezone">Timezone : {{ timezone }}</h1>
           <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(task.createdOn) }}</h1>
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(task.updatedOn) }}</h1>

@@ -55,7 +55,7 @@ const deleteTask = async (deleteid) => {
 
 <template>
   <div>
-    <div v-if="title" class="text-black fixed z-10 inset-0 overflow-y-auto">
+    <div v-if="title" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
       <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
         <div class="bg-white w-1/2 p-6 rounded shadow-lg">
           <div class="">
@@ -67,8 +67,7 @@ const deleteTask = async (deleteid) => {
 
             <div class="text-right">
               <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
-                <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                  @click="deleteTask(taskId)">
+                <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3" @click="deleteTask(taskId)">
                   Confirm
                 </button>
               </router-link>

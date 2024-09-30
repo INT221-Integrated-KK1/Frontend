@@ -20,6 +20,7 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
 
 const statuses = ref([]);
 
+
 const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 const showTaskDetail = ref(false)
@@ -40,11 +41,15 @@ const { params } = useRoute();
 const boardId = params.boardId;
 console.log(boardId);
 
+const board = ref([]);
+
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 onMounted(async () => {
   const items = await getItems(taskUrl);
   const statusItems = await getItems(statusUrl);
+  const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
+  board.value = boardItems;
   todo.value = items;
   statuses.value = statusItems;
   taskmanager.value.setTasks(items);
@@ -224,16 +229,16 @@ const saveChanges = async (getTaskProp, id) => {
 
 // ----------------------------------- task details handler -----------------------------------
 
-// function taskDetailsHandler(id) {
-//   console.log(id);
-//   taskId.value = id;
-//   showTaskDetail.value = true;
-// }
+function taskDetailsHandler(id) {
+  console.log(id);
+  taskId.value = id;
+  showTaskDetail.value = true;
+}
 
-// function isTaskDetailModalOpen() {
-//   showTaskDetail.value = false;
-//   console.log("Task detail modal closed");
-// }
+function isTaskDetailModalOpen() {
+  showTaskDetail.value = false;
+  console.log("Task detail modal closed");
+}
 
 // ----------------------------------- sort handler -----------------------------------
 
@@ -315,14 +320,14 @@ const getStatusClass = (status) => {
       <AlertBox :tableType="tableType" :showAdded="showAdded" :showAddedError="showAddedError"
         :showDeleted="showDeleted" :showDeletedError="showDeletedError" :showUpdated="showUpdated"
         :showUpdatedError="showUpdatedError" :addedTitle="addedTitle" :updatedTitle="updatedTitle" />
-      <h1 class="text-5xl text-center font-bold mt-10">Board</h1>
+      <h1 class="text-4xl overflow-x-auto text-center font-bold mt-10">{{ board.name }}</h1>
       <!-- filter -->
       <div class="flex justify-between mx-52 mt-5 items-center">
         <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
         <!-- add task -->
         <div class="flex">
           <router-link :to="{ name: 'addtask' }">
-            <div class="bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
+            <div class="itbkk-button-add bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                 <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
               </svg>
@@ -333,7 +338,7 @@ const getStatusClass = (status) => {
 
           <!-- manage status -->
           <RouterLink :to="{ name: 'status', params: { boardId: params.boardId } }">
-            <div class="btn font-bold">Manage Status</div>
+            <div class="itbkk-manage-status btn font-bold">Manage Status</div>
           </RouterLink>
         </div>
       </div>
@@ -378,11 +383,11 @@ const getStatusClass = (status) => {
                 {{ task.status.name }}
               </td>
 
-              <div class="flex justify-center">
+              <div class="flex justify-center itbkk-button-action">
                 <router-link :to="{ name: 'editTaskModal', params: { boardId: params.boardId, taskId: task.id } }">
 
-                  <td class="itbkk-button-action" @click="editHandler(task.id)">
-                    <span class="itbkk-button-edit block  p-2 text-center">
+                  <td class="itbkk-button-edit" @click="editHandler(task.id)">
+                    <span class=" block  p-2 text-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                         <g fill="none" fill-rule="evenodd">
                           <path
@@ -396,8 +401,8 @@ const getStatusClass = (status) => {
                 </router-link>
 
                 <router-link :to="{ name: 'deleteTask', params: { taskId: task.id } }">
-                  <td class="itbkk-button-action" @click="showConfirmModals(task)">
-                    <span class="itbkk-button-delete block p-2 text-center" :id="task.id">
+                  <td class="itbkk-button-delete" @click="showConfirmModals(task)">
+                    <span class=" block p-2 text-center" :id="task.id">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                         <g fill="none">
                           <path
@@ -410,6 +415,9 @@ const getStatusClass = (status) => {
                   </td>
                 </router-link>
               </div>
+            </tr>
+            <tr v-if="todo.length < 1">
+              <td colspan="5" class="text-center text-slate-500 italic"> No tasks found</td>
             </tr>
           </tbody>
         </table>

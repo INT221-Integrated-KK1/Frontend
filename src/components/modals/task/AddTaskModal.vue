@@ -99,7 +99,7 @@ onMounted(async () => {
 
 <template>
 
-  <div v-if="$route.name === 'addtask' || showModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="$route.name === 'addtask' || showModal" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">

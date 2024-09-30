@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { addItem } from '@/libs/fetchUtils';
+import { addItem, getItems } from '@/libs/fetchUtils';
 import { useBoardStore } from '@/stores/useBoardStore';
 
 import { BoardManagement } from '@/libs/BoardManagement';
@@ -36,29 +36,41 @@ const closeModal = () => {
 const characterCount = computed(() => boardName.value.length);
 const isSaveButtonDisabled = computed(() => boardName.value.trim() === '');
 
+const board = ref('asdasd');
 async function saveBoard() {
-  if (isValid.value) {
-    const boardsinput = boardName.value;
+  // if (isValid.value) {
+  const boardsinput = boardName.value;
+  try {
+    const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput });
+    boardmanager.value.addBoard(items);  
+    // emit('save-board', items);
+    console.log("items", items);
+    console.log('Board saved:', boardName.value);
     try {
-      const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput });
-      boardmanager.value.addBoard(items);
-      console.log("items", items);
-      console.log('Board saved:', boardName.value);
-
-      emit('save-board', items);
-
-      if (items.status === 401) {
-        localStorage.clear();
-        router.push({ name: 'login' });
-      }
+      const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+     
+      console.log('Board:', boardItem[0].id);
+      board.value = boardItem[0].id;
+     
+      
     } catch (error) {
-      console.error('Error saving board:', error);
+      console.error("Error fetching task details:", error);
+      localStorage.clear();
+      router.push({ name: 'login' });
+    } if (items.status === 401) {
+      localStorage.clear();
       router.push({ name: 'login' });
     }
-    closeModal();
+  } catch (error) {
+    console.error('Error saving board:', error);
+    localStorage.clear();
+    router.push({ name: 'login' });
   }
+  // closeModal();
+  console.log(board.value);
+  router.push({ name: 'task', params: { boardId: board.value } });
 };
-console.log('aaaaaaaaaaaa');
+// console.log('aaaaaaaaaaaa');
 
 </script>
 
@@ -77,10 +89,12 @@ console.log('aaaaaaaaaaaa');
       <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
 
       <div class="flex justify-end space-x-4">
-        <button @click="saveBoard" :disabled="isSaveButtonDisabled"
-          class="itbkk-button-ok bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
-          Save
-        </button>
+
+          <button @click="saveBoard" :disabled="isSaveButtonDisabled"
+            class="itbkk-button-ok bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
+            Save
+          </button>
+
         <button @click="closeModal"
           class="itbkk-button-cancel bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
       </div>

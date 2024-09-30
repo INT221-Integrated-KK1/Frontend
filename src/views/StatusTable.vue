@@ -219,7 +219,7 @@ const handleStatusDeletedNotfound = () => {
             <div class="flex justify-end mx-52 mt-5 items-end">
 
                 <router-link :to="{ name: 'addstatus' }">
-                    <div class="bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
+                    <div class="itbkk-button-add bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                             <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
                         </svg>
@@ -248,17 +248,18 @@ const handleStatusDeletedNotfound = () => {
                     </thead>
                     <tbody>
                         <tr v-for="(status, index) in statusmanager.getStatus()" :key="index"
-                            class=" h-16 border-solid border-2 border-black">
+                            class="itbkk-item h-16 border-solid border-2 border-black">
                             <th class="font-semibold text-center">{{ index + 1 }}</th>
                             <td>
-                                <div v-if="status.name && status.name.length > 10" class=" block py-2 text-center">
+                                <div v-if="status.name && status.name.length > 10"
+                                    class="itbkk-status-name block py-2 text-center">
                                     <span>{{ status.name.substring(0, 25) }}</span>
                                     <br>
                                     <span>{{ status.name.substring(26, 50) }}</span>
                                 </div>
-                                <div v-else>{{ status.name }}</div>
+                                <div class="itbkk-status-name" v-else>{{ status.name }}</div>
                             </td>
-                            <td class="break-words"
+                            <td class=" break-words"
                                 :class="status.description === null || status.description === '' ? EmptyStyle : ''">
                                 <div v-if="status.description && status.description.length > 50">
                                     <span>{{ status.description.substring(0, 50) }}</span>
@@ -271,7 +272,7 @@ const handleStatusDeletedNotfound = () => {
                                 </div>
                                 <div v-else>
                                     {{ status.description === null || status.description === "" ?
-                                        "No Description Provided" : status.description }}
+                                    "No Description Provided" : status.description }}
                                 </div>
                             </td>
 

@@ -9,11 +9,10 @@ const emit = defineEmits(['save-board-sidebar']);
 const boardmanager = ref(new BoardManagement());
 const boards = ref([]);
 
-function handleBoardAdded(addBoard) {
-  console.log('Board added:', addBoard);
-  boardmanager.value.addBoard(addBoard);
-  emit('save-board-sidebar', addBoard);
-}
+// function handleBoardAdded(addBoard) {
+//   console.log('Board added:', addBoard);
+//   boardmanager.value.addBoard(addBoard);
+// }
 
 const openModal = () => {
   console.log('Opening modal');
@@ -59,7 +58,8 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <router-view @save-board="handleBoardAdded" />
+        <router-view  />
+        <!-- <router-view @save-board="handleBoardAdded" /> -->
       </div>
     </div>
   </div>
