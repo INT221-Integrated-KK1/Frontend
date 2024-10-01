@@ -67,12 +67,13 @@ const deleteTask = async (deleteid) => {
 
             <div class="text-right">
               <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
-                <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3" @click="deleteTask(taskId)">
+                <button class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mr-3"
+                  @click="deleteTask(taskId)">
                   Confirm
                 </button>
               </router-link>
               <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
-                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+                <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
                   Cancel
                 </button>
               </router-link>

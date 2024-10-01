@@ -378,14 +378,14 @@ const getStatusClass = (status) => {
               </td>
 
 
-              <td class="itbkk-status " :class="getStatusClass(task.status.name).class">
+              <td class="itbkk-status itbkk-button-action" :class="getStatusClass(task.status.name).class">
                 {{ task.status.name }}
               </td>
 
-              <div class="flex justify-center itbkk-button-action">
+              <div class="flex justify-center ">
                 <router-link :to="{ name: 'editTaskModal', params: { boardId: params.boardId, taskId: task.id } }">
 
-                  <td class="itbkk-button-edit" @click="editHandler(task.id)">
+                  <td class=" itbkk-button-edit" @click="editHandler(task.id)">
                     <span class=" block  p-2 text-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                         <g fill="none" fill-rule="evenodd">

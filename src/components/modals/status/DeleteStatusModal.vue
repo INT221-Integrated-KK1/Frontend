@@ -102,12 +102,13 @@ async function DeleteStatus(deletedId) {
                             </option>
                         </select>
                         <div class="text-right">
-                            <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
+                            <button class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mr-3"
                                 @click="transferConfirm(selectId)" :disabled="selectId === undefined">
                                 Transfer
                             </button>
                             <router-link :to="{ name: 'status' }">
-                                <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+                                <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white"
+                                    @click="$emit('close')">
                                     Cancel
                                 </button>
                             </router-link>

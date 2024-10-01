@@ -146,13 +146,13 @@ const countOptionalCharacters = (text) => {
         </div>
         <div class="flex justify-end mt-4 col-start-3">
           <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
-            <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="saveChanges"
-              :disabled="!isFormModified || checkWhiteSpace(task.title)">
+            <button class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3"
+              @click="saveChanges" :disabled="!isFormModified || checkWhiteSpace(task.title)">
               Save
             </button>
           </router-link>
           <router-link :to="({ name: 'task', params: {boardId: params.boardId}})">
-            <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
+            <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
               Close
             </button>
           </router-link>

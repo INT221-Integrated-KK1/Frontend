@@ -91,7 +91,7 @@ const AddStatus = async () => {
                 </div>
                 <hr class=" col-start-1 col-span-3" />
 
-                <div class="flex justify-end mt-4 col-start-3">
+                <div class="flex justify-end mt-4 col-start-3 ">
                     <router-link :to="{ name: 'status' }">
                         <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
                             @click="AddStatus" :disabled="checkWhiteSpace(name)">
