@@ -32,6 +32,9 @@ const closeModal = () => {
   router.push({ name: 'board' });
 };
 
+const checkWhiteSpace = (title) => {
+  return /^\s*$/.test(title);
+};
 
 const characterCount = computed(() => boardName.value.length);
 const isSaveButtonDisabled = computed(() => boardName.value.trim() === '');
@@ -39,20 +42,25 @@ const isSaveButtonDisabled = computed(() => boardName.value.trim() === '');
 const board = ref('asdasd');
 async function saveBoard() {
   // if (isValid.value) {
-  const boardsinput = boardName.value;
+  const boardsinput = ref(boardName.value.trim());
   try {
-    const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput });
+    const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput.value });
     boardmanager.value.addBoard(items);  
     // emit('save-board', items);
     console.log("items", items);
-    console.log('Board saved:', boardName.value);
+    console.log('Board saved:', boardsinput.value);
     try {
       const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-     
+      // for (let i = 0; i < boardItem.length; i++) {
+      //   if (boardItem[i].name === boardName.value) {
+      //     board.value = boardItem[i].id;
+      //     break;
+      //   }
+      // }
       console.log('Board:', boardItem[0].id);
       board.value = boardItem[0].id;
      
-      
+
     } catch (error) {
       console.error("Error fetching task details:", error);
       localStorage.clear();
@@ -63,8 +71,7 @@ async function saveBoard() {
     }
   } catch (error) {
     console.error('Error saving board:', error);
-    localStorage.clear();
-    router.push({ name: 'login' });
+    alert('There is a problem. Please try again later.');
   }
   // closeModal();
   console.log(board.value);
@@ -81,19 +88,20 @@ async function saveBoard() {
       <h2 class="text-2xl font-bold mb-5 text-green-800">New Board</h2>
 
       <label for="boardName" class="block text-lg mb-2">Name</label>
-      <input v-model="boardName" type="text" class="itbkk-board-name z-index w-full p-2 border rounded mb-2"
+      <input v-model="boardName" maxlength="120" type="text" class="itbkk-board-name z-index w-full p-2 border rounded mb-2"
         placeholder="Enter board name" />
 
-      <p class="text-gray-600 mb-2">{{ characterCount }}/120</p>
+      <!-- <p class="text-gray-600 mb-2" :class="{ 'text-red-600 mb-2': boardName.trim().length > 120 || boardName.trim().length === 0 }">
+        {{ boardName.trim().length }}/120</p> -->
 
       <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
 
       <div class="flex justify-end space-x-4">
 
-          <button @click="saveBoard" :disabled="isSaveButtonDisabled"
-            class="itbkk-button-ok bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
-            Save
-          </button>
+        <button @click="saveBoard" :disabled="checkWhiteSpace(boardName) || isSaveButtonDisabled"
+          class="itbkk-button-ok bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
+          Save
+        </button>
 
         <button @click="closeModal"
           class="itbkk-button-cancel bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>

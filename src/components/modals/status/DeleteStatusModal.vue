@@ -47,15 +47,9 @@ async function transferConfirm(transferId) {
         const exist = await getItemById(statusUrl, id);
         console.log(exist);
         const item = await deleteAndTransfer(statusUrl, id, transferId);
-        if (item === undefined) {
-            confirmModal.value = false;
-            tranferModal.value = false;
-            emit("taskNotfound")
-        } else {
-            transfer.value = 1;
-            console.log(transfer);
-            confirmModal.value = true;
-        }
+        transfer.value = 1;
+        console.log(transfer);
+        confirmModal.value = true;
     } else {
         confirmModal.value = false;
         tranferModal.value = false;

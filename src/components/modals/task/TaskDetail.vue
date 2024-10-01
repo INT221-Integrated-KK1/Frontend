@@ -6,6 +6,9 @@ import { StatusManagement } from "@/libs/StatusManagement.js";
 import NotFound from "@/views/NotFound.vue";
 
 const emit = defineEmits(['closed'])
+const props = defineProps({
+  id: Number
+});
 
 const task = ref(null);
 const statusmanager = ref(new StatusManagement());
@@ -13,29 +16,18 @@ const route = useRoute();
 const { params } = useRoute();
 const routeId = ref(null);
 
-const props = defineProps({
-  taskId: Number
-});
-
 if (props.id === undefined) {
-  routeId.value = Number(route.params.taskId);
-  console.log("Route ID:", routeId.value);
-  
+  routeId.value = params.taskId;
 }
 const boardId = params.boardId;
-const taskId = params.taskId ? Number(params.taskId) : routeId.value;
-console.log("Task ID:", taskId);
-
-console.log(taskId);
-console.log(boardId);
+const taskId = ref(props.id || routeId);
 
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 
 onMounted(async () => {
   try {
-    console.log(taskId);
-    const item = await getItemById(taskUrl, taskId);
+    const item = await getItemById(taskUrl, taskId.value);
     task.value = item;
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)
@@ -65,7 +57,6 @@ const formatToLocalTime = (dateTimeString) => {
   // const localTime = new Date(dateTime - timezoneOffset);
   //return localTime.toLocaleString()
   const localDate = new Date(dateTime.getTime());
-  console.log(localDate);
   return localDate.toLocaleString("en-GB", {
     day: "2-digit",
     month: "2-digit",

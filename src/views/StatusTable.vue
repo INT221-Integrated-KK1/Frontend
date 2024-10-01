@@ -319,7 +319,8 @@ const handleStatusDeletedNotfound = () => {
             </div>
         </div>
     </div>
-    <RouterView />
+
+    <!-- <RouterView /> -->
 
     <router-link :to="{ name: 'addstatus' }">
         <AddStatusModal @statusAdded="handleStatusAdded" />

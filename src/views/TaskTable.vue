@@ -230,7 +230,6 @@ const saveChanges = async (getTaskProp, id) => {
 // ----------------------------------- task details handler -----------------------------------
 
 function taskDetailsHandler(id) {
-  console.log(id);
   taskId.value = id;
   showTaskDetail.value = true;
 }
@@ -368,7 +367,7 @@ const getStatusClass = (status) => {
               <th class="font-semibold text-center">{{ index + 1 }}</th>
 
               <router-link :to="{ name: 'taskdetail', params: { boardId: params.boardId, taskId: task.id } }">
-                <td class="itbkk-title cursor-pointer">
+                <td @click="taskDetailsHandler(task.id)" class="itbkk-title cursor-pointer">
                   <span class=" block py-2 text-center">{{ task.title }}</span>
                 </td>
               </router-link>
@@ -425,7 +424,7 @@ const getStatusClass = (status) => {
     </div>
   </div>
 
-  <RouterView />
+  <!-- <RouterView /> -->
 
   <Teleport to="body">
     <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
@@ -437,7 +436,7 @@ const getStatusClass = (status) => {
   </Teleport>
 
   <Teleport to="body">
-    <TaskDetail v-if="showTaskDetail" @closed="isTaskDetailModalOpen" />
+    <TaskDetail :id="taskId" v-if="showTaskDetail" @closed="isTaskDetailModalOpen" />
   </Teleport>
 
   <AddTaskModal @taskAdded="handleTaskAdded" />
