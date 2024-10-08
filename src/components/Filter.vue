@@ -12,8 +12,6 @@ const { params } = useRoute();
 const boardId = params.boardId;
 const taskId = Number(params.taskId);
 
-
-const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 onMounted(async () => {
     statuses.value = await getItems(statusUrl);

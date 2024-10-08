@@ -15,6 +15,8 @@ import Board from "@/views/Board.vue";
 import TaskTable from "@/views/TaskTable.vue";
 import StatusTable from "@/views/StatusTable.vue";
 
+import { addToken } from "@/libs/fetchUtils";
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -98,6 +100,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const haveToken = localStorage.getItem("token");
+  const haveRefreshToken = localStorage.getItem("refreshToken");
   if (haveToken) {
     if (haveToken.split(".").length !== 3 || typeof haveToken !== "string") {
       localStorage.clear();
@@ -114,8 +117,16 @@ router.beforeEach((to, from, next) => {
         localStorage.clear();
       }
     }
-  } else {
-    localStorage.clear();
+  } else if (haveToken === null && haveRefreshToken) {
+    const renew = async () => {
+      const res = await addToken(import.meta.env.VITE_BASE_TOKEN_URL);
+      if (res.status === 401) {
+        localStorage.clear();
+        next({ name: "login" });
+      } else {
+        localStorage.setItem("token", res.token);
+      }
+    };
   }
 
   if (to.name !== "login" && !localStorage.getItem("token"))

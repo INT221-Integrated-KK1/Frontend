@@ -171,6 +171,28 @@ async function isAuthenticated(url, input) {
     console.log(`error: ${error}`);
   }
 }
+async function addToken (url) {
+  localStorage.getItem("refreshToken");
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        refreshToken: localStorage.getItem("refreshToken"),
+      }),
+    });
+    const response = await res.json();
+    if (response.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+    }
+    return response;
+  } catch (error) {
+    console.log(`error: ${error}`);
+  }
+} 
 
 export {
   getItems,
@@ -180,4 +202,5 @@ export {
   editItem,
   deleteAndTransfer,
   isAuthenticated,
+  addToken,
 };

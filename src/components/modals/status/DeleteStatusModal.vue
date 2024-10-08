@@ -21,7 +21,6 @@ const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 onMounted(async () => {
     try {
         task.value = await getItemById(statusUrl, id);
-        console.log(task.value);
         const taskItems = await getItems(taskUrl);
         const statusItems = await getItems(statusUrl);
         if (taskItems.some(task => task.status.id === id)) {
@@ -44,11 +43,9 @@ async function transferConfirm(transferId) {
     if (transferId != undefined) {
         confirmModal.value = true;
         tranferModal.value = false;
-        const exist = await getItemById(statusUrl, id);
-        console.log(exist);
-        const item = await deleteAndTransfer(statusUrl, id, transferId);
+        await getItemById(statusUrl, id);
+        await deleteAndTransfer(statusUrl, id, transferId);
         transfer.value = 1;
-        console.log(transfer);
         confirmModal.value = true;
     } else {
         confirmModal.value = false;
@@ -62,7 +59,7 @@ async function DeleteStatus(deletedId) {
     try {
         const exist = await getItemById(statusUrl, deletedId);
         if (exist) {
-            const item = await deleteItemById(statusUrl, deletedId);
+            await deleteItemById(statusUrl, deletedId);
             statusmanager.value.deleteStatus(deletedId);
             emit("statusDeleted", deletedId);
         } else if (transfer.value === 1) {

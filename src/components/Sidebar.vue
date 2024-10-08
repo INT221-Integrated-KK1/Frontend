@@ -1,7 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
-// import { useBoardStore } from '@/stores/useBoardStore';
 import { BoardManagement } from '@/libs/BoardManagement';
 import { getItems } from '@/libs/fetchUtils';
 const router = useRouter();
@@ -16,12 +15,7 @@ const OpenBoard = () => {
 }
 
 const boardmanager = ref(new BoardManagement());
-
 const name = localStorage.getItem('username');
-
-// function handleBoardAdded(addBoard) {
-//     boardmanager.value.addBoard(addBoard);
-// }
 
 function signOut() {
     localStorage.clear();
@@ -61,18 +55,8 @@ onMounted(async () => {
 
                 </div>
                 <hr class=" border-2 border-zinc-950 mb-2 " />
-
                 <div class="font-bold text-lg hover:text-white" role="button" @click="OpenBoard">Home</div>
-
-                <div class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">Board List</div>
-                <!-- <ul v-for="(board, index) in boards" :key="index" class="rounded-box w-52">
-                    <li>
-                        <div @click="router.push({ name: 'task', params: { boardId: board.id } })"
-                            class="menu font-semibold hover:text-white overflow-hidden">
-                            {{ board.name }}
-                        </div>
-                    </li>
-                </ul> -->
+                <div class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">Personal Boards</div>
 
 
             </div>

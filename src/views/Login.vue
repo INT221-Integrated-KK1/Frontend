@@ -21,6 +21,7 @@ async function loginHandler() {
     try {
         let decode = VueJwtDecode.decode(data.access_token);
         localStorage.setItem('token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('decode', decode);
         localStorage.setItem('username', decode.name);
     } catch (error) {
@@ -81,7 +82,7 @@ const showPassword = () => {
                             <span class="label-text text-xl font-bold">Username</span>
                         </label>
                         <input type="text"
-                            class="input input-bordered w-full itbkk-username rounded-xl border-zinc-300 border-2"
+                            class="input input-bordered w-full itbkk-username bg-white rounded-xl border-zinc-300 border-2"
                             v-model="inputForm.userName" placeholder="Type your username" :maxlength="50" />
                     </div>
                     <label class="label mt-4">
@@ -89,7 +90,7 @@ const showPassword = () => {
                     </label>
                     <div class="relative w-full">
                         <input type="password"
-                            class="input input-bordered w-full pr-10 border-zinc-300 border-2 itbkk-password autocomplete-off"
+                            class="input input-bordered w-full pr-10 bg-white border-zinc-300 border-2 itbkk-password autocomplete-off"
                             id="password" v-model="inputForm.password" placeholder="Type your password"
                             :maxlength="14" />
                         <i @click="showPassword" class="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -108,9 +109,6 @@ const showPassword = () => {
                                     stroke-width="1.5"
                                     d="M20.645 7c-.731 2.05-1.958 3.813-3.534 5.082c-1.493 1.212-3.286 1.835-5.111 1.774c-1.825.06-3.618-.562-5.111-1.774C5.313 10.813 4.086 9.05 3.355 7M12 13.857V17m5.7-1.095l-1.919-2.947m-7.562 0L6.3 15.905m15.2-4.381L19.315 9.64m-14.63 0L2.5 11.523" />
                             </svg>
-
-
-
                         </i>
                     </div>
                     <button

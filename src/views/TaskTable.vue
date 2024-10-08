@@ -11,6 +11,7 @@ import Sort from "@/components/Sort.vue";
 import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import { useRoute } from 'vue-router';
+import BoardVisibility from "@/components/BoardVisibility.vue";
 
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
@@ -39,8 +40,6 @@ const showUpdatedError = ref(false);
 
 const { params } = useRoute();
 const boardId = params.boardId;
-console.log(boardId);
-
 const board = ref([]);
 
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
@@ -79,9 +78,7 @@ async function handleTaskAdded(addedTasks) {
 
 async function showConfirmModals(task) {
   const items = await getItemById(taskUrl, task.id);
-  console.log(task.id);
   showDeleteModal.value = true;
-  console.log(items);
 }
 
 const handleClose = () => {
@@ -99,7 +96,6 @@ const handleTaskDeleted = (deletedid) => {
 };
 
 const handleTaskDeletedNotfound = () => {
-  console.log("Received task not found: ");
   showDeleteModal.value = false;
   showDeletedError.value = true;
   setTimeout(() => {
@@ -117,7 +113,6 @@ async function editHandler(id) {
   const items = await getItemById(taskUrl, id);
   if (items !== undefined) {
     showEditModal.value = true;
-    console.log(items);
   } else {
     showUpdatedError.value = true;
     setTimeout(() => {
@@ -129,22 +124,17 @@ async function editHandler(id) {
 const saveChanges = async (getTaskProp, id) => {
 
   const checkinput = ref(0);
-  console.log(getTaskProp);
 
   if (getTaskProp.title.length > 100) {
     alert("Title cannot contain more than 100 characters");
     checkinput.value += 1;
-    console.log("Title Alert:", getTaskProp.title.length);
   }
 
-  console.log(getTaskProp.description);
   if (getTaskProp.description == null || getTaskProp.description == "" || getTaskProp.description == undefined) {
   }
   else if (getTaskProp.description.length > 500) {
-    console.log(getTaskProp.description.length);
     alert("Description cannot contain more than 500 characters");
     checkinput.value += 1;
-    console.log("Description Alert:", getTaskProp.description.length);
   }
 
 
@@ -153,7 +143,6 @@ const saveChanges = async (getTaskProp, id) => {
   } else if (getTaskProp.assignees.length > 30) {
     alert("Assignees cannot contain more than 30 characters");
     checkinput.value += 1;
-    console.log("Assignees Alert:", getTaskProp.assignees.length);
   }
 
   const editedTask = {
@@ -163,8 +152,6 @@ const saveChanges = async (getTaskProp, id) => {
     assignees: getTaskProp.assignees,
     status: getTaskProp.status.id
   };
-  console.log("getTaskProp:", getTaskProp);
-  console.log("Edited task:", editedTask.status);
 
   updatedTitle.value = getTaskProp.title.trim();
 
@@ -187,8 +174,6 @@ const saveChanges = async (getTaskProp, id) => {
   } else {
     try {
       const item = await editItem(taskUrl, id, editedTask);
-      console.log(item);
-      console.log(checkinput.value);
       if (checkinput.value > 0) {
         showUpdatedError.value = true;
         setTimeout(() => {
@@ -207,7 +192,6 @@ const saveChanges = async (getTaskProp, id) => {
           }
         };
         taskmanager.value.editTask(id, { ...ShowEditedTask });
-        console.log({ ...ShowEditedTask });
 
         closeEditModal();
         showUpdated.value = true;
@@ -236,7 +220,6 @@ function taskDetailsHandler(id) {
 
 function isTaskDetailModalOpen() {
   showTaskDetail.value = false;
-  console.log("Task detail modal closed");
 }
 
 // ----------------------------------- sort handler -----------------------------------
@@ -322,9 +305,15 @@ const getStatusClass = (status) => {
       <h1 class="text-4xl overflow-x-auto text-center font-bold mt-10">{{ board.name }}</h1>
       <!-- filter -->
       <div class="flex justify-between mx-52 mt-5 items-center">
-        <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
-        <!-- add task -->
+        <div class="flex justify-items-center">
+          <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
+        </div>
+
         <div class="flex">
+          <!-- toggle -->
+          <BoardVisibility :boardId="boardId" />
+
+          <!-- add task -->
           <router-link :to="{ name: 'addtask' }">
             <div class="itbkk-button-add bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -423,8 +412,6 @@ const getStatusClass = (status) => {
       </div>
     </div>
   </div>
-
-  <!-- <RouterView /> -->
 
   <Teleport to="body">
     <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"

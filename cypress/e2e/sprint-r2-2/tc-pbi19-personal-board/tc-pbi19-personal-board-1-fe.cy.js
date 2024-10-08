@@ -41,7 +41,7 @@ describe(`TC-PBI19-PERSIONAL-BOARD-1-FE\n
 
     it('[Step 5] Should handle status 401 with invalid token (tempered or expired) and redirect to /login',()=>{
         // let apiUrl = Cypress.env('apiUrl')
-        cy.intercept("POST", "http://localhost:8080/v3/*", {
+        cy.intercept("POST", "http:/intproj23.sit.kmutt.ac.th/kk1/api/v3/*", {
           statusCode: 401,
         }).as("mockAPI");
         // cy.intercept('POST','http:/intproj23.sit.kmutt.ac.th/kk1/api/v3/*',{
@@ -55,7 +55,6 @@ describe(`TC-PBI19-PERSIONAL-BOARD-1-FE\n
         cy.wait(100)
 
         cy.get('.itbkk-modal-new').should('exist').as('modal')
-        // cy.get('@modal').find('.itbkk-board-name')
         cy.get('@modal').find('.itbkk-board-name').clear()
         cy.get('@modal').find('.itbkk-board-name').type('Software Development Kanban Board for the course INT222 Integrated Project II at School of Information Technology in 2024')
         cy.get('@modal').find('.itbkk-button-ok').should('exist').click()
@@ -68,7 +67,7 @@ describe(`TC-PBI19-PERSIONAL-BOARD-1-FE\n
     it('[Step 6] Open /board page and redirect to /login',()=>{
         // let apiUrl = Cypress.env('apiUrl')
         //http://localhost:8080/v3/boards
-        cy.intercept("GET", "http://localhost:8080/v3/*", {
+        cy.intercept("GET", "http:/intproj23.sit.kmutt.ac.th/kk1/api/v3/*", {
           statusCode: 401,
         }).as("mockAPI");
 
@@ -87,7 +86,6 @@ describe(`TC-PBI19-PERSIONAL-BOARD-1-FE\n
         cy.wait(100)
 
         cy.get('.itbkk-modal-new').should('exist').as('modal')
-        // cy.get('@modal').find('.itbkk-board-name')
         cy.get('@modal').find('.itbkk-board-name').clear()
         cy.get('@modal').find('.itbkk-board-name').type('Software Development Kanban Board for the course INT222 Integrated Project II at School of Information Technology in 2024')
         cy.get('@modal').find('.itbkk-button-ok').should('exist').click()

@@ -10,7 +10,6 @@ import AlertBox from "@/components/AlertBox.vue";
 import { useRoute } from 'vue-router';
 const { params } = useRoute();
 const boardId = params.boardId;
-console.log(boardId);
 
 const tableType = "status";
 const statusmanager = ref(new StatusManagement());
@@ -23,10 +22,6 @@ onMounted(async () => {
         const items = await getItems(statusUrl);
         todo.value = items;
         statusmanager.value.setStatuses(items);
-        console.log(items);
-
-        console.log(statusmanager.value.getStatus());
-
     } catch (error) {
         console.error("Error fetching tasks:", error);
     }
@@ -101,11 +96,9 @@ const saveChanges = async (statusProp, id) => {
         checkinput.value += 1;
     }
 
-    console.log(statusProp.description);
     if (statusProp.description == null || statusProp.description == "" || statusProp.description == undefined) {
     }
     else if (statusProp.description.length > 200) {
-        console.log(statusProp.description.length);
         alert("Description cannot contain more than 200 characters");
         checkinput.value += 1;
     }
@@ -164,7 +157,6 @@ const closeDeleteModal = () => {
 async function showDeleteModals(status) {
     try {
         const items = await getItemById(statusUrl, status.id);
-        console.log(items);
         if (items !== undefined) {
             deleteModal.value = true;
         } else {
@@ -174,7 +166,7 @@ async function showDeleteModals(status) {
             }, 3000);
         }
     } catch (error) {
-        console.log(error);
+        console.error("Error fetching status:", error);
         showDeletedError.value = true;
         setTimeout(() => {
             showDeletedError.value = false;
@@ -184,7 +176,6 @@ async function showDeleteModals(status) {
 
 const handleStatusDeleted = (deletedid) => {
     statusmanager.value.deleteStatus(deletedid);
-    console.log(deletedid);
     todo.value = statusmanager.value.getStatus();
     deleteModal.value = false;
     showDeleted.value = true;
@@ -195,7 +186,6 @@ const handleStatusDeleted = (deletedid) => {
 
 
 const handleStatusDeletedNotfound = () => {
-    console.log("Received status not found: ");
     showDeletedError.value = true;
     setTimeout(() => {
         showDeletedError.value = false;
