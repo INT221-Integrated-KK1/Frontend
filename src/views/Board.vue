@@ -54,6 +54,10 @@ onMounted(async () => {
         </div>
         <router-view />
       </div>
+
+      <div>
+        <h1 class="text-5xl text-center font-bold mt-20">Collaborator Boards</h1>
+      </div>
     </div>
   </div>
 

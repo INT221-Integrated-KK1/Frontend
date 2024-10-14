@@ -32,12 +32,18 @@ const task = reactive({
 
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
-
+const notOwner = ref(false);
 onMounted(async () => {
   try {
     isLoaded.value = true;
     const item = await getItemById(taskUrl, taskId);
-    console.log(item);
+    console.log(item.board.ownerId);
+    console.log(localStorage.getItem('oid'));
+    
+    item.board.ownerId === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
+    // if (notOwner.value === true) {
+    //   window.alert('Access denied, you do not have permission to view this page.');
+    // }
     
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)

@@ -1,10 +1,10 @@
 <script setup>
-import { ref } from 'vue';
+import { changeBoardVisibility, getItemById } from '@/libs/fetchUtils';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
     boardId: String,
 });
-//รอจัดการส่วน owner
 
 const isChecked = ref(false);
 const showModal = ref(false);
@@ -18,6 +18,8 @@ const toggleVisibility = () => {
 
 const confirmChange = () => {
     isChecked.value = pendingState.value;
+    const visibilityState = isChecked.value ? 'public' : 'private';
+    changeBoardVisibility(import.meta.env.VITE_BASE_BOARDS_URL, props.boardId, visibilityState);
     showModal.value = false;
 };
 
@@ -25,12 +27,21 @@ const confirmChange = () => {
 const cancelChange = () => {
     showModal.value = false;
 };
+const disabled = ref(false);
+
+onMounted(async () => {
+    const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, props.boardId);
+    boardItems.owner.name === localStorage.getItem('username') ? disabled.value = false : disabled.value = true;    
+    const state = boardItems.visibility === 'public' ? true : false;
+    isChecked.value = state;
+});
 </script>
 
 <template>
     <div class="flex justify-center items-center space-x-4 mr-5">
 
-        <input type="checkbox" class="toggle toggle-accent" :checked="isChecked" @click.prevent="toggleVisibility" />
+        <input type="checkbox" class="toggle toggle-accent itbkk-board-visibility" :checked="isChecked"
+            @click.prevent="toggleVisibility" :disabled="disabled"/>
 
         <span class="text-md font-semibold">
             {{ isChecked ? 'Public' : 'Private' }}
@@ -61,7 +72,7 @@ const cancelChange = () => {
 
             </p>
             <p class="itbkk-message">
-                Do you want to change the visibility to private?
+                Do you want to change board visibility to private?
             </p>
             <div class="modal-action">
                 <button class="btn btn-outline itbkk-button-cancel" @click="cancelChange">Cancel</button>

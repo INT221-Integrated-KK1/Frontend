@@ -3,11 +3,19 @@ import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
 import { BoardManagement } from '@/libs/BoardManagement';
 import { getItems } from '@/libs/fetchUtils';
+
 const router = useRouter();
 const openSidebar = ref(true);
 
+// Retrieve the sidebar state from localStorage on component mount
+onMounted(() => {
+    const savedSidebarState = localStorage.getItem('openSidebar');
+    openSidebar.value = savedSidebarState !== null ? JSON.parse(savedSidebarState) : true;
+});
+
 const Sidebar = () => {
     openSidebar.value = !openSidebar.value;
+    localStorage.setItem('openSidebar', JSON.stringify(openSidebar.value)); // Save the state in localStorage
 }
 
 const OpenBoard = () => {
@@ -33,6 +41,7 @@ onMounted(async () => {
     }
 });
 </script>
+
 
 <template>
     <transition name="slide-fade">

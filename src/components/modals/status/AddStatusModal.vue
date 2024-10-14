@@ -16,6 +16,8 @@ const checkWhiteSpace = (title) => {
 };
 
 const AddStatus = async () => {
+    const notOwner = ref(false);
+    
     const trimStatusName = ref(name.value.trim());
     const trimStatusDescription = ref(description.value.trim());
 

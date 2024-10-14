@@ -22,8 +22,8 @@ async function loginHandler() {
         let decode = VueJwtDecode.decode(data.access_token);
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
-        localStorage.setItem('decode', decode);
         localStorage.setItem('username', decode.name);
+        localStorage.setItem('oid', decode.oid);
     } catch (error) {
         console.error("Error fetching task details:", error)
         localStorage.clear();
@@ -32,12 +32,11 @@ async function loginHandler() {
         showLoginAlert.value = false;
         try {
             const board = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-            if (board.length < 1) {
+            if (board.length !== 1) {
                 router.push("/board");
-            } else {
+            } else if (board.length === 1) {
                 router.push({ name: "task", params: { boardId: board[0].id } });
                 console.log(board[0].id);
-                
             }
         } catch (error) {
             console.error("Error fetching task details:", error)
