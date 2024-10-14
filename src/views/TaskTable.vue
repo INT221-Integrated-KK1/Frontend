@@ -462,6 +462,7 @@ const getStatusClass = (status) => {
     </div>
   </div>
   
+  <router-view />
 
   <Teleport to="body">
     <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"

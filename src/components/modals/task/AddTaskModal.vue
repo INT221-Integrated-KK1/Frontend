@@ -96,13 +96,16 @@ onMounted(async () => {
     statusmanager.value.setStatuses(items);
     status.value = items[0].id;
     console.log(boardItems.owner.name);
-    boardItems.owner.name === localStorage.getItem('username') ? notOwner.value = false : notOwner.value = true;    console.log(notOwner.value);
+    boardItems.owner.name === localStorage.getItem('username') ? notOwner.value = false : notOwner.value = true;    
+    console.log(notOwner.value);
+
+    // if (notOwner.value === true) {
+    //   router.push("/403");
+    // }
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
 });
-
-
 </script>
 
 <template>

@@ -14,7 +14,7 @@ async function getItems(url) {
       router.push("/login");
       console.error(`Error fetching items: ${response.status}`);
     } else if (response.status === 403) {
-      router.push("/403");
+      router.push({ name: "Forbidden" });
     } else if (response.ok) {
       const items = await response.json();
       return items;
@@ -45,7 +45,7 @@ async function getItemById(url, id) {
         router.push("/login");
         console.error(`Error fetching task details: ${data.status}`);
       } else if (data.status === 403) {
-        router.push("/403");
+        router.push({ name: "Forbidden" });
       }
       // other errors
       console.error(`Error fetching task details: ${data.status}`);
@@ -71,7 +71,7 @@ async function deleteItemById(url, id) {
       router.push("/login");
       console.error(`Error fetching items: ${response.status}`);
     } else if (res.status === 403) {
-      router.push("/403");
+      router.push({ name: "Forbidden" });
     } else if (res.ok) {
       return res.status;
     }
@@ -99,7 +99,7 @@ async function addItem(url, newItem) {
       router.push("/login");
       console.error(`Error fetching items: ${response.status}`);
     } else if (res.status === 403) {
-      router.push("/403");
+      router.push({ name: "Forbidden" });
     } else if (res.ok) {
       const addedItem = await res.json();
       return addedItem;
@@ -127,7 +127,7 @@ async function editItem(url, id, editItem) {
       localStorage.clear();
       router.push("/login");
     } else if (res.status === 403) {
-      router.push("/403");
+      router.push({ name: "Forbidden" });
     } else if (res.ok) {
       const editedItem = await res.json();
       return editedItem;
@@ -150,7 +150,7 @@ async function deleteAndTransfer(url, id, transferId) {
       localStorage.clear();
       router.push("/login");
     } else if (res.status === 403) {
-      router.push("/403");
+      router.push({ name: "Forbidden" });
     } else if (res.ok) {
       return response.status;
     } else {
@@ -176,7 +176,7 @@ async function isAuthenticated(url, input) {
       localStorage.clear();
       router.push("/login");
     } else if (res.status === 403) {
-      router.push("/403");
+      router.push({ name: "Forbidden" });
     }
     return response;
   } catch (error) {
@@ -186,6 +186,7 @@ async function isAuthenticated(url, input) {
 
 async function addToken(url) {
   const refreshToken = localStorage.getItem("refresh_token");
+  const token = localStorage.getItem("token");
 
   if (!refreshToken) {
     console.error("Refresh token is missing in localStorage.");
@@ -198,11 +199,12 @@ async function addToken(url) {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${refreshToken}`,
+        "x-refresh-token": `${refreshToken}` ,
       },
     });
     const response = await res.json();
     if (response.status === 403) {
-      router.push("/403");
+      router.push({ name: "Forbidden" });
     }
 
     return response;
@@ -225,7 +227,7 @@ async function changeBoardVisibility(url, id, visibility) {
       }),
     });
     if (res.status === 403) {
-      router.push("/403");
+      router.push({ name: "Forbidden" });
     }
     return res;
   } catch (error) {
