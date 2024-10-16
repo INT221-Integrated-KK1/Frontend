@@ -63,11 +63,13 @@ const router = createRouter({
             try {
               const notOwner = ref(false);
               const boardId = to.params.boardId;
-              const boardItem = await getItemById(
-                import.meta.env.VITE_BASE_URL,
+              const boardItems = await getItemById(
+                import.meta.env.VITE_BASE_BOARDS_URL,
                 boardId
               );
-              boardItem.owner.name === localStorage.getItem("username")
+              console.log("boardItem", boardItems);
+              
+              boardItems.owner.name === localStorage.getItem("username")
                 ? (notOwner.value = false)
                 : (notOwner.value = true);
 
@@ -91,7 +93,7 @@ const router = createRouter({
               const notOwner = ref(false);
               const boardId = to.params.boardId;
               const boardItem = await getItemById(
-                import.meta.env.VITE_BASE_URL,
+                import.meta.env.VITE_BASE_BOARDS_URL,
                 boardId
               );
               boardItem.owner.name === localStorage.getItem("username")
@@ -118,7 +120,7 @@ const router = createRouter({
               const notOwner = ref(false);
               const boardId = to.params.boardId;
               const boardItem = await getItemById(
-                import.meta.env.VITE_BASE_URL,
+                import.meta.env.VITE_BASE_BOARDS_URL,
                 boardId
               );
               boardItem.owner.name === localStorage.getItem("username")
@@ -152,7 +154,7 @@ const router = createRouter({
               const notOwner = ref(false);
               const boardId = to.params.boardId;
               const boardItem = await getItemById(
-                import.meta.env.VITE_BASE_URL,
+                import.meta.env.VITE_BASE_BOARDS_URL,
                 boardId
               );
               boardItem.owner.name === localStorage.getItem("username")
@@ -179,7 +181,7 @@ const router = createRouter({
               const notOwner = ref(false);
               const boardId = to.params.boardId;
               const boardItem = await getItemById(
-                import.meta.env.VITE_BASE_URL,
+                import.meta.env.VITE_BASE_BOARDS_URL,
                 boardId
               );
               boardItem.owner.name === localStorage.getItem("username")
@@ -206,7 +208,7 @@ const router = createRouter({
               const notOwner = ref(false);
               const boardId = to.params.boardId;
               const boardItem = await getItemById(
-                import.meta.env.VITE_BASE_URL,
+                import.meta.env.VITE_BASE_BOARDS_URL,
                 boardId
               );
               boardItem.owner.name === localStorage.getItem("username")

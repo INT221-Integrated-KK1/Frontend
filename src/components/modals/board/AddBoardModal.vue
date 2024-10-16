@@ -26,12 +26,14 @@ async function saveBoard() {
     boardmanager.value.addBoard(items);  
     try {
       const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-      for (let i = 0; i < boardItem.length; i++) {
-        if (boardItem[i].name === boardName.value) {
-          board.value = boardItem[i].id;
+      const personalBoards = boardItem.personalBoards;
+      
+      for (let i = 0; i < personalBoards.length; i++) {
+        if (personalBoards[i].name === boardName.value) {
+          board.value = personalBoards[i].id;
           break;
         } if (boardItem.length === 1) {
-          board.value = boardItem[0].id;
+          board.value = personalBoards[0].id;
         }
       }
 

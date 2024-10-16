@@ -1,9 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { addItem, getItems } from '@/libs/fetchUtils';
-import { BoardManagement } from '@/libs/BoardManagement';
+import { ref, reactive } from 'vue';
+import { addItem, getItemById } from '@/libs/fetchUtils';
+import { CollabManagement } from '@/libs/CollabManagement';
 import router from '@/router';
 
+const email = ref("");
+const accessRight = ref("READ");
 
 const showModal = ref(false);
 const props = defineProps({
@@ -11,20 +13,39 @@ const props = defineProps({
     notOwner: Boolean
 });
 
+const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${props.boardId}/collabs`;
+const emit = defineEmits(["addCollab"]);
+
 const openModal = () => {
     showModal.value = true;
 };
 
-const confirmChange = () => {
-    console.log('confirmChange');
-    showModal.value = false;
+async function confirmChange() {
+    try {
+        const inputItem = {
+            email: email.value,
+            accessRight: accessRight.value
+        };
+        const addCollab = await addItem(url, inputItem)
+        console.log(addCollab.collaboratorId);
+        ;
+        const recentCollab = await getItemById(url, addCollab.collaboratorId);
+        console.log(recentCollab);
+        emit("addCollab", recentCollab);
+        
+        console.log(addCollab);
+        console.log('confirmChange');
+        email.value = "";
+        showModal.value = false;
+    } catch (error) {
+        console.error(`Error add collab: ${error}`);
+    }
 };
 
 const cancelChange = () => {
     console.log('cancelChange');
     showModal.value = false;
 };
-
 
 
 </script>
@@ -61,9 +82,9 @@ const cancelChange = () => {
                 </div>
                 <div class="w-1/2">
                     <label class="font-semibold text-gray-700 block">Access Right</label>
-                    <select class="select select-bordered w-full max-w-xs">
-                        <option selected>READ</option>
-                        <option>WRITE</option>
+                    <select class="select select-bordered w-full max-w-xs" v-model="accessRight">
+                        <option selected value="READ">READ</option>
+                        <option value="WRITE">WRITE</option>
                     </select>
                 </div>
             </div>

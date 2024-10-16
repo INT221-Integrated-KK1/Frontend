@@ -10,7 +10,6 @@ const emit = defineEmits(['filter', 'reset']);
 
 const { params } = useRoute();
 const boardId = params.boardId;
-const taskId = Number(params.taskId);
 
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 onMounted(async () => {
@@ -70,7 +69,7 @@ const clearSelectedStatues = async () => {
 
         </div>
 
-        <div class="btn btn-ghost flex font-bold text-sm cursor-pointer" v-if="selectedStatuses.length > 0"
+        <div class="btn btn-ghost flex font-bold text-sm cursor-pointer mr-5" v-if="selectedStatuses.length > 0"
             @click="clearSelectedStatues">
             Reset<span class="px-2">✖</span>
         </div>
