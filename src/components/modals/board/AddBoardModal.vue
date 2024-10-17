@@ -23,11 +23,11 @@ async function saveBoard() {
   const boardsinput = ref(boardName.value.trim());
   try {
     const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput.value });
-    boardmanager.value.addBoard(items);  
+    boardmanager.value.addBoard(items);
     try {
       const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
       const personalBoards = boardItem.personalBoards;
-      
+
       for (let i = 0; i < personalBoards.length; i++) {
         if (personalBoards[i].name === boardName.value) {
           board.value = personalBoards[i].id;
@@ -61,8 +61,8 @@ async function saveBoard() {
       <h2 class="text-2xl font-bold mb-5 text-green-800">New Board</h2>
 
       <label for="boardName" class="block text-lg mb-2">Name</label>
-      <input v-model="boardName" maxlength="120" type="text" class="itbkk-board-name bg-white z-index w-full p-2 border rounded mb-2"
-        placeholder="Enter board name" />
+      <input v-model="boardName" maxlength="120" type="text"
+        class="itbkk-board-name bg-white z-index w-full p-2 border rounded mb-2" placeholder="Enter board name" />
 
 
       <div class="flex justify-end space-x-4">

@@ -32,17 +32,24 @@ async function loginHandler() {
         showLoginAlert.value = false;
         try {
             const board = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-            if (board.length !== 1) {
+            // PBI 24
+            const boardLength = board.personalBoards.length ? board.personalBoards.length : 0;
+            if (boardLength === 1) {
+                router.push({ name: "task", params: { boardId: board.personalBoards[0].id } });
+            } else {
                 router.push("/board");
-            } else if (board.length === 1) {
-                router.push({ name: "task", params: { boardId: board[0].id } });
-                console.log(board[0].id);
             }
+            // if (board.length !== 1) {
+            //     router.push("/board");
+            // } else if (board.length === 1) {
+            //     router.push({ name: "task", params: { boardId: board[0].id } });
+            //     console.log(board[0].id);
+            // }
+
         } catch (error) {
             console.error("Error fetching task details:", error)
             localStorage.clear();
         }
-
         localStorage.setItem('token', data.access_token);
         console.log(data.access_token);
 

@@ -1,8 +1,7 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
 import { addItem, getItemById } from '@/libs/fetchUtils';
-import { CollabManagement } from '@/libs/CollabManagement';
-import router from '@/router';
+
 
 const email = ref("");
 const accessRight = ref("READ");
@@ -27,16 +26,20 @@ async function confirmChange() {
             accessRight: accessRight.value
         };
         const addCollab = await addItem(url, inputItem)
-        console.log(addCollab.collaboratorId);
-        ;
-        const recentCollab = await getItemById(url, addCollab.collaboratorId);
-        console.log(recentCollab);
-        emit("addCollab", recentCollab);
-        
-        console.log(addCollab);
-        console.log('confirmChange');
-        email.value = "";
-        showModal.value = false;
+        console.log(addCollab.collabsId);
+        if (addCollab === undefined || addCollab === null) {
+            showModal.value = false;
+            console.log('error');
+        } else {
+            const recentCollab = await getItemById(url, addCollab.collabsId);
+            console.log(recentCollab);
+            emit("addCollab", recentCollab);
+
+            console.log(addCollab);
+            console.log('confirmChange');
+            email.value = "";
+            showModal.value = false;
+        }
     } catch (error) {
         console.error(`Error add collab: ${error}`);
     }

@@ -12,7 +12,6 @@ import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import { useRoute } from 'vue-router';
 import BoardVisibility from "@/components/modals/board/BoardVisibility.vue";
-import router from "@/router";
 
 const notOwner = ref(false);
 

@@ -100,7 +100,11 @@ async function addItem(url, newItem) {
       console.error(`Error fetching items: ${response.status}`);
     } else if (res.status === 403) {
       router.push({ name: "Forbidden" });
-    } else if (res.ok) {
+    } else if (res.status === 404) {
+      router.push({ name: "NotFound" });
+    } else if (res.status === 409) {
+      router.push({ name: "Conflict" });
+    } else {
       const addedItem = await res.json();
       return addedItem;
     }
@@ -199,7 +203,7 @@ async function addToken(url) {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${refreshToken}`,
-        "x-refresh-token": `${refreshToken}` ,
+        "x-refresh-token": `${refreshToken}`,
       },
     });
     const response = await res.json();
@@ -228,6 +232,9 @@ async function changeBoardVisibility(url, id, visibility) {
     });
     if (res.status === 403) {
       router.push({ name: "Forbidden" });
+    } else if (res.status === 401) {
+      localStorage.clear();
+      router.push("/login");
     }
     return res;
   } catch (error) {

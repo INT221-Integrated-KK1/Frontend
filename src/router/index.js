@@ -16,6 +16,7 @@ import TaskTable from "@/views/TaskTable.vue";
 import StatusTable from "@/views/StatusTable.vue";
 import CollaboratorTable from "@/views/CollaboratorTable.vue";
 import AccessDenied from "@/views/AccessDenied.vue";
+import Conflict from "@/views/Conflict.vue";
 
 import { addToken, getItemById } from "@/libs/fetchUtils";
 import { ref } from "vue";
@@ -68,7 +69,7 @@ const router = createRouter({
                 boardId
               );
               console.log("boardItem", boardItems);
-              
+
               boardItems.owner.name === localStorage.getItem("username")
                 ? (notOwner.value = false)
                 : (notOwner.value = true);
@@ -239,9 +240,19 @@ const router = createRouter({
       component: NotFound,
     },
     {
+      path: "/404",
+      name: "NotFound",
+      component: NotFound,
+    },
+    {
       path: "/403",
       name: "Forbidden",
       component: AccessDenied,
+    },
+    {
+      path: "/409",
+      name: "Conflict",
+      component: Conflict,
     },
   ],
 });

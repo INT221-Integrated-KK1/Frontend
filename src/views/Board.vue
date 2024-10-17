@@ -112,7 +112,7 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          <router-view />
+          <!-- <router-view /> -->
         </div>
       </div>
     </div>

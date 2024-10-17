@@ -6,6 +6,7 @@ import { CollabManagement } from "@/libs/CollabManagement";
 import Sidebar from "@/components/Sidebar.vue";
 import AddCollabModal from "@/components/modals/board/AddCollabModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
+import router from "@/router";
 
 const notOwner = ref(false);
 const showAddedCollab = ref(false);
@@ -17,14 +18,18 @@ const collabs = ref([]);
 const collabmanager = ref(new CollabManagement());
 
 function handleAddCollab(addCollab) {
-    collabmanager.value.addCollab(addCollab);
-    collabs.value = collabmanager.value.getCollabs();
-    addedCollabName.value = addCollab.name;
-    showAddedCollab.value = true;
-    setTimeout(() => {
+    console.log("addCollab in CollboratorTable", addCollab);
+    if (addCollab === undefined || addCollab === null) {
         showAddedCollab.value = false;
-    }, 3000);
-
+    } else {
+        collabmanager.value.addCollab(addCollab);
+        collabs.value = collabmanager.value.getCollabs();
+        addedCollabName.value = addCollab.name;
+        showAddedCollab.value = true;
+        setTimeout(() => {
+            showAddedCollab.value = false;
+        }, 3000);
+    }
 }
 
 onMounted(async () => {
@@ -35,7 +40,7 @@ onMounted(async () => {
         boardItem.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
         board.value = boardItem;
         collabs.value = collabMembers;
-        collabStore.setCollabs(collabMembers);
+        // collabStore.setCollabs(collabMembers);
     } catch (error) {
         console.error("Error fetching task details:", error)
     }
