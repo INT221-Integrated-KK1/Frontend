@@ -4,10 +4,7 @@ import { addItem, getItems } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 
 const { params } = useRoute();
-const id = Number(params.id);
-console.log(id);
 const boardId = params.boardId;
-const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const showModal = ref(false);
 const name = ref("");
@@ -19,6 +16,8 @@ const checkWhiteSpace = (title) => {
 };
 
 const AddStatus = async () => {
+    const notOwner = ref(false);
+    
     const trimStatusName = ref(name.value.trim());
     const trimStatusDescription = ref(description.value.trim());
 

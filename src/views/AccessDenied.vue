@@ -15,22 +15,22 @@ onMounted(() => {
 });
 
 </script>
- 
+
 <template>
-    <div  class="text-black fixed z-10 inset-0 overflow-y-auto">
+    <div class="text-black fixed z-10 inset-0 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen bg-orange-300">
             <div class="bg-white w-1/2 p-6 rounded shadow-lg">
                 <div class="">
-                    <h1 class="text-center text-3xl font-bold pt-5 text-red-500">404</h1>
-                    <div class="text-center text-xl font-bold pt-10">The page or input you are looking for does not exist</div>
-                    <div class="text-center text-xl font-bold pt-3 pb-10">This we'll return to the previous page in {{ count }} seconds
-                    </div>
+                    <h1 class="text-center text-3xl font-bold pt-5 text-red-500">403</h1>
+                    <div class="text-center text-2xl font-bold pt-5">Access denied, you do not have permission to view
+                        this page.</div>
+                    <div class="text-center text-xl font-bold pt-3 pb-10">This we'll return to the previous page in {{
+                        count }} seconds
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 </template>
- 
-<style scoped>
 
-</style>
+<style scoped></style>

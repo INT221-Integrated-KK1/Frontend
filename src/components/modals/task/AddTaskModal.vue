@@ -1,8 +1,9 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { getItems, addItem } from "@/libs/fetchUtils.js";
+import { getItems, addItem, getItemById } from "@/libs/fetchUtils.js";
 import { StatusManagement } from "@/libs/StatusManagement";
 import { useRoute } from 'vue-router'; 
+import router from "@/router/index.js";
 
 const title = ref("");
 const description = ref("");
@@ -16,6 +17,8 @@ const statusmanager = ref(new StatusManagement());
 
 const { params } = useRoute();
 const boardId = params.boardId;
+console.log(boardId);
+
 
 
 const emit = defineEmits(["taskAdded"]);
@@ -83,12 +86,17 @@ const AddTask = async () => {
 
   }
 };
+const notOwner = ref(false);
+
 onMounted(async () => {
   try {
     const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
     const items = await getItems(url);
+    const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     statusmanager.value.setStatuses(items);
     status.value = items[0].id;
+    console.log(boardItems.owner.name);
+    boardItems.owner.name === localStorage.getItem('username') ? notOwner.value = false : notOwner.value = true;    console.log(notOwner.value);
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
@@ -98,7 +106,6 @@ onMounted(async () => {
 </script>
 
 <template>
-
   <div v-if="$route.name === 'addtask' || showModal" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
@@ -138,7 +145,7 @@ onMounted(async () => {
           <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button @click="AddTask"
               :class="title === '' || title === ' ' ? disabled : 'itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 '"
-              :disabled="checkWhiteSpace(title)">
+              :disabled="checkWhiteSpace(title) || notOwner === true">
               Save
             </button>
           </router-link>

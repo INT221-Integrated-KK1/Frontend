@@ -10,7 +10,9 @@ const props = defineProps({
     showUpdatedError: Boolean,
     addedTitle: String,
     updatedTitle: String,
-    showLoginAlert: Boolean
+    showLoginAlert: Boolean,
+    showAddedCollab: Boolean,
+    addedCollabName: String
 });
 
 </script>
@@ -25,6 +27,20 @@ const props = defineProps({
             <div class="flex justify-between">
                 <h1 class="text-xl font-bold mr-3 itbkk-message">Username or Password is incorrect</h1>
                 <button class="px-4 py-2rounded" @click="showLoginAlert = false">✖</button>
+            </div>
+        </div>
+    </div>
+
+    <div  v-if="showAddedCollab" class="flex justify-center items-center">
+        <div class="absolute bottom-0 z-40 bg-green-100 rounded-md my-10 w-[1000px] border-2 border-green-500">
+            <div class="p-4">
+                <div class="flex justify-between mb-3">
+                    <h1 class="text-2xl font-bold">Success</h1>
+                    <button @click="showAddedCollab = false" class="px-4 py-2rounded">✖</button>
+                </div>
+                <p class="itbkk-message text-lg font-bold break-words">
+                    {{ addedCollabName }} is added successfully
+                </p>
             </div>
         </div>
     </div>

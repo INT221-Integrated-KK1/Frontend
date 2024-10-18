@@ -13,6 +13,8 @@ async function getItems(url) {
       localStorage.clear();
       router.push("/login");
       console.error(`Error fetching items: ${response.status}`);
+    } else if (response.status === 403) {
+      router.push("/403");
     } else if (response.ok) {
       const items = await response.json();
       return items;
@@ -42,6 +44,8 @@ async function getItemById(url, id) {
         localStorage.clear();
         router.push("/login");
         console.error(`Error fetching task details: ${data.status}`);
+      } else if (data.status === 403) {
+        router.push("/403");
       }
       // other errors
       console.error(`Error fetching task details: ${data.status}`);
@@ -66,6 +70,8 @@ async function deleteItemById(url, id) {
       localStorage.clear();
       router.push("/login");
       console.error(`Error fetching items: ${response.status}`);
+    } else if (res.status === 403) {
+      router.push("/403");
     } else if (res.ok) {
       return res.status;
     }
@@ -92,7 +98,13 @@ async function addItem(url, newItem) {
       localStorage.clear();
       router.push("/login");
       console.error(`Error fetching items: ${response.status}`);
-    } else if (res.ok) {
+    } else if (res.status === 403) {
+      router.push({ name: "Forbidden" });
+    } else if (res.status === 404) {
+      router.push({ name: "NotFound" });
+    } else if (res.status === 409) {
+      router.push({ name: "Conflict" });
+    } else {
       const addedItem = await res.json();
       return addedItem;
     }
@@ -118,7 +130,8 @@ async function editItem(url, id, editItem) {
     if (res.status === 401) {
       localStorage.clear();
       router.push("/login");
-      console.error(`Error fetching items: ${response.status}`);
+    } else if (res.status === 403) {
+      router.push("/403");
     } else if (res.ok) {
       const editedItem = await res.json();
       return editedItem;
@@ -140,11 +153,12 @@ async function deleteAndTransfer(url, id, transferId) {
     if (response.status === 401) {
       localStorage.clear();
       router.push("/login");
-      console.error(`Error fetching items: ${response.status}`);
-    } else if (!response.ok) {
-      throw new Error(`Failed to delete and transfer item: ${response.status}`);
+    } else if (res.status === 403) {
+      router.push("/403");
     } else if (res.ok) {
       return response.status;
+    } else {
+      console.error(`Error fetching items: ${response.status}`);
     }
   } catch (error) {
     console.log(error);
@@ -165,8 +179,63 @@ async function isAuthenticated(url, input) {
     if (response.status === 401) {
       localStorage.clear();
       router.push("/login");
+    } else if (res.status === 403) {
+      router.push("/403");
     }
     return response;
+  } catch (error) {
+    console.log(`error: ${error}`);
+  }
+}
+
+async function addToken(url) {
+  const refreshToken = localStorage.getItem("refresh_token");
+
+  if (!refreshToken) {
+    console.error("Refresh token is missing in localStorage.");
+    return;
+  }
+  console.log("Sending refresh token:", refreshToken);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${refreshToken}`,
+        "x-refresh-token": `${refreshToken}`,
+      },
+    });
+    const response = await res.json();
+    if (response.status === 403) {
+      router.push("/403");
+    }
+
+    return response;
+  } catch (error) {
+    console.error(`Error while refreshing token: ${error}`);
+  }
+}
+
+async function changeBoardVisibility(url, id, visibility) {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${url}/${id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        visibility: visibility,
+      }),
+    });
+    if (res.status === 403) {
+      router.push({ name: "Forbidden" });
+    } else if (res.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+    }
+    return res;
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -180,4 +249,6 @@ export {
   editItem,
   deleteAndTransfer,
   isAuthenticated,
+  addToken,
+  changeBoardVisibility,
 };

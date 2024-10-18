@@ -4,6 +4,7 @@ import { getItemById, getItems } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import NotFound from "@/views/NotFound.vue";
+import router from "@/router/index.js";
 
 const emit = defineEmits(['closed'])
 const props = defineProps({
@@ -24,13 +25,19 @@ const taskId = ref(props.id || routeId);
 
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
-
+const notOwner = ref(false);
 onMounted(async () => {
   try {
     const item = await getItemById(taskUrl, taskId.value);
     task.value = item;
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)
+    
+    item.owner.name === localStorage.getItem('username') ? notOwner.value = false : notOwner.value = true;
+    // if (notOwner.value === true) {
+    //   window.alert('Access denied, you do not have permission to view this page.');
+    //   router.go(-1);
+    // }
   } catch (error) {
     console.error("Error fetching task details:", error);
   }

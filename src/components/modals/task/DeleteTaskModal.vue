@@ -18,7 +18,8 @@ const title = ref("");
 const emit = defineEmits(["taskDeleted", "close", "taskNotfound"]);
 
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
-const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+
+const notOwner = ref(false);
 onMounted(async () => {
   try {
     task.value = await getItemById(taskUrl, taskId);
@@ -29,6 +30,12 @@ onMounted(async () => {
     console.log(route.params.id)
     console.log(title.value);
     console.log(task.value.title);
+
+    task.value.board.ownerId === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
+    // if (notOwner.value === true) {
+    //   window.alert('Access denied, you do not have permission to view this page.');
+    // }
+
   } catch (error) {
     console.error("Error fetching task details:", error);
     emit("taskNotfound");
@@ -55,7 +62,7 @@ const deleteTask = async (deleteid) => {
 
 <template>
   <div>
-    <div v-if="title" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
+    <div v-if="title || $route.name === 'deleteTask'" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
       <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
         <div class="bg-white w-1/2 p-6 rounded shadow-lg">
           <div class="">
