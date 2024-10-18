@@ -40,7 +40,9 @@ async function getItemById(url, id) {
       if (data.status === 404) {
         //window.alert('The requested task does not exist');
         router.go(-1);
-      } else if (data.status === 401) {
+      } else 
+      
+      if (data.status === 401) {
         localStorage.clear();
         router.push("/login");
         console.error(`Error fetching task details: ${data.status}`);

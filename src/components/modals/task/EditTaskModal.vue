@@ -7,7 +7,7 @@ import { StatusManagement } from "@/libs/StatusManagement.js";
 const emit = defineEmits('close', 'saveChanges', 'status-updated');
 const { params } = useRoute();
 const boardId = params.boardId;
-const taskId = Number(params.taskId);
+const taskId = Number(params.taskId) ? Number(params.taskId) : null;
 console.log(taskId);
 
 const statusmanager = ref(new StatusManagement());
@@ -36,26 +36,32 @@ const notOwner = ref(false);
 onMounted(async () => {
   try {
     isLoaded.value = true;
-    const item = await getItemById(taskUrl, taskId);
-    console.log(item.board.ownerId);
-    console.log(localStorage.getItem('oid'));
-    
-    item.board.ownerId === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-    // if (notOwner.value === true) {
-    //   window.alert('Access denied, you do not have permission to view this page.');
-    // }
-    
-    const statusItem = await getItems(statusUrl);
-    statusmanager.value.setStatuses(statusItem)
-    task.id = item.id;
-    task.title = item.title;
-    task.description = item.description;
-    task.assignees = item.assignees;
-    task.status.id = item.status.id;
-    task.status.name = item.status.name;
-    task.status.description = item.status.description;
-    task.createdOn = item.createdOn;
-    task.updatedOn = item.updatedOn;
+    // const item = null
+    if (taskId === null) {
+      // item = null
+    } else {
+      const item = await getItemById(taskUrl, taskId);
+      console.log(item.board.ownerId);
+      console.log(localStorage.getItem('oid'));
+
+      item.board.ownerId === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
+      if (notOwner.value === true) {
+        window.alert('Access denied, you do not have permission to view this page.');
+      }
+
+      const statusItem = await getItems(statusUrl);
+      statusmanager.value.setStatuses(statusItem)
+      task.id = item.id;
+      task.title = item.title;
+      task.description = item.description;
+      task.assignees = item.assignees;
+      task.status.id = item.status.id;
+      task.status.name = item.status.name;
+      task.status.description = item.status.description;
+      task.createdOn = item.createdOn;
+      task.updatedOn = item.updatedOn;
+    }
+
   } catch (error) {
     console.error("Error fetching task details:", error)
   }
@@ -108,7 +114,7 @@ const countOptionalCharacters = (text) => {
 </script>
 
 <template>
-  <div v-if="isLoaded" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="$route.name === 'editTaskModal'" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class=" col-start-1 col-span-3">
@@ -117,7 +123,7 @@ const countOptionalCharacters = (text) => {
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-model="task.title">
           <span class="text-gray-500 text-sm"
             :class="{ 'text-red-500': task.title.trim().length > 100 || task.title.trim().length === 0 }">{{
-            task.title.trim().length }} / 100 characters</span>
+              task.title.trim().length }} / 100 characters</span>
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -157,7 +163,7 @@ const countOptionalCharacters = (text) => {
               Save
             </button>
           </router-link>
-          <router-link :to="({ name: 'task', params: {boardId: params.boardId}})">
+          <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
               Close
             </button>

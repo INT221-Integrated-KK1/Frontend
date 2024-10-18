@@ -62,7 +62,7 @@ const deleteTask = async (deleteid) => {
 
 <template>
   <div>
-    <div v-if="title || $route.name === 'deleteTask'" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
+    <div v-if="$route.name === 'deleteTask'" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
       <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
         <div class="bg-white w-1/2 p-6 rounded shadow-lg">
           <div class="">

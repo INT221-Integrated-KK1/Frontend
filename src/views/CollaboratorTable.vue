@@ -35,11 +35,11 @@ function handleAddCollab(addCollab) {
 onMounted(async () => {
     try {
         const boardItem = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
-        const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
+        // const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
 
         boardItem.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
         board.value = boardItem;
-        collabs.value = collabMembers;
+        // collabs.value = collabMembers;
         // collabStore.setCollabs(collabMembers);
     } catch (error) {
         console.error("Error fetching task details:", error)
