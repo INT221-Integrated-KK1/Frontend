@@ -18,8 +18,7 @@ import CollaboratorTable from "@/views/CollaboratorTable.vue";
 import AccessDenied from "@/views/AccessDenied.vue";
 import Conflict from "@/views/Conflict.vue";
 
-import { addToken, getItemById } from "@/libs/fetchUtils";
-import { ref } from "vue";
+import { addToken } from "@/libs/fetchUtils";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -49,7 +48,6 @@ const router = createRouter({
       path: "/board/:boardId",
       name: "task",
       component: TaskTable,
-
       children: [
         {
           path: "task/:taskId",
@@ -261,6 +259,7 @@ router.beforeEach(async (to, from, next) => {
   const haveToken = localStorage.getItem("token");
   const haveRefreshToken = localStorage.getItem("refresh_token");
 
+
   if (haveRefreshToken) {
     try {
       let decodedToken = VueJwtDecode.decode(haveRefreshToken);
@@ -282,6 +281,7 @@ router.beforeEach(async (to, from, next) => {
       let decodedToken = VueJwtDecode.decode(haveToken);
       const tokenExpire = new Date(decodedToken.exp * 1000);
       const now = new Date();
+
       if (tokenExpire > now) {
         next();
         console.log("Token still valid");
@@ -291,11 +291,10 @@ router.beforeEach(async (to, from, next) => {
         if (haveRefreshToken) {
           const res = await addToken(import.meta.env.VITE_BASE_TOKEN_URL);
           console.log("res", res);
+
           if (res.status === 401) {
             localStorage.clear();
             next({ name: "login" });
-          } else if (res.staus === 403) {
-            next({ name: "Forbidden" });
           } else {
             localStorage.setItem("token", res.access_token);
             next();
@@ -315,8 +314,6 @@ router.beforeEach(async (to, from, next) => {
     if (res.status === 401) {
       localStorage.clear();
       next({ name: "login" });
-    } else if (res.staus === 403) {
-      next({ name: "Forbidden" });
     } else {
       localStorage.setItem("token", res.token);
       next();
