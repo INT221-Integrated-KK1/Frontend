@@ -2,6 +2,8 @@
 import { onMounted, ref, reactive, computed } from "vue";
 import { getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
+import router from "@/router";
+import Board from "@/views/Board.vue";
 
 
 const emit = defineEmits(['saveChanges', 'close'])
@@ -20,10 +22,11 @@ const status = reactive({
     description: ""
 });
 console.log(status);
-
+const notOwner = ref(false);
 onMounted(async () => {
     try {
         const items = await getItemById(statusUrl, id);
+        const BoardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         status.id = items.id;
         status.name = items.name;
         status.description = items.description;
@@ -31,6 +34,11 @@ onMounted(async () => {
         console.log(status.name);
 
         isLoaded.value = true;
+        console.log(BoardItems.owner.oid);
+        BoardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
+        if (notOwner.value === true) {
+            router.push({ name: 'Forbidden' });
+        }
     } catch (error) {
         console.error("Error fetching task details:", error)
     }

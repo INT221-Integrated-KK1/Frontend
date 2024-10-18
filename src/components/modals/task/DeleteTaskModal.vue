@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { getItemById, deleteItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import NotFound from "@/views/NotFound.vue";
+import router from "@/router";
 
 const route = useRoute();
 const number = ref(0);
@@ -32,9 +33,9 @@ onMounted(async () => {
     console.log(task.value.title);
 
     task.value.board.ownerId === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-    // if (notOwner.value === true) {
-    //   window.alert('Access denied, you do not have permission to view this page.');
-    // }
+    if (notOwner.value === true) {
+      router.push({ name: 'Forbidden'});
+    }
 
   } catch (error) {
     console.error("Error fetching task details:", error);

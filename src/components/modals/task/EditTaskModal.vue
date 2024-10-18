@@ -3,6 +3,7 @@ import { ref, onMounted, computed, reactive } from "vue";
 import { getItems, getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
+import router from "@/router";
 
 const emit = defineEmits('close', 'saveChanges', 'status-updated');
 const { params } = useRoute();
@@ -41,9 +42,9 @@ onMounted(async () => {
     console.log(localStorage.getItem('oid'));
     
     item.board.ownerId === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-    // if (notOwner.value === true) {
-    //   window.alert('Access denied, you do not have permission to view this page.');
-    // }
+    if (notOwner.value === true) {
+      router.push({ name: 'Forbidden'});
+    }
     
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)

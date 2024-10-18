@@ -52,8 +52,7 @@ onMounted(async () => {
     const statusItems = await getItems(statusUrl);
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     console.log(boardItems);
-    
-    boardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
+    boardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false: notOwner.value = true;
     console.log(notOwner.value);
     board.value = boardItems;
     todo.value = items;

@@ -7,7 +7,7 @@ import { BoardManagement } from '@/libs/BoardManagement';
 const router = useRouter();
 const emit = defineEmits(['save-board-sidebar']);
 const boardmanager = ref(new BoardManagement());
-const personalBoards = ref([]);
+const personalBoards = [];
 const collabBoards = ref([]);
 
 const openModal = () => {
@@ -18,9 +18,14 @@ onMounted(async () => {
   try {
     const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
     boardmanager.value.setBoards(items);
-    personalBoards.value = items.personalBoards;
-    collabBoards.value = items.collabBoards;
-    console.log(collabBoards.value);
+    console.log(items);
+    
+    // personalBoards = items;
+    // console.log(personalBoards);
+    
+    // personalBoards.value = items.personalBoards;
+    // collabBoards.value = items.collabBoards;
+    // console.log(collabBoards);
   } catch (error) {
     console.error('Error fetching personalBoards:', error);
   }
@@ -43,7 +48,7 @@ onMounted(async () => {
           + Add New Board
         </div>
 
-        <div v-for="(board, index) in personalBoards" :key="index">
+        <div v-for="(board, index) in boardmanager.getBoards()" :key="index">
           <div
             class="card bg-base-100 w-auto h-auto shadow-xl transition transform hover:scale-105 duration-300 ease-in-out relative">
 
@@ -53,7 +58,6 @@ onMounted(async () => {
 
             <div @click="router.push({ name: 'task', params: { boardId: board.id } })"
               class="card-title pt-3 pl-3 relative z-10 flex">
-              <div class="font-bold text-md ">{{ board.visibility.toUpperCase() }} </div>
             </div>
             <div class="font-semibold overflow-auto text-base px-3 pb-3">{{ board.name }}</div>
             <div class="absolute top-0 right-0 p-3 ">

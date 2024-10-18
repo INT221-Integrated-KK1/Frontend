@@ -4,6 +4,7 @@ import { getItemById, getItems, deleteItemById, editItem, deleteAndTransfer } fr
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
 import NotFound from "@/views/NotFound.vue";
+import router from "@/router";
 
 const route = useRoute();
 const tranferModal = ref(false);
@@ -18,11 +19,13 @@ const selectId = ref();
 const boardId = route.params.boardId;
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+const notOwner = ref(false);
 onMounted(async () => {
     try {
         task.value = await getItemById(statusUrl, id);
         const taskItems = await getItems(taskUrl);
         const statusItems = await getItems(statusUrl);
+        const BoardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         if (taskItems.some(task => task.status.id === id)) {
             count.value = taskItems.filter(task => task.status.id === id).length;
             tranferModal.value = true;
@@ -32,6 +35,11 @@ onMounted(async () => {
             confirmModal.value = true;
         }
 
+        console.log(BoardItems);
+        BoardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
+        if (notOwner.value === true) {
+            router.push({ name: 'Forbidden' });
+        }
     } catch (error) {
         console.error("Error fetching task details:", error)
         emit("taskNotfound");

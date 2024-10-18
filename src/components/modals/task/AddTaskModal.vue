@@ -95,8 +95,7 @@ onMounted(async () => {
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     statusmanager.value.setStatuses(items);
     status.value = items[0].id;
-    console.log(boardItems.owner.name);
-    boardItems.owner.name === localStorage.getItem('username') ? notOwner.value = false : notOwner.value = true;    console.log(notOwner.value);
+    console.log(boardItems.owner.name);   
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
