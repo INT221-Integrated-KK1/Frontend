@@ -22,7 +22,7 @@ onMounted(() => {
             <div class="bg-white w-1/2 p-6 rounded shadow-lg">
                 <div class="">
                     <h1 class="text-center text-3xl font-bold pt-5 text-red-500">409</h1>
-                    <div class="text-center text-2xl font-bold pt-5">Conflict: email not belong to owner.</div>
+                    <div class="text-center text-2xl font-bold pt-5">Conflict: email not belong to owner or is already added.</div>
                     <div class="text-center text-xl font-bold pt-3 pb-10">This we'll return to the previous page in {{
                         count }} seconds
                     </div>

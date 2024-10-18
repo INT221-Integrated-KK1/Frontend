@@ -3,6 +3,7 @@ import { ref, onMounted, computed, reactive } from "vue";
 import { getItems, getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
+import router from "@/router";
 
 const emit = defineEmits('close', 'saveChanges', 'status-updated');
 const { params } = useRoute();
@@ -39,12 +40,12 @@ onMounted(async () => {
     const item = await getItemById(taskUrl, taskId);
     console.log(item.board.ownerId);
     console.log(localStorage.getItem('oid'));
-    
+
     item.board.ownerId === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-    // if (notOwner.value === true) {
-    //   window.alert('Access denied, you do not have permission to view this page.');
-    // }
-    
+    if (notOwner.value === true) {
+      router.push({ name: 'Forbidden' });
+    }
+
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)
     task.id = item.id;
@@ -117,7 +118,7 @@ const countOptionalCharacters = (text) => {
           <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words" v-model="task.title">
           <span class="text-gray-500 text-sm"
             :class="{ 'text-red-500': task.title.trim().length > 100 || task.title.trim().length === 0 }">{{
-            task.title.trim().length }} / 100 characters</span>
+              task.title.trim().length }} / 100 characters</span>
           </input>
         </div>
         <hr class="col-start-1 col-span-3" />
@@ -157,7 +158,7 @@ const countOptionalCharacters = (text) => {
               Save
             </button>
           </router-link>
-          <router-link :to="({ name: 'task', params: {boardId: params.boardId}})">
+          <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
               Close
             </button>

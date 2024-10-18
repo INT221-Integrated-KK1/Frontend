@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { getItems, addItem, getItemById } from "@/libs/fetchUtils.js";
 import { StatusManagement } from "@/libs/StatusManagement";
-import { useRoute } from 'vue-router'; 
+import { useRoute } from 'vue-router';
 import router from "@/router/index.js";
 
 const title = ref("");
