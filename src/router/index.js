@@ -1,5 +1,15 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { ref } from "vue";
+
+import { addToken, getItemById, getItems } from "@/libs/fetchUtils";
+import VueJwtDecode from "vue-jwt-decode";
+
+import Login from "@/views/Login.vue";
+import Board from "@/views/Board.vue";
+import TaskTable from "@/views/TaskTable.vue";
+import StatusTable from "@/views/StatusTable.vue";
+import CollaboratorTable from "@/views/CollaboratorTable.vue";
+
 import TaskDetail from "@/components/modals/task/TaskDetail.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
 import EditTaskModal from "@/components/modals/task/EditTaskModal.vue";
@@ -9,17 +19,9 @@ import EditStatusModal from "@/components/modals/status/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/modals/status/DeleteStatusModal.vue";
 import AddBoardModal from "@/components/modals/board/AddBoardModal.vue";
 
-import VueJwtDecode from "vue-jwt-decode";
-import NotFound from "@/views/NotFound.vue";
-import Login from "@/views/Login.vue";
-import Board from "@/views/Board.vue";
-import TaskTable from "@/views/TaskTable.vue";
-import StatusTable from "@/views/StatusTable.vue";
-import CollaboratorTable from "@/views/CollaboratorTable.vue";
-import AccessDenied from "@/views/AccessDenied.vue";
-import Conflict from "@/views/Conflict.vue";
-
-import { addToken, getItemById } from "@/libs/fetchUtils";
+import NotFound from "@/views/errors/NotFound.vue";
+import AccessDenied from "@/views/errors/AccessDenied.vue";
+import Conflict from "@/views/errors/Conflict.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,30 +61,43 @@ const router = createRouter({
           path: "task/add",
           name: "addtask",
           component: AddTaskModal,
-          beforeEnter: async (to, from, next) => {
-            try {
-              const notOwner = ref(false);
-              const boardId = to.params.boardId;
-              const boardItems = await getItemById(
-                import.meta.env.VITE_BASE_BOARDS_URL,
-                boardId
-              );
-              console.log("boardItem", boardItems);
+          // beforeEnter: async (to, from, next) => {
+          //   try {
+          //     const readAccess = ref(false);
+          //     const boardId = to.params.boardId;
+          //     const boardItems = await getItemById(
+          //       import.meta.env.VITE_BASE_BOARDS_URL,
+          //       boardId
+          //     );
+          //     const collabMembers = await getItems(
+          //       import.meta.env.VITE_BASE_BOARDS_URL,
+          //       boardId
+          //     );
 
-              boardItems.owner.name === localStorage.getItem("username")
-                ? (notOwner.value = false)
-                : (notOwner.value = true);
+          //     for (let i = 0; i < collabMembers.length; i++) {
+          //       if (
+          //         collabMembers[i].oid === localStorage.getItem("oid") &&
+          //         collabMembers[i].accessRight === "READ"
+          //       ) {
+          //         readAccess.value = true;
+          //       }
+          //     }
 
-              if (notOwner.value === true) {
-                next({ name: "Forbidden" });
-              } else {
-                next();
-              }
-            } catch (error) {
-              console.error(`Error fetching board details: ${error}`);
-              next({ name: "Forbidden" });
-            }
-          },
+          //     boardItems.owner.oid === localStorage.getItem("oid")
+          //       ? (readAccess.value = false)
+          //       : (readAccess.value = true);
+          //     console.log("read access " + readAccess.value);
+
+          //     if ((readAccess.value = true)) {
+          //       next({ name: "Forbidden" });
+          //     } else {
+          //       next();
+          //     }
+          //   } catch (error) {
+          //     console.error(`Error fetching board details: ${error}`);
+          //     next({ name: "Forbidden" });
+          //   }
+          // },
         },
         {
           path: "task/:taskId/delete",
@@ -234,24 +249,19 @@ const router = createRouter({
       component: CollaboratorTable,
     },
     {
-      path: "/:catchAll(.*)",
-      name: "NotFound",
-      component: NotFound,
-    },
-    {
-      path: "/404",
-      name: "NotFound",
-      component: NotFound,
-    },
-    {
-      path: "/403",
+      path: "/forbidden",
       name: "Forbidden",
       component: AccessDenied,
     },
     {
-      path: "/409",
+      path: "/conflict",
       name: "Conflict",
       component: Conflict,
+    },
+    {
+      path: "/:catchAll(.*)",
+      name: "NotFound",
+      component: NotFound,
     },
   ],
 });

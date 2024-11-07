@@ -12,7 +12,7 @@ import EditIcons from "@/components/icons/EditIcons.vue";
 import { useRoute } from 'vue-router';
 const { params } = useRoute();
 const boardId = params.boardId;
-const notOwner = ref(false);
+const readAccess = ref(false);
 const board = ref({});
 const tableType = "status";
 const statusmanager = ref(new StatusManagement());
@@ -20,6 +20,7 @@ const todo = ref([]);
 const isDefault = (status) => status.name === "No Status" || status.name === "Done";
 
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 onMounted(async () => {
     try {
         const items = await getItems(statusUrl);
@@ -27,8 +28,17 @@ onMounted(async () => {
         statusmanager.value.setStatuses(items);
         const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         board.value = boardItems;
-        boardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-        console.log(notOwner.value);
+        // boardItems.owner.oid === localStorage.getItem('oid') ? readAccess.value = false : readAccess.value = true;
+        // console.log(readAccess.value);
+        const collabItems = await getItems(collabUrl);
+
+        for (let i = 0; i < collabItems.length; i++) {
+            if (collabItems[i].oid === localStorage.getItem('oid')) {
+                if (collabItems[i].accessRight === "READ") {
+                    readAccess.value = true;
+                }
+            }
+        }
 
     } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -227,7 +237,7 @@ const handleStatusDeletedNotfound = () => {
 
                 <div class=" flex">
 
-                    <div v-if="notOwner === true">
+                    <div v-if="readAccess === true">
                         <div class="itbkk-button-add bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5"
                             disabled="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -288,33 +298,33 @@ const handleStatusDeletedNotfound = () => {
                                 </div>
                                 <div v-else>
                                     {{ status.description === null || status.description === "" ?
-                                    "No Description Provided" : status.description }}
+                                        "No Description Provided" : status.description }}
                                 </div>
                             </td>
                             <div v-if="!isDefault(status)" class="flex justify-center ">
-                                <div v-if="notOwner === true">
+                                <div v-if="readAccess === true">
                                     <td class="itbkk-button-edit">
-                                        <EditIcons :isOff="notOwner" />
+                                        <EditIcons :isOff="readAccess" />
                                     </td>
                                 </div>
                                 <div v-else>
                                     <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }">
                                         <td class="itbkk-button-action" @click="showEditModals(status.id)">
-                                            <EditIcons :isOff="notOwner" />
+                                            <EditIcons :isOff="readAccess" />
                                         </td>
                                     </RouterLink>
                                 </div>
-                                <div v-if="notOwner === true">
+                                <div v-if="readAccess === true">
                                     <td class="itbkk-button-delete">
 
-                                        <DeleteIcons :isOff="notOwner" />
+                                        <DeleteIcons :isOff="readAccess" />
                                     </td>
                                 </div>
                                 <div v-else>
                                     <RouterLink :to="{ name: 'deletestatus', params: { id: status.id } }">
                                         <td class="itbkk-button-action" @click="showDeleteModals(status)">
 
-                                            <DeleteIcons :isOff="notOwner" />
+                                            <DeleteIcons :isOff="readAccess" />
                                         </td>
                                     </RouterLink>
                                 </div>

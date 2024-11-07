@@ -3,21 +3,38 @@ import router from "../router/index.js";
 async function getItems(url) {
   try {
     const token = localStorage.getItem("token");
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (response.status === 401) {
-      localStorage.clear();
-      router.push("/login");
-      console.error(`Error fetching items: ${response.status}`);
-    } else if (response.status === 403) {
-      router.push({ name: "Forbidden" });
-    } else if (response.ok) {
-      const items = await response.json();
-      return items;
+   
+    if (token) {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 401) {
+        localStorage.clear();
+        router.push("/login");
+        console.error(`Error fetching items: ${response.status}`);
+      } else if (response.status === 403) {
+        router.push({ name: "Forbidden" });
+      } else if (response.ok) {
+        const items = await response.json();
+        return items;
+      }
+    } else {
+      const response = await fetch(url, {
+        method: "GET",
+      });
+      if (response.status === 401) {
+        localStorage.clear();
+        router.push("/login");
+        console.error(`Error fetching items: ${response.status}`);
+      } else if (response.status === 403) {
+        router.push({ name: "Forbidden" });
+      } else if (response.ok) {
+        const items = await response.json();
+        return items;
+      }
     }
   } catch (error) {
     console.log(`error: ${error}`);
@@ -36,9 +53,7 @@ async function getItemById(url, id) {
       const item = await data.json();
       return item;
     } else {
-      // 404 error
       if (data.status === 404) {
-        //window.alert('The requested task does not exist');
         router.go(-1);
       } else if (data.status === 401) {
         localStorage.clear();
@@ -47,7 +62,6 @@ async function getItemById(url, id) {
       } else if (data.status === 403) {
         router.push({ name: "Forbidden" });
       }
-      // other errors
       console.error(`Error fetching task details: ${data.status}`);
       return undefined;
     }
@@ -242,6 +256,35 @@ async function changeBoardVisibility(url, id, visibility) {
   }
 }
 
+const editPatchItem = async (url, editItem) => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${url}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+
+      body: JSON.stringify({
+        ...editItem,
+      }),
+    });
+    if (res.status === 401) {
+      localStorage.clear();
+      router.push("/login");
+    } else if (res.status === 403) {
+      router.push({ name: "Forbidden" });
+    } else if (res.ok) {
+      const editedItem = await res.json();
+      return editedItem;
+    }
+  }
+  catch (error) {
+    console.log(`error: ${error}`);
+  }
+}
+
 export {
   getItems,
   getItemById,
@@ -252,4 +295,5 @@ export {
   isAuthenticated,
   addToken,
   changeBoardVisibility,
+  editPatchItem,
 };

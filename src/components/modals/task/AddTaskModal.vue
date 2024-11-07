@@ -3,7 +3,6 @@ import { onMounted, ref } from "vue";
 import { getItems, addItem, getItemById } from "@/libs/fetchUtils.js";
 import { StatusManagement } from "@/libs/StatusManagement";
 import { useRoute } from 'vue-router';
-import router from "@/router/index.js";
 
 const title = ref("");
 const description = ref("");
@@ -96,12 +95,7 @@ onMounted(async () => {
     statusmanager.value.setStatuses(items);
     status.value = items[0].id;
     console.log(boardItems.owner.name);
-    boardItems.owner.name === localStorage.getItem('username') ? notOwner.value = false : notOwner.value = true;    
-    console.log(notOwner.value);
 
-    // if (notOwner.value === true) {
-    //   router.push("/403");
-    // }
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }

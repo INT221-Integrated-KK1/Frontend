@@ -1,21 +1,52 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { getItemById, getItems } from "@/libs/fetchUtils";
+import { getItemById, getItems, editPatchItem, deleteItemById } from "@/libs/fetchUtils";
 import { CollabManagement } from "@/libs/CollabManagement";
 import Sidebar from "@/components/Sidebar.vue";
-import AddCollabModal from "@/components/modals/board/AddCollabModal.vue";
+import CollabModal from "@/components/modals/board/CollabModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import router from "@/router";
 
-const notOwner = ref(false);
+const readAccess = ref(false);
+const email = ref("");
+const accessRight = ref("READ");
+
+const showModal = ref(false);
+const actionType = ref('');
+const collabItem = ref(null);
+
+const Owner = ref(false);
 const showAddedCollab = ref(false);
+const showUpdated = ref(false);
+const showDeleted = ref(false);
 const addedCollabName = ref("");
+const updatedTitle = ref("");
+const tableType = ref("Collaborator");
 const { params } = useRoute();
 const boardId = params.boardId;
 const board = ref([]);
 const collabs = ref([]);
 const collabmanager = ref(new CollabManagement());
+
+const openAddModal = () => {
+    actionType.value = 'add';
+    showModal.value = true;
+};
+
+const openEditModal = (collab) => {
+    actionType.value = 'edit';
+    collabItem.value = collab;
+    showModal.value = true;
+};
+
+
+const openRemoveModal = (collab) => {
+    actionType.value = 'remove';
+    collabItem.value = collab;
+    showModal.value = true;
+};
+
 
 function handleAddCollab(addCollab) {
     console.log("addCollab in CollboratorTable", addCollab);
@@ -32,12 +63,62 @@ function handleAddCollab(addCollab) {
     }
 }
 
+const handleUpdateCollab = async (oid, accessRight) => {
+    const updateAccess = {
+        accessRight: accessRight
+    };
+    if (Owner.value === false) {
+        router.push({ name: 'Forbidden' });
+    } else {
+        try {
+            const collabItem = await editPatchItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs/${oid}`, updateAccess);
+            console.log("collabItem", collabItem);
+            
+            updatedTitle.value = collabItem.collabsName;
+            showUpdated.value = true;
+            setTimeout(() => {
+                showUpdated.value = false;
+            }, 3000);
+        } catch (error) {
+            console.error(`Error updating access right: ${error}`);
+        }
+    }
+}
+
+const handleRemoveCollab = async (collab) => {
+    if (Owner.value === false) {
+        router.push({ name: 'Forbidden' });
+    } else {
+        try {
+            await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, collab);
+            collabs.value = collabs.value.filter((item) => item.oid !== collab);
+            showDeleted.value = true;
+            setTimeout(() => {
+                showDeleted.value = false;
+            }, 3000);
+        } catch (error) {
+            console.error(`Error removing access right: ${error}`);
+        }
+    }
+}
+
+const closeModal = () => {
+    showModal.value = false;
+};
+
+
 onMounted(async () => {
     try {
         const boardItem = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
-
-        boardItem.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
+        for (let i = 0; i < collabMembers.length; i++) {
+            if (collabMembers[i].oid === localStorage.getItem('oid')) {
+                if (collabMembers[i].accessRight === "READ") {
+                    readAccess.value = true;
+                }
+            }
+        }
+        boardItem.owner.oid === localStorage.getItem('oid') ? Owner.value = true : Owner.value = false;
         board.value = boardItem;
         collabs.value = collabMembers;
         // collabStore.setCollabs(collabMembers);
@@ -57,7 +138,8 @@ onMounted(async () => {
         </div>
 
         <div class="w-screen">
-            <AlertBox :showAddedCollab="showAddedCollab" :addedCollabName="addedCollabName" />
+            <AlertBox :tableType="tableType" :showAddedCollab="showAddedCollab" :addedCollabName="addedCollabName"
+                :showUpdated="showUpdated" :showDeleted="showDeleted" :updatedTitle="updatedTitle" />
             <h1 class="text-4xl text-center font-bold mt-10">Collaborator Management</h1>
             <!-- filter -->
             <div class="flex justify-between mx-52 mt-5 items-center ">
@@ -70,12 +152,22 @@ onMounted(async () => {
                 </div>
 
                 <div class=" flex">
-                    <div v-if="notOwner === true">
-                        <AddCollabModal :boardId="boardId" :notOwner="notOwner" @addCollab="handleAddCollab"
-                            disabled="disabled" />
+                    <div v-if="readAccess === true">
+                        <div class="itbkk-button-add bg-green-500 hover:bg-green-600 btn font-semibold mr-5"
+                            disabled="disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
+                            </svg>
+                            Add Collaborator
+                        </div>
                     </div>
-                    <div v-else>
-                        <AddCollabModal :boardId="boardId" :notOwner="notOwner" @addCollab="handleAddCollab" />
+                    <div v-else @click.prevent="openAddModal">
+                        <div class="itbkk-button-add bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
+                            </svg>
+                            Add Collaborator
+                        </div>
                     </div>
 
                     <RouterLink :to="{ name: 'task', params: { boardId: params.boardId } }">
@@ -97,8 +189,6 @@ onMounted(async () => {
                             <th class="font-bold">E-mail</th>
                             <th class="font-bold">Access Right</th>
                             <th class="font-bold">Action</th>
-
-
                         </tr>
                     </thead>
                     <tbody>
@@ -108,19 +198,19 @@ onMounted(async () => {
                             <td class="">{{ collab.name }}</td>
                             <td class="">{{ collab.email }}</td>
                             <td class="">
-                                <select
-                                    class="w-full p-3 rounded-md text-zinc-950 bg-slate-50  border-2 border-zinc-700 max-w-xs"
-                                    v-model="collab.accessRight" disabled>
-                                    <option>READ</option>
-                                    <option>WRITE</option>
-                                </select>
+                                <div
+                                    class="w-full p-3 rounded-md text-zinc-950 bg-slate-50 border-2 border-zinc-700 max-w-xs"
+                                     @click="openEditModal(collab)" >
+                                    <div> {{ collab.accessRight }}</div>
+                                </div>
                             </td>
                             <td>
-                                <div v-if="notOwner === true">
+                                <div v-if="readAccess === true">
                                     <button class="btn btn-outline btn-error" disabled="disabled">Remove</button>
                                 </div>
                                 <div v-else>
-                                    <button class="btn btn-outline btn-error">Remove</button>
+                                    <button class="btn btn-outline btn-error"
+                                        @click="openRemoveModal(collab)">Remove</button>
                                 </div>
                             </td>
                         </tr>
@@ -130,9 +220,14 @@ onMounted(async () => {
 
                     </tbody>
                 </table>
+
+
             </div>
         </div>
     </div>
+
+    <CollabModal :showModal="showModal" :readAccess="readAccess" :boardId="boardId" :actionType="actionType" :collabItem="collabItem" @addCollab="handleAddCollab" @closeModal="closeModal"
+        @removeCollab="handleRemoveCollab" @editCollab="handleUpdateCollab"/>
 
 </template>
 

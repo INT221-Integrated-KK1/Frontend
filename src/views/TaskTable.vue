@@ -14,10 +14,12 @@ import { useRoute } from 'vue-router';
 import BoardVisibility from "@/components/modals/board/BoardVisibility.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
+import { CollabManagement } from "@/libs/CollabManagement";
 
-const notOwner = ref(false);
+const readAccess = ref(false);
 
 const taskmanager = ref(new TaskManagement());
+const collabmanager = ref(new CollabManagement());
 const todo = ref([]);
 
 const taskId = ref(null);
@@ -48,15 +50,27 @@ const board = ref([]);
 
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
+
+// collabmanager.value.getCollabs();
+// console.log(collabmanager.value.getCollabs());
+
 onMounted(async () => {
   try {
     const items = await getItems(taskUrl);
     const statusItems = await getItems(statusUrl);
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
-    console.log(boardItems);
+    const collabItems = await getItems(collabUrl);
 
-    boardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-    console.log(notOwner.value);
+    for (let i = 0; i < collabItems.length; i++) {
+      if (collabItems[i].oid === localStorage.getItem('oid')) {
+        if (collabItems[i].accessRight === "READ") {
+          readAccess.value = true;
+        }
+      } 
+    }
+    console.log(readAccess.value);
+
     board.value = boardItems;
     todo.value = items;
     statuses.value = statusItems;
@@ -337,9 +351,8 @@ const getStatusClass = (status) => {
           </RouterLink>
 
           <!-- add task -->
-          <div v-if="notOwner === true">
-            <div class="itbkk-button-add bg-green-500 hover:bg-green-600 btn font-semibold rounded-full"
-              disabled="disabled">
+          <div v-if="readAccess === true">
+            <div class="itbkk-button-add  bg-grey-500 btn rounded-full cursor-not-allowed disabled">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                 <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
               </svg>
@@ -401,29 +414,29 @@ const getStatusClass = (status) => {
               </td>
 
               <div class="flex justify-center ">
-                <div v-if="notOwner === true">
-                  <td class="itbkk-button-edit">
-                    <EditIcons :isOff="notOwner" />
+                <div v-if="readAccess === true">
+                  <td class="itbkk-button-edit cursor-not-allowed">
+                    <EditIcons :isOff="readAccess" />
                   </td>
                 </div>
                 <div v-else>
                   <router-link :to="{ name: 'editTaskModal', params: { boardId: params.boardId, taskId: task.id } }">
                     <td class="itbkk-button-edit" @click="editHandler(task.id)">
-                      <EditIcons :isOff="notOwner" />
+                      <EditIcons :isOff="readAccess" />
                     </td>
                   </router-link>
                 </div>
 
-                <div v-if="notOwner === true">
-                  <td class="itbkk-button-delete">
+                <div v-if="readAccess === true">
+                  <td class="itbkk-button-delete cursor-not-allowed">
                     <!-- <DeleteOffIcons /> -->
-                    <DeleteIcons :isOff="notOwner" />
+                    <DeleteIcons :isOff="readAccess" />
                   </td>
                 </div>
                 <div v-else>
                   <router-link :to="{ name: 'deleteTask', params: { taskId: task.id } }">
                     <td class="itbkk-button-delete" @click="showConfirmModals(task)">
-                      <DeleteIcons :isOff="notOwner" />
+                      <DeleteIcons :isOff="readAccess" />
                     </td>
                   </router-link>
                 </div>
