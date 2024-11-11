@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { ref } from "vue";
-
 import { addToken, getItemById, getItems } from "@/libs/fetchUtils";
 import VueJwtDecode from "vue-jwt-decode";
 
@@ -22,6 +20,43 @@ import AddBoardModal from "@/components/modals/board/AddBoardModal.vue";
 import NotFound from "@/views/errors/NotFound.vue";
 import AccessDenied from "@/views/errors/AccessDenied.vue";
 import Conflict from "@/views/errors/Conflict.vue";
+
+const checkWriteAccess = async (to, from, next) => {
+  try {
+    const boardId = to.params.boardId;
+    const userOid = localStorage.getItem("oid");
+
+    const boardItems = await getItemById(
+      import.meta.env.VITE_BASE_BOARDS_URL,
+      boardId
+    );
+    const collabMembers = await getItems(
+      `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`
+    );
+
+    const isOwner = boardItems.owner.oid === userOid;
+    const hasWriteAccess = collabMembers.some(
+      (member) => member.accessRight === "WRITE" 
+    );
+
+    if (isOwner || hasWriteAccess) {
+      console.log("aaaa    " + isOwner, hasWriteAccess);
+      
+      next();
+    } else {
+      window.alert(
+        "Access denied, you do not have permission to view this page."
+      );
+      router.go(-1);
+    }
+  } catch (error) {
+    console.error(`Error fetching board details: ${error.message}`);
+    window.alert(
+      "An error occurred while fetching board details. Please try again later."
+    );
+    router.go(-1);
+  }
+};
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,106 +97,24 @@ const router = createRouter({
           name: "addtask",
           component: AddTaskModal,
           beforeEnter: async (to, from, next) => {
-            try {
-              const boardId = to.params.boardId;
-              const userOid = localStorage.getItem("oid");
-
-              // Fetch board and collaborators data in parallel
-              
-              const boardItems = await getItemById(
-                import.meta.env.VITE_BASE_BOARDS_URL,
-                boardId
-              );
-              const collabMembersResponse = await getItems(
-                `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`
-              );
-
-              // Ensure collabMembers is an array
-              const collabMembers = Array.isArray(collabMembersResponse)
-                ? collabMembersResponse
-                : [];
-
-              // Check if user is the owner of the board
-              const isOwner = boardItems.owner.oid === userOid;
-
-              // Check if user has write access
-              const hasWriteAccess = collabMembers.some(
-                (member) =>
-                  member.oid === userOid && member.accessRight === "write"
-              );
-
-              if (isOwner || hasWriteAccess) {
-                // Allow navigation
-                next();
-              } else {
-                // Deny access for users with only read access
-                window.alert(
-                  "Access denied, you do not have permission to view this page."
-                );
-                router.go(-1);
-              }
-            } catch (error) {
-              console.error(`Error fetching board details: ${error.message}`);
-              window.alert(
-                "An error occurred while fetching board details. Please try again later."
-              );
-              router.go(-1); // Redirect to the previous page on error
-            }
+            await checkWriteAccess(to, from, next);
           },
         },
         {
           path: "task/:taskId/delete",
           name: "deleteTask",
           component: DeleteTaskModal,
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
         {
           path: "task/:taskId/edit",
           name: "editTaskModal",
           component: EditTaskModal,
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     // next({ name: "Forbidden" });
-          //   }
-          // },
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     // next({ name: "Forbidden" });
-          //   }
-          // },
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
       ],
     },
@@ -174,60 +127,25 @@ const router = createRouter({
           path: "add",
           name: "addstatus",
           component: AddStatusModal,
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
         {
           path: ":id/edit",
           name: "editstatus",
           component: EditStatusModal,
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
         {
           path: ":id/delete",
           name: "deletestatus",
           component: DeleteStatusModal,
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
       ],
     },

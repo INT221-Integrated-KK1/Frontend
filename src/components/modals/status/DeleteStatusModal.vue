@@ -1,9 +1,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItemById, getItems, deleteItemById, editItem, deleteAndTransfer } from "../../../libs/fetchUtils.js";
+import { getItemById, getItems, deleteItemById, editItem, deleteAndTransfer } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
-import NotFound from "@/views/errors/NotFound.vue";
 import router from "@/router";
 
 const route = useRoute();
@@ -29,6 +28,7 @@ onMounted(async () => {
         if (taskItems.some(task => task.status.id === id)) {
             count.value = taskItems.filter(task => task.status.id === id).length;
             tranferModal.value = true;
+            confirmModal.value = false;
             statusmanager.value.setStatuses(statusItems);
             statusmanager.value.deleteStatus(id);
         } else {
@@ -150,8 +150,6 @@ async function DeleteStatus(deletedId) {
             </div>
         </div>
     </div>
-
-    <NotFound v-if="task === undefined" />
 </template>
 
 <style scoped></style>

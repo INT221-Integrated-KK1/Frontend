@@ -16,6 +16,7 @@ import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
 
 const readAccess = ref(false);
+const unAuthorized = localStorage.getItem('token') === null;
 
 const taskmanager = ref(new TaskManagement());
 const todo = ref([]);
@@ -65,8 +66,6 @@ onMounted(async () => {
         }
       } 
     }
-    console.log(readAccess.value);
-
     board.value = boardItems;
     todo.value = items;
     statuses.value = statusItems;
@@ -98,9 +97,10 @@ async function handleTaskAdded(addedTasks) {
 };
 
 // ----------------------------------- delete handler -----------------------------------
-
+const idDelete = ref(0);
 async function showConfirmModals(task) {
   const items = await getItemById(taskUrl, task.id);
+  idDelete.value = task.id;
   showDeleteModal.value = true;
 }
 
@@ -131,11 +131,12 @@ const handleTaskDeletedNotfound = () => {
 const closeEditModal = () => {
   showEditModal.value = false;
 };
-
+const idEdit = ref(0);
 async function editHandler(id) {
   const items = await getItemById(taskUrl, id);
   if (items !== undefined) {
     showEditModal.value = true;
+    idEdit.value = id;
   } else {
     showUpdatedError.value = true;
     setTimeout(() => {
@@ -347,7 +348,7 @@ const getStatusClass = (status) => {
           </RouterLink>
 
           <!-- add task -->
-          <div v-if="readAccess === true">
+          <div v-if="readAccess === true || unAuthorized">
             <div
               class="itbkk-button-add  bg-slate-300 text-white hover:bg-slate-400  btn rounded-full cursor-not-allowed ">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -411,29 +412,29 @@ const getStatusClass = (status) => {
               </td>
 
               <div class="flex justify-center ">
-                <div v-if="readAccess === true">
+                <div v-if="readAccess === true || unAuthorized">
                   <td class="itbkk-button-edit cursor-not-allowed">
-                    <EditIcons :isOff="readAccess" />
+                    <EditIcons :isOff="readAccess || unAuthorized" />
                   </td>
                 </div>
                 <div v-else>
                   <router-link :to="{ name: 'editTaskModal', params: { boardId: params.boardId, taskId: task.id } }">
                     <td class="itbkk-button-edit" @click="editHandler(task.id)">
-                      <EditIcons :isOff="readAccess" />
+                      <EditIcons :isOff="readAccess || unAuthorized" />
                     </td>
                   </router-link>
                 </div>
 
-                <div v-if="readAccess === true">
+                <div v-if="readAccess === true|| unAuthorized">
                   <td class="itbkk-button-delete cursor-not-allowed">
                     <!-- <DeleteOffIcons /> -->
-                    <DeleteIcons :isOff="readAccess" />
+                    <DeleteIcons :isOff="readAccess || unAuthorized" />
                   </td>
                 </div>
                 <div v-else>
                   <router-link :to="{ name: 'deleteTask', params: { taskId: task.id } }">
                     <td class="itbkk-button-delete" @click="showConfirmModals(task)">
-                      <DeleteIcons :isOff="readAccess" />
+                      <DeleteIcons :isOff="readAccess || unAuthorized" />
                     </td>
                   </router-link>
                 </div>
@@ -448,15 +449,14 @@ const getStatusClass = (status) => {
     </div>
   </div>
 
-  <router-view />
-
   <Teleport to="body">
-    <DeleteTaskModal v-if="showDeleteModal == true" @close="handleClose" @taskDeleted="handleTaskDeleted"
+    <DeleteTaskModal :showDeleteModal="showDeleteModal" :idDelete="idDelete" @close="handleClose" @taskDeleted="handleTaskDeleted"
       @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
 
   <Teleport to="body">
-    <EditTaskModal v-if="showEditModal" @close="closeEditModal()" @saveChanges="saveChanges" />
+    <EditTaskModal :showEditModal="showEditModal" :idEdit="idEdit" @close="closeEditModal()"
+      @saveChanges="saveChanges" />
   </Teleport>
 
   <Teleport to="body">

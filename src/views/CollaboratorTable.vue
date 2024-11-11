@@ -154,7 +154,7 @@ onMounted(async () => {
                 </div>
 
                 <div class=" flex">
-                    <div v-if="readAccess === true && Owner === false ">
+                    <div v-if="Owner === false">
                         <div
                             class="itbkk-button-add bg-slate-300 text-white hover:bg-slate-400 btn font-semibold mr-5 cursor-not-allowed ">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -200,18 +200,28 @@ onMounted(async () => {
                             <td class="">{{ collab.name || collab.collabsName }}</td>
                             <td class="">{{ collab.email || collab.collabsEmail }}</td>
                             <td class="">
-                                <div v-if="readAccess === true && Owner === false"
+                                <div v-if="Owner === false"
                                     class="w-full p-3 rounded-md text-zinc-950 bg-slate-50 border-2 border-zinc-700 max-w-xs cursor-not-allowed">
-                                    <div> {{ collab.accessRight || collab.accessLevel }}</div>
+                                    <div class="flex justify-between"> {{ collab.accessRight || collab.accessLevel }}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
+                                            viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="m12 15l5-5H7z" />
+                                        </svg>
+                                    </div>
                                 </div>
                                 <div v-else
                                     class="w-full p-3 rounded-md text-zinc-950 bg-slate-50 border-2 border-zinc-700 max-w-xs"
                                     @click="openEditModal(collab)">
-                                    <div> {{ collab.accessRight || collab.accessLevel }}</div>
+                                    <div class="flex justify-between"> {{ collab.accessRight || collab.accessLevel }}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
+                                            viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="m12 15l5-5H7z" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </td>
                             <td>
-                                <div v-if="readAccess === true && Owner === false">
+                                <div v-if="Owner === false">
                                     <button
                                         class="btn  bg-slate-300 text-white hover:bg-slate-400 cursor-not-allowed">Remove</button>
                                 </div>

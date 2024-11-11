@@ -8,15 +8,12 @@ async function getItems(url) {
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    
     const response = await fetch(url, {
       method: "GET",
       headers
     });
 
-    if (response.status === 403) {
-      router.push({ name: "Forbidden" });
-    } else if (response.ok) {
+    if (response.ok) {
       const items = await response.json();
       return items;
     } else {
@@ -41,9 +38,7 @@ async function getItemById(url, id) {
       headers,
     });
 
-    if (response.status === 403) {
-      router.push({ name: "Forbidden" });
-    } else if (response.ok) {
+    if (response.ok) {
       const item = await response.json();
       return item;
     } else {
@@ -65,9 +60,7 @@ async function deleteItemById(url, id) {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (res.status === 403) {
-      router.push({ name: "Forbidden" });
-    } else if (res.ok) {
+     if (res.ok) {
       return res.status;
     }
   } catch (error) {
@@ -88,9 +81,6 @@ async function addItem(url, newItem) {
         ...newItem,
       }),
     });
-    //  if (res.status === 403) {
-    //   router.push({ name: "Forbidden" });
-    // } else 
     if (res.status === 409) {
       return { status: 409 };
     } else {
@@ -115,9 +105,6 @@ async function editItem(url, id, editItem) {
         ...editItem,
       }),
     });
-    // if (res.status === 403) {
-    //   router.push({ name: "Forbidden" });
-    // } else if (res.ok) {
       const editedItem = await res.json();
       return editedItem;
     // }
@@ -135,9 +122,6 @@ async function deleteAndTransfer(url, id, transferId) {
         Authorization: `Bearer ${token}`,
       },
     });
-    // if (res.status === 403) {
-    //   router.push({ name: "Forbidden" });
-    // } else 
     if (res.ok) {
       return response.status;
     } else {
@@ -162,11 +146,8 @@ async function isAuthenticated(url, input) {
     if (response.status === 401) {
       localStorage.clear();
       router.push("/login");
-    } else 
+    } 
     
-    // if (res.status === 403) {
-    //   router.push({ name: "Forbidden" });
-    // }
     return response;
   } catch (error) {
     console.log(`error: ${error}`);
@@ -192,9 +173,6 @@ async function addToken(url) {
       },
     });
     const response = await res.json();
-    if (response.status === 403) {
-      router.push({ name: "Forbidden" });
-    }
 
     return response;
   } catch (error) {
@@ -215,9 +193,6 @@ async function changeBoardVisibility(url, id, visibility) {
         visibility: visibility,
       }),
     });
-    if (res.status === 403) {
-      router.push({ name: "Forbidden" });
-    } 
     return res;
   } catch (error) {
     console.log(`error: ${error}`);
@@ -238,9 +213,7 @@ const editPatchItem = async (url, editItem) => {
         ...editItem,
       }),
     });
-     if (res.status === 403) {
-      router.push({ name: "Forbidden" });
-    } else if (res.ok) {
+    if (res.ok) {
       const editedItem = await res.json();
       return editedItem;
     }

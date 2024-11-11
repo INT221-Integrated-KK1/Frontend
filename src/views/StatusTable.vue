@@ -13,6 +13,8 @@ import { useRoute } from 'vue-router';
 const { params } = useRoute();
 const boardId = params.boardId;
 const readAccess = ref(false);
+
+const unAuthorized = localStorage.getItem('token') === null;
 const board = ref({});
 const tableType = "status";
 const statusmanager = ref(new StatusManagement());
@@ -72,6 +74,7 @@ const handleStatusAdded = (items) => {
 const showUpdated = ref(false);
 const showUpdatedError = ref(false);
 const editModal = ref(false);
+const idEdit = ref(0);
 
 const closeEditModal = () => {
     editModal.value = false;
@@ -82,6 +85,7 @@ async function showEditModals(id) {
     try {
         const items = await getItemById(statusUrl, id);
         if (items !== undefined) {
+            idEdit.value = id;
             editModal.value = true;
         } else {
             showUpdatedError.value = true;
@@ -235,7 +239,7 @@ const handleStatusDeletedNotfound = () => {
 
                 <div class=" flex">
 
-                    <div v-if="readAccess === true">
+                    <div v-if="readAccess === true || unAuthorized">
                         <div
                             class="itbkk-button-add bg-slate-300 text-white hover:bg-slate-400 btn font-semibold mr-5 cursor-not-allowed">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -300,29 +304,29 @@ const handleStatusDeletedNotfound = () => {
                                 </div>
                             </td>
                             <div v-if="!isDefault(status)" class="flex justify-center ">
-                                <div v-if="readAccess === true">
+                                <div v-if="readAccess === true || unAuthorized">
                                     <td class="itbkk-button-edit cursor-not-allowed">
-                                        <EditIcons :isOff="readAccess" />
+                                        <EditIcons :isOff="readAccess || unAuthorized" />
                                     </td>
                                 </div>
                                 <div v-else>
                                     <RouterLink :to="{ name: 'editstatus', params: { id: status.id } }">
                                         <td class="itbkk-button-action" @click="showEditModals(status.id)">
-                                            <EditIcons :isOff="readAccess" />
+                                            <EditIcons :isOff="readAccess || unAuthorized" />
                                         </td>
                                     </RouterLink>
                                 </div>
-                                <div v-if="readAccess === true">
+                                <div v-if="readAccess === true || unAuthorized">
                                     <td class="itbkk-button-delete cursor-not-allowed">
 
-                                        <DeleteIcons :isOff="readAccess" />
+                                        <DeleteIcons :isOff="readAccess || unAuthorized" />
                                     </td>
                                 </div>
                                 <div v-else>
                                     <RouterLink :to="{ name: 'deletestatus', params: { id: status.id } }">
                                         <td class="itbkk-button-action" @click="showDeleteModals(status)">
 
-                                            <DeleteIcons :isOff="readAccess" />
+                                            <DeleteIcons :isOff="readAccess || unAuthorized" />
                                         </td>
                                     </RouterLink>
                                 </div>
@@ -340,9 +344,15 @@ const handleStatusDeletedNotfound = () => {
     <router-link :to="{ name: 'addstatus' }">
         <AddStatusModal @statusAdded="handleStatusAdded" />
     </router-link>
-    <Teleport to="body">
+
+    <!-- <Teleport to="body">
         <EditStatusModal v-if="editModal" @close="closeEditModal" @saveChanges="saveChanges" />
+    </Teleport> -->
+
+    <Teleport to="body">
+        <EditStatusModal :editModal="editModal" @close="closeEditModal" @saveChanges="saveChanges" />
     </Teleport>
+
     <Teleport to="body">
         <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted"
             @taskNotfound="handleStatusDeletedNotfound()" />

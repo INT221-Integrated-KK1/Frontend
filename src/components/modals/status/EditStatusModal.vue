@@ -1,48 +1,51 @@
 <script setup>
-import { onMounted, ref, reactive, computed } from "vue";
+import { watch, ref, reactive, computed } from "vue";
 import { getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import router from "@/router";
-import Board from "@/views/Board.vue";
 
 
 const emit = defineEmits(['saveChanges', 'close'])
 
 const { params } = useRoute();
+const route = useRoute();
 const id = Number(params.id);
-console.log(id);
+
+const props = defineProps({
+    editModal: Boolean,
+    idEdit: Number,
+});
+
 const boardId = params.boardId;
-const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
-const isLoaded = ref(false);
 
 const status = reactive({
     id: 1,
     name: "",
     description: ""
 });
-console.log(status);
-const notOwner = ref(false);
-onMounted(async () => {
+
+let initialTask = "";
+watch(
+    async () => {
+        const idToUse = !isNaN(id) ? id : props.idEdit;
+        if (idToUse) {
+            await fetchTaskDetails(idToUse);
+            initialTask = JSON.stringify(status);
+        }
+    },
+    { immediate: true }
+);
+
+async function fetchTaskDetails(id) {
     try {
         const items = await getItemById(statusUrl, id);
-        const BoardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         status.id = items.id;
         status.name = items.name;
         status.description = items.description;
-        console.log(status.id);
-        console.log(status.name);
-
-        isLoaded.value = true;
-        console.log(BoardItems.owner.oid);
-        BoardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-        if (notOwner.value === true) {
-            router.push({ name: 'Forbidden' });
-        }
     } catch (error) {
         console.error("Error fetching task details:", error)
     }
-});
+};
 
 if (status.name === null) {
     status.name = "";
@@ -57,7 +60,6 @@ const checkWhiteSpace = (title) => {
 };
 
 
-const initialTask = ref(JSON.stringify(status));
 const isFormModified = computed(() => JSON.stringify(status) !== initialTask.value);
 
 
@@ -80,7 +82,7 @@ const countOptionalCharacters = (text) => {
 </script>
 
 <template>
-    <div v-if="isLoaded" class="text-black fixed z-10 inset-0 overflow-y-auto">
+    <div v-if="editModal || route.name === 'editstatus'" class="text-black fixed z-10 inset-0 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
             <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
                 <div class="itbkk-modal-status col-start-1 col-span-3">

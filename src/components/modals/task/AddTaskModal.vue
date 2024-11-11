@@ -85,12 +85,10 @@ const AddTask = async () => {
 
   }
 };
-const notOwner = ref(false);
 
 onMounted(async () => {
   try {
-    const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
-    const items = await getItems(url);
+    const items = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`);
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     statusmanager.value.setStatuses(items);
     status.value = items[0].id;
@@ -142,7 +140,7 @@ onMounted(async () => {
           <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button @click="AddTask"
               :class="title === '' || title === ' ' ? disabled : 'itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 '"
-              :disabled="checkWhiteSpace(title) || notOwner === true">
+              :disabled="checkWhiteSpace(title)">
               Save
             </button>
           </router-link>

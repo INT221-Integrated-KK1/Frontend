@@ -74,30 +74,6 @@ async function leaveBoard(boardId) {
 
 }
 
-// async function deleteBoard(boardId) {
-//   try {
-//     const deleteBoard = await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}`);
-//     if (deleteBoard === undefined || deleteBoard === null) {
-//       console.log('Error deleting board');
-//     } else {
-//       boardmanager.value.deleteBoard(boardId, "personal");
-//       tableType.value = "board";
-//       showDeleted.value = true;
-//       setTimeout(() => {
-//         showDeleted.value = false;
-//       }, 3000);
-//     }
-//   } catch (error) {
-//     console.error('Error deleting board:', error);
-//     showDeletedError.value = true;
-//     setTimeout(() => {
-//       showDeletedError.value = false;
-//     }, 3000);
-//   }
-  
-// }
-
-
 onMounted(async () => {
   try {
     const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
