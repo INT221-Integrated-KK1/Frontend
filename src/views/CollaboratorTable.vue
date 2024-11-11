@@ -9,8 +9,6 @@ import AlertBox from "@/components/AlertBox.vue";
 import router from "@/router";
 
 const readAccess = ref(false);
-const email = ref("");
-const accessRight = ref("READ");
 
 const showModal = ref(false);
 const actionType = ref('');
@@ -26,7 +24,6 @@ const tableType = ref("Collaborator");
 const { params } = useRoute();
 const boardId = params.boardId;
 const board = ref([]);
-const collabs = ref([]);
 const collabmanager = ref(new CollabManagement());
 
 const openAddModal = () => {
@@ -54,7 +51,6 @@ function handleAddCollab(addCollab) {
         showAddedCollab.value = false;
     } else {
         collabmanager.value.addCollab(addCollab);
-        collabs.value = collabmanager.value.getCollabs();
         addedCollabName.value = addCollab.name;
         showAddedCollab.value = true;
         setTimeout(() => {
@@ -72,8 +68,14 @@ const handleUpdateCollab = async (oid, accessRight) => {
     } else {
         try {
             const collabItem = await editPatchItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs/${oid}`, updateAccess);
-            console.log("collabItem", collabItem);
-            
+            const collabEdit = {
+                oid: collabItem.collabsId,
+                name: collabItem.collabsName,
+                email: collabItem.collabsEmail,
+                accessRight: collabItem.accessLevel,
+                addedOn: collabItem.addedOn
+            }
+            collabmanager.value.updateCollab(collabItem.collabsId, { ...collabEdit });
             updatedTitle.value = collabItem.collabsName;
             showUpdated.value = true;
             setTimeout(() => {
@@ -91,7 +93,7 @@ const handleRemoveCollab = async (collab) => {
     } else {
         try {
             await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, collab);
-            collabs.value = collabs.value.filter((item) => item.oid !== collab);
+            collabmanager.value.removeCollab(collab);
             showDeleted.value = true;
             setTimeout(() => {
                 showDeleted.value = false;
@@ -120,8 +122,8 @@ onMounted(async () => {
         }
         boardItem.owner.oid === localStorage.getItem('oid') ? Owner.value = true : Owner.value = false;
         board.value = boardItem;
-        collabs.value = collabMembers;
-        // collabStore.setCollabs(collabMembers);
+        collabmanager.value.setCollabs(collabMembers);
+        console.log("collabMembers", collabMembers);
     } catch (error) {
         console.error("Error fetching task details:", error)
     }
@@ -152,9 +154,9 @@ onMounted(async () => {
                 </div>
 
                 <div class=" flex">
-                    <div v-if="readAccess === true">
-                        <div class="itbkk-button-add bg-green-500 hover:bg-green-600 btn font-semibold mr-5"
-                            disabled="disabled">
+                    <div v-if="readAccess === true && Owner === false ">
+                        <div
+                            class="itbkk-button-add bg-slate-300 text-white hover:bg-slate-400 btn font-semibold mr-5 cursor-not-allowed ">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                                 <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
                             </svg>
@@ -192,21 +194,26 @@ onMounted(async () => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(collab, index) in collabs" :key="index"
+                        <tr v-for="(collab, index) in collabmanager.getCollabs()" :key="index"
                             class="h-16 border-solid border-2 border-black">
                             <td class="font-semibold text-center">{{ index + 1 }}</td>
-                            <td class="">{{ collab.name }}</td>
-                            <td class="">{{ collab.email }}</td>
+                            <td class="">{{ collab.name || collab.collabsName }}</td>
+                            <td class="">{{ collab.email || collab.collabsEmail }}</td>
                             <td class="">
-                                <div
+                                <div v-if="readAccess === true && Owner === false"
+                                    class="w-full p-3 rounded-md text-zinc-950 bg-slate-50 border-2 border-zinc-700 max-w-xs cursor-not-allowed">
+                                    <div> {{ collab.accessRight || collab.accessLevel }}</div>
+                                </div>
+                                <div v-else
                                     class="w-full p-3 rounded-md text-zinc-950 bg-slate-50 border-2 border-zinc-700 max-w-xs"
-                                     @click="openEditModal(collab)" >
-                                    <div> {{ collab.accessRight }}</div>
+                                    @click="openEditModal(collab)">
+                                    <div> {{ collab.accessRight || collab.accessLevel }}</div>
                                 </div>
                             </td>
                             <td>
-                                <div v-if="readAccess === true">
-                                    <button class="btn btn-outline btn-error" disabled="disabled">Remove</button>
+                                <div v-if="readAccess === true && Owner === false">
+                                    <button
+                                        class="btn  bg-slate-300 text-white hover:bg-slate-400 cursor-not-allowed">Remove</button>
                                 </div>
                                 <div v-else>
                                     <button class="btn btn-outline btn-error"
@@ -214,7 +221,7 @@ onMounted(async () => {
                                 </div>
                             </td>
                         </tr>
-                        <tr v-if="collabs.length < 1">
+                        <tr v-if="collabmanager.getCollabs().length < 1">
                             <td colspan="5" class="text-center text-slate-500 italic"> No Collaborator found</td>
                         </tr>
 
@@ -226,8 +233,9 @@ onMounted(async () => {
         </div>
     </div>
 
-    <CollabModal :showModal="showModal" :readAccess="readAccess" :boardId="boardId" :actionType="actionType" :collabItem="collabItem" @addCollab="handleAddCollab" @closeModal="closeModal"
-        @removeCollab="handleRemoveCollab" @editCollab="handleUpdateCollab"/>
+    <CollabModal :showModal="showModal" :readAccess="readAccess" :boardId="boardId" :actionType="actionType"
+        :collabItem="collabItem" @addCollab="handleAddCollab" @closeModal="closeModal"
+        @removeCollab="handleRemoveCollab" @editCollab="handleUpdateCollab" />
 
 </template>
 

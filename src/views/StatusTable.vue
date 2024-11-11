@@ -28,8 +28,6 @@ onMounted(async () => {
         statusmanager.value.setStatuses(items);
         const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         board.value = boardItems;
-        // boardItems.owner.oid === localStorage.getItem('oid') ? readAccess.value = false : readAccess.value = true;
-        // console.log(readAccess.value);
         const collabItems = await getItems(collabUrl);
 
         for (let i = 0; i < collabItems.length; i++) {
@@ -238,8 +236,8 @@ const handleStatusDeletedNotfound = () => {
                 <div class=" flex">
 
                     <div v-if="readAccess === true">
-                        <div class="itbkk-button-add bg-green-500 text-white hover:bg-green-600 btn font-semibold mr-5"
-                            disabled="disabled">
+                        <div
+                            class="itbkk-button-add bg-slate-300 text-white hover:bg-slate-400 btn font-semibold mr-5 cursor-not-allowed">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                                 <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
                             </svg>
@@ -298,12 +296,12 @@ const handleStatusDeletedNotfound = () => {
                                 </div>
                                 <div v-else>
                                     {{ status.description === null || status.description === "" ?
-                                        "No Description Provided" : status.description }}
+                                    "No Description Provided" : status.description }}
                                 </div>
                             </td>
                             <div v-if="!isDefault(status)" class="flex justify-center ">
                                 <div v-if="readAccess === true">
-                                    <td class="itbkk-button-edit">
+                                    <td class="itbkk-button-edit cursor-not-allowed">
                                         <EditIcons :isOff="readAccess" />
                                     </td>
                                 </div>
@@ -315,7 +313,7 @@ const handleStatusDeletedNotfound = () => {
                                     </RouterLink>
                                 </div>
                                 <div v-if="readAccess === true">
-                                    <td class="itbkk-button-delete">
+                                    <td class="itbkk-button-delete cursor-not-allowed">
 
                                         <DeleteIcons :isOff="readAccess" />
                                     </td>

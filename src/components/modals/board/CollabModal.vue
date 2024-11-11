@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { addItem, getItemById } from '@/libs/fetchUtils';
 
 const email = ref("");
@@ -23,8 +23,15 @@ async function confirmChange() {
                 accessRight: accessRight.value
             };
             const addCollab = await addItem(url, inputItem)
-            if (addCollab === undefined || addCollab === null) {
-                emit("closeModal")
+
+            if (addCollab.status === 404) {
+                window.alert("The user does not exist.");
+            } else if (addCollab.status === 409) {
+                if (email.value === localStorage.getItem('email')) {
+                    window.alert("Board owner cannot be collaborator of his/her own board.");
+                } else {
+                    window.alert("The user is already the collaborator of this board.");
+                }
             } else {
                 const recentCollab = await getItemById(url, addCollab.collabsId);
                 emit("addCollab", recentCollab);
@@ -49,6 +56,11 @@ async function confirmChange() {
 const cancelChange = () => {
     emit("closeModal")
 };
+
+const checkWhiteSpace = (title) => {
+    return /^\s*$/.test(title);
+};
+const isSaveButtonDisabled = computed(() => email.value.trim() === '');
 
 </script>
 
@@ -89,8 +101,9 @@ const cancelChange = () => {
 
             <div class="modal-action space-x-2">
                 <button class="btn bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md px-4 py-2"
-                    @click="confirmChange()">
-                    Confirm
+                    @click="confirmChange()"
+                    :disabled="actionType === 'add' && (checkWhiteSpace(email) || isSaveButtonDisabled)">
+                    {{ actionType === 'add' ? 'Add' : actionType === 'edit' ? 'Change' : 'Remove' }}
                 </button>
                 <button class="btn bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-md px-4 py-2"
                     @click="cancelChange">

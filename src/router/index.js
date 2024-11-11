@@ -61,34 +61,60 @@ const router = createRouter({
           path: "task/add",
           name: "addtask",
           component: AddTaskModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const readAccess = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItems = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     const collabMembers = await getItems(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
+          beforeEnter: async (to, from, next) => {
+            try {
+              const boardId = to.params.boardId;
+              const userOid = localStorage.getItem("oid");
 
-          //     for (let i = 0; i < collabMembers.length; i++) {
-          //       if (
-          //         collabMembers[i].oid === localStorage.getItem("oid") &&
-          //         collabMembers[i].accessRight === "READ"
-          //       ) {
-          //         readAccess.value = true;
-          //       }
-          //     }
+              // Fetch board and collaborators data in parallel
+              
+              const boardItems = await getItemById(
+                import.meta.env.VITE_BASE_BOARDS_URL,
+                boardId
+              );
+              const collabMembersResponse = await getItems(
+                `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`
+              );
 
-          //     boardItems.owner.oid === localStorage.getItem("oid")
-          //       ? (readAccess.value = false)
-          //       : (readAccess.value = true);
-          //     console.log("read access " + readAccess.value);
+              // Ensure collabMembers is an array
+              const collabMembers = Array.isArray(collabMembersResponse)
+                ? collabMembersResponse
+                : [];
 
-          //     if ((readAccess.value = true)) {
+              // Check if user is the owner of the board
+              const isOwner = boardItems.owner.oid === userOid;
+
+              // Check if user has write access
+              const hasWriteAccess = collabMembers.some(
+                (member) =>
+                  member.oid === userOid && member.accessRight === "write"
+              );
+
+              if (isOwner || hasWriteAccess) {
+                // Allow navigation
+                next();
+              } else {
+                // Deny access for users with only read access
+                window.alert(
+                  "Access denied, you do not have permission to view this page."
+                );
+                router.go(-1);
+              }
+            } catch (error) {
+              console.error(`Error fetching board details: ${error.message}`);
+              window.alert(
+                "An error occurred while fetching board details. Please try again later."
+              );
+              router.go(-1); // Redirect to the previous page on error
+            }
+          },
+        },
+        {
+          path: "task/:taskId/delete",
+          name: "deleteTask",
+          component: DeleteTaskModal,
+
+          //     if (notOwner.value === true) {
           //       next({ name: "Forbidden" });
           //     } else {
           //       next();
@@ -98,22 +124,6 @@ const router = createRouter({
           //     next({ name: "Forbidden" });
           //   }
           // },
-        },
-        {
-          path: "task/:taskId/delete",
-          name: "deleteTask",
-          component: DeleteTaskModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const notOwner = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItem = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     boardItem.owner.name === localStorage.getItem("username")
-          //       ? (notOwner.value = false)
-          //       : (notOwner.value = true);
 
           //     if (notOwner.value === true) {
           //       next({ name: "Forbidden" });
@@ -130,17 +140,17 @@ const router = createRouter({
           path: "task/:taskId/edit",
           name: "editTaskModal",
           component: EditTaskModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const notOwner = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItem = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     boardItem.owner.name === localStorage.getItem("username")
-          //       ? (notOwner.value = false)
-          //       : (notOwner.value = true);
+
+          //     if (notOwner.value === true) {
+          //       next({ name: "Forbidden" });
+          //     } else {
+          //       next();
+          //     }
+          //   } catch (error) {
+          //     console.error(`Error fetching board details: ${error}`);
+          //     // next({ name: "Forbidden" });
+          //   }
+          // },
 
           //     if (notOwner.value === true) {
           //       next({ name: "Forbidden" });
@@ -164,44 +174,22 @@ const router = createRouter({
           path: "add",
           name: "addstatus",
           component: AddStatusModal,
-          beforeEnter: async (to, from, next) => {
-            try {
-              const notOwner = ref(false);
-              const boardId = to.params.boardId;
-              const boardItem = await getItemById(
-                import.meta.env.VITE_BASE_BOARDS_URL,
-                boardId
-              );
-              boardItem.owner.name === localStorage.getItem("username")
-                ? (notOwner.value = false)
-                : (notOwner.value = true);
-
-              if (notOwner.value === true) {
-                next({ name: "Forbidden" });
-              } else {
-                next();
-              }
-            } catch (error) {
-              console.error(`Error fetching board details: ${error}`);
-              next({ name: "Forbidden" });
-            }
-          },
         },
         {
           path: ":id/edit",
           name: "editstatus",
           component: EditStatusModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const notOwner = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItem = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     boardItem.owner.name === localStorage.getItem("username")
-          //       ? (notOwner.value = false)
-          //       : (notOwner.value = true);
+
+          //     if (notOwner.value === true) {
+          //       next({ name: "Forbidden" });
+          //     } else {
+          //       next();
+          //     }
+          //   } catch (error) {
+          //     console.error(`Error fetching board details: ${error}`);
+          //     next({ name: "Forbidden" });
+          //   }
+          // },
 
           //     if (notOwner.value === true) {
           //       next({ name: "Forbidden" });
@@ -218,17 +206,17 @@ const router = createRouter({
           path: ":id/delete",
           name: "deletestatus",
           component: DeleteStatusModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const notOwner = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItem = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     boardItem.owner.name === localStorage.getItem("username")
-          //       ? (notOwner.value = false)
-          //       : (notOwner.value = true);
+
+          //     if (notOwner.value === true) {
+          //       next({ name: "Forbidden" });
+          //     } else {
+          //       next();
+          //     }
+          //   } catch (error) {
+          //     console.error(`Error fetching board details: ${error}`);
+          //     next({ name: "Forbidden" });
+          //   }
+          // },
 
           //     if (notOwner.value === true) {
           //       next({ name: "Forbidden" });
@@ -329,11 +317,7 @@ router.beforeEach(async (to, from, next) => {
       next();
     }
   } else {
-    if (to.name !== "login" && !localStorage.getItem("token")) {
-      next({ name: "login" });
-    } else {
-      next();
-    }
+    next();
   }
 });
 

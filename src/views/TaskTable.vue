@@ -14,12 +14,10 @@ import { useRoute } from 'vue-router';
 import BoardVisibility from "@/components/modals/board/BoardVisibility.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
-import { CollabManagement } from "@/libs/CollabManagement";
 
 const readAccess = ref(false);
 
 const taskmanager = ref(new TaskManagement());
-const collabmanager = ref(new CollabManagement());
 const todo = ref([]);
 
 const taskId = ref(null);
@@ -52,8 +50,6 @@ const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 
-// collabmanager.value.getCollabs();
-// console.log(collabmanager.value.getCollabs());
 
 onMounted(async () => {
   try {
@@ -352,7 +348,8 @@ const getStatusClass = (status) => {
 
           <!-- add task -->
           <div v-if="readAccess === true">
-            <div class="itbkk-button-add  bg-grey-500 btn rounded-full cursor-not-allowed disabled">
+            <div
+              class="itbkk-button-add  bg-slate-300 text-white hover:bg-slate-400  btn rounded-full cursor-not-allowed ">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                 <path fill="#ffffff" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" />
               </svg>
