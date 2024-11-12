@@ -31,21 +31,20 @@ const disabled = ref(false);
 
 onMounted(async () => {
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, props.boardId);
-    boardItems.owner.name === localStorage.getItem('username') ? disabled.value = false : disabled.value = true;    
+    boardItems.owner.oid === localStorage.getItem('oid') ? disabled.value = false : disabled.value = true;
     const state = boardItems.visibility === 'public' ? true : false;
     isChecked.value = state;
 });
 </script>
 
 <template>
-    <div class="flex justify-center items-center space-x-4 mr-5">
-
+    <div :class="disabled ? 'flex justify-center items-center space-x-4 mr-5 tooltip': 'flex justify-center items-center space-x-4 mr-5'"
+        :data-tip="disabled ? 'You need to be board owner to perform this action' : ''">
         <input type="checkbox" class="toggle toggle-accent itbkk-board-visibility" :checked="isChecked"
-            @click.prevent="toggleVisibility" :disabled="disabled"/>
+            @click.prevent="toggleVisibility" :disabled="disabled" />
 
         <span class="text-md font-semibold">
-            {{ isChecked ? 'Public' : 'Private' }}
-        </span>
+            {{ isChecked ? ' Public' : 'Private' }} </span>
     </div>
 
 

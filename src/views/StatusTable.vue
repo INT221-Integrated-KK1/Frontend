@@ -26,6 +26,13 @@ const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 onMounted(async () => {
     try {
         const items = await getItems(statusUrl);
+        if (items.status === 403) {
+            window.alert("Access denied, you do not have permission to view this board");
+            router.go(-1);
+        } if (items.status === 401) {
+            window.alert("Unauthorized, please login to view this board");
+            router.push({ name: 'login' });
+        }
         todo.value = items;
         statusmanager.value.setStatuses(items);
         const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
@@ -239,7 +246,8 @@ const handleStatusDeletedNotfound = () => {
 
                 <div class=" flex">
 
-                    <div v-if="readAccess === true || unAuthorized">
+                    <div v-if="readAccess === true || unAuthorized" class="tooltip"
+                        data-tip="You need to be board owner or has write access to perform this action">
                         <div
                             class="itbkk-button-add bg-slate-300 text-white hover:bg-slate-400 btn font-semibold mr-5 cursor-not-allowed">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -304,7 +312,8 @@ const handleStatusDeletedNotfound = () => {
                                 </div>
                             </td>
                             <div v-if="!isDefault(status)" class="flex justify-center ">
-                                <div v-if="readAccess === true || unAuthorized">
+                                <div v-if="readAccess === true || unAuthorized" class="tooltip"
+                                    data-tip="You need to be board owner or has write access to perform this action">
                                     <td class="itbkk-button-edit cursor-not-allowed">
                                         <EditIcons :isOff="readAccess || unAuthorized" />
                                     </td>
@@ -316,7 +325,8 @@ const handleStatusDeletedNotfound = () => {
                                         </td>
                                     </RouterLink>
                                 </div>
-                                <div v-if="readAccess === true || unAuthorized">
+                                <div v-if="readAccess === true || unAuthorized" class="tooltip"
+                                    data-tip="You need to be board owner or has write access to perform this action">
                                     <td class="itbkk-button-delete cursor-not-allowed">
 
                                         <DeleteIcons :isOff="readAccess || unAuthorized" />

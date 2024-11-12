@@ -18,6 +18,8 @@ async function getItems(url) {
       return items;
     } else {
       console.error(`Error fetching items: ${response.status}`);
+      const items = await response.json();
+      return items;
     }
   } catch (error) {
     console.error(`Error: ${error}`);

@@ -111,8 +111,16 @@ const closeModal = () => {
 
 onMounted(async () => {
     try {
-        const boardItem = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
+        
+        if (collabMembers.status === 403) {
+            window.alert("Access denied, you do not have permission to view this board");
+            router.go(-1);
+        } if (collabMembers.status === 401) {
+            window.alert("Unauthorized, please login to view this board");
+            router.push({ name: 'login' });
+        }
+
         for (let i = 0; i < collabMembers.length; i++) {
             if (collabMembers[i].oid === localStorage.getItem('oid')) {
                 if (collabMembers[i].accessRight === "READ") {
@@ -120,6 +128,8 @@ onMounted(async () => {
                 }
             }
         }
+
+        const boardItem = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         boardItem.owner.oid === localStorage.getItem('oid') ? Owner.value = true : Owner.value = false;
         board.value = boardItem;
         collabmanager.value.setCollabs(collabMembers);
@@ -154,7 +164,8 @@ onMounted(async () => {
                 </div>
 
                 <div class=" flex">
-                    <div v-if="Owner === false">
+                    <div v-if="Owner === false" class="tooltip"
+                        data-tip="You need to be board owner to perform this action">
                         <div
                             class="itbkk-button-add bg-slate-300 text-white hover:bg-slate-400 btn font-semibold mr-5 cursor-not-allowed ">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -201,7 +212,8 @@ onMounted(async () => {
                             <td class="">{{ collab.email || collab.collabsEmail }}</td>
                             <td class="">
                                 <div v-if="Owner === false"
-                                    class="w-full p-3 rounded-md text-zinc-950 bg-slate-50 border-2 border-zinc-700 max-w-xs cursor-not-allowed">
+                                    class="tooltip w-full p-3 rounded-md text-zinc-950 bg-slate-50 border-2 border-zinc-700 max-w-xs cursor-not-allowed "
+                                    data-tip="You need to be board owner to perform this action">
                                     <div class="flex justify-between"> {{ collab.accessRight || collab.accessLevel }}
                                         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
                                             viewBox="0 0 24 24">
@@ -221,7 +233,8 @@ onMounted(async () => {
                                 </div>
                             </td>
                             <td>
-                                <div v-if="Owner === false">
+                                <div v-if="Owner === false" class="tooltip"
+                                    data-tip="You need to be board owner to perform this action">
                                     <button
                                         class="btn  bg-slate-300 text-white hover:bg-slate-400 cursor-not-allowed">Remove</button>
                                 </div>

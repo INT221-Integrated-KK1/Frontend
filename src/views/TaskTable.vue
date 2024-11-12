@@ -14,6 +14,7 @@ import { useRoute } from 'vue-router';
 import BoardVisibility from "@/components/modals/board/BoardVisibility.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
+import router from "@/router";
 
 const readAccess = ref(false);
 const unAuthorized = localStorage.getItem('token') === null;
@@ -55,6 +56,13 @@ const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 onMounted(async () => {
   try {
     const items = await getItems(taskUrl);
+    if (items.status === 403) {
+      window.alert("Access denied, you do not have permission to view this board");
+      router.go(-1);
+    } if (items.status === 401) {
+      window.alert("Unauthorized, please login to view this board");
+      router.push({ name: 'login' });
+    }
     const statusItems = await getItems(statusUrl);
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     const collabItems = await getItems(collabUrl);
@@ -71,6 +79,7 @@ onMounted(async () => {
     statuses.value = statusItems;
     taskmanager.value.setTasks(items);
     taskmanager.value.sortTask("default");
+    
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -335,7 +344,8 @@ const getStatusClass = (status) => {
 
         <div class="flex">
           <!-- toggle -->
-          <BoardVisibility :boardId="boardId" />
+          <BoardVisibility :boardId="boardId" class="tooltip"
+            data-tip="You need to be board owner or has write access to perform this action" />
 
           <!-- manage collaborator -->
           <RouterLink :to="{ name: 'collabTable', params: { boardId: params.boardId } }">
@@ -348,7 +358,8 @@ const getStatusClass = (status) => {
           </RouterLink>
 
           <!-- add task -->
-          <div v-if="readAccess === true || unAuthorized">
+          <div v-if="readAccess === true || unAuthorized" class="tooltip"
+            data-tip="You need to be board owner or has write access to perform this action">
             <div
               class="itbkk-button-add  bg-slate-300 text-white hover:bg-slate-400  btn rounded-full cursor-not-allowed ">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -412,7 +423,8 @@ const getStatusClass = (status) => {
               </td>
 
               <div class="flex justify-center ">
-                <div v-if="readAccess === true || unAuthorized">
+                <div v-if="readAccess === true || unAuthorized" class="tooltip"
+                  data-tip="You need to be board owner or has write access to perform this action">
                   <td class="itbkk-button-edit cursor-not-allowed">
                     <EditIcons :isOff="readAccess || unAuthorized" />
                   </td>
@@ -425,7 +437,8 @@ const getStatusClass = (status) => {
                   </router-link>
                 </div>
 
-                <div v-if="readAccess === true|| unAuthorized">
+                <div v-if="readAccess === true|| unAuthorized" class="tooltip"
+                  data-tip="You need to be board owner or has write access to perform this action">
                   <td class="itbkk-button-delete cursor-not-allowed">
                     <!-- <DeleteOffIcons /> -->
                     <DeleteIcons :isOff="readAccess || unAuthorized" />
@@ -450,8 +463,8 @@ const getStatusClass = (status) => {
   </div>
 
   <Teleport to="body">
-    <DeleteTaskModal :showDeleteModal="showDeleteModal" :idDelete="idDelete" @close="handleClose" @taskDeleted="handleTaskDeleted"
-      @taskNotfound="handleTaskDeletedNotfound" />
+    <DeleteTaskModal :showDeleteModal="showDeleteModal" :idDelete="idDelete" @close="handleClose"
+      @taskDeleted="handleTaskDeleted" @taskNotfound="handleTaskDeletedNotfound" />
   </Teleport>
 
   <Teleport to="body">
