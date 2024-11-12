@@ -82,7 +82,10 @@ const props = defineProps({
                     <h1 class="text-2xl font-bold">Success</h1>
                     <button @click="showDeleted = false" class="px-4 py-2rounded">✖</button>
                 </div>
-                <p class="itbkk-message text-lg font-bold">The {{ tableType }}
+                <p v-if="tableType === 'boardCollab'" class="itbkk-message text-lg font-bold">
+                    Leave the collab board successfully
+                </p>
+                <p v-else class="itbkk-message text-lg font-bold">The {{ tableType }}
                     has been deleted</p>
             </div>
         </div>

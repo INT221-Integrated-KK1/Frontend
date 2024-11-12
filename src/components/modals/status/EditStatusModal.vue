@@ -1,48 +1,54 @@
 <script setup>
-import { onMounted, ref, reactive, computed } from "vue";
+import { watch, reactive, computed } from "vue";
 import { getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import router from "@/router";
-import Board from "@/views/Board.vue";
 
 
 const emit = defineEmits(['saveChanges', 'close'])
 
 const { params } = useRoute();
+const route = useRoute();
 const id = Number(params.id);
-console.log(id);
+
+const props = defineProps({
+    editModal: Boolean,
+    idEdit: Number,
+});
+
 const boardId = params.boardId;
-const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
-const isLoaded = ref(false);
 
 const status = reactive({
-    id: 1,
+    id: 0,
     name: "",
     description: ""
 });
-console.log(status);
-const notOwner = ref(false);
-onMounted(async () => {
+
+
+watch(
+    () => [props.editModal, route.name],
+    async ([editModal, routeName]) => {
+        if (editModal || routeName === 'editstatus') {
+            await fetchTaskDetails(id || props.idEdit);
+            initialTask = JSON.stringify(status);
+        }
+    },
+    { immediate: true }
+);
+async function fetchTaskDetails(id) {
     try {
         const items = await getItemById(statusUrl, id);
-        const BoardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
+        if (!items) {
+            console.error("No status found with the given ID");
+            return;
+        }
         status.id = items.id;
         status.name = items.name;
         status.description = items.description;
-        console.log(status.id);
-        console.log(status.name);
-
-        isLoaded.value = true;
-        console.log(BoardItems.owner.oid);
-        BoardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-        if (notOwner.value === true) {
-            router.push({ name: 'Forbidden' });
-        }
     } catch (error) {
         console.error("Error fetching task details:", error)
     }
-});
+};
 
 if (status.name === null) {
     status.name = "";
@@ -56,31 +62,22 @@ const checkWhiteSpace = (title) => {
     return /^\s*$/.test(title);
 };
 
+let initialTask = "";
+const isFormModified = computed(() => JSON.stringify(status) !== initialTask);
 
-const initialTask = ref(JSON.stringify(status));
-const isFormModified = computed(() => JSON.stringify(status) !== initialTask.value);
-
-
-
-const EditStatus = () => {
+const confirmChange = () => {
     if (isFormModified.value) {
-        isLoaded.value = false;
-        emit('saveChanges', status, id);
+        emit('saveChanges', status, id || props.idEdit);
     }
 }
 
 const countOptionalCharacters = (text) => {
-    if (text === null || text === undefined) {
-        text = "";
-        return text.trim().length;
-    } else {
-        return text.trim().length;
-    }
+    return (text ?? "").trim().length;
 }
 </script>
 
 <template>
-    <div v-if="isLoaded" class="text-black fixed z-10 inset-0 overflow-y-auto">
+    <div v-if="editModal || route.name === 'editstatus'" class="text-black fixed z-10 inset-0 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
             <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
                 <div class="itbkk-modal-status col-start-1 col-span-3">
@@ -104,7 +101,7 @@ const countOptionalCharacters = (text) => {
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
                         <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
-                            @click="EditStatus" :disabled="!isFormModified || checkWhiteSpace(status.name)">
+                            @click="confirmChange" :disabled="!isFormModified || checkWhiteSpace(status.name)">
                             Save
                         </button>
                     </router-link>

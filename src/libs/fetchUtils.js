@@ -2,60 +2,56 @@ import router from "../router/index.js";
 
 async function getItems(url) {
   try {
+    const headers = {};
     const token = localStorage.getItem("token");
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers
     });
-    if (response.status === 401) {
-      localStorage.clear();
-      router.push("/login");
+
+    if (response.ok) {
+      const items = await response.json();
+      return items;
+    } else {
       console.error(`Error fetching items: ${response.status}`);
-    } else if (response.status === 403) {
-      router.push("/403");
-    } else if (response.ok) {
       const items = await response.json();
       return items;
     }
   } catch (error) {
-    console.log(`error: ${error}`);
+    console.error(`Error: ${error}`);
   }
 }
+
 async function getItemById(url, id) {
   try {
+    const headers = {};
     const token = localStorage.getItem("token");
-    const data = await fetch(`${url}/${id}`, {
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${url}/${id}`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
     });
-    if (data.ok) {
-      const item = await data.json();
+
+    if (response.ok) {
+      const item = await response.json();
       return item;
     } else {
-      // 404 error
-      if (data.status === 404) {
-        //window.alert('The requested task does not exist');
-        router.go(-1);
-      } else if (data.status === 401) {
-        localStorage.clear();
-        router.push("/login");
-        console.error(`Error fetching task details: ${data.status}`);
-      } else if (data.status === 403) {
-        router.push("/403");
-      }
-      // other errors
-      console.error(`Error fetching task details: ${data.status}`);
-      return undefined;
+      console.error(`Error fetching item details: ${response.status}`);
     }
   } catch (error) {
-    console.error(`Error fetching task details: ${error}`);
-    return undefined;
+    console.error(`Error fetching item details: ${error}`);
   }
 }
+
+
 
 async function deleteItemById(url, id) {
   const token = localStorage.getItem("token");
@@ -66,13 +62,7 @@ async function deleteItemById(url, id) {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (res.status === 401) {
-      localStorage.clear();
-      router.push("/login");
-      console.error(`Error fetching items: ${response.status}`);
-    } else if (res.status === 403) {
-      router.push("/403");
-    } else if (res.ok) {
+     if (res.ok) {
       return res.status;
     }
   } catch (error) {
@@ -93,24 +83,14 @@ async function addItem(url, newItem) {
         ...newItem,
       }),
     });
-
-    if (res.status === 401) {
-      localStorage.clear();
-      router.push("/login");
-      console.error(`Error fetching items: ${response.status}`);
-    } else if (res.status === 403) {
-      router.push({ name: "Forbidden" });
-    } else if (res.status === 404) {
-      router.push({ name: "NotFound" });
-    } else if (res.status === 409) {
-      router.push({ name: "Conflict" });
+    if (res.status === 409) {
+      return { status: 409 };
     } else {
       const addedItem = await res.json();
       return addedItem;
     }
   } catch (error) {
     console.log(`error: ${error}`);
-    return { status: 401, message: "Unauthorized" };
   }
 }
 
@@ -127,15 +107,9 @@ async function editItem(url, id, editItem) {
         ...editItem,
       }),
     });
-    if (res.status === 401) {
-      localStorage.clear();
-      router.push("/login");
-    } else if (res.status === 403) {
-      router.push("/403");
-    } else if (res.ok) {
       const editedItem = await res.json();
       return editedItem;
-    }
+    // }
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -150,12 +124,7 @@ async function deleteAndTransfer(url, id, transferId) {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (response.status === 401) {
-      localStorage.clear();
-      router.push("/login");
-    } else if (res.status === 403) {
-      router.push("/403");
-    } else if (res.ok) {
+    if (res.ok) {
       return response.status;
     } else {
       console.error(`Error fetching items: ${response.status}`);
@@ -179,9 +148,8 @@ async function isAuthenticated(url, input) {
     if (response.status === 401) {
       localStorage.clear();
       router.push("/login");
-    } else if (res.status === 403) {
-      router.push("/403");
-    }
+    } 
+    
     return response;
   } catch (error) {
     console.log(`error: ${error}`);
@@ -190,6 +158,7 @@ async function isAuthenticated(url, input) {
 
 async function addToken(url) {
   const refreshToken = localStorage.getItem("refresh_token");
+  const token = localStorage.getItem("token");
 
   if (!refreshToken) {
     console.error("Refresh token is missing in localStorage.");
@@ -206,9 +175,6 @@ async function addToken(url) {
       },
     });
     const response = await res.json();
-    if (response.status === 403) {
-      router.push("/403");
-    }
 
     return response;
   } catch (error) {
@@ -229,17 +195,34 @@ async function changeBoardVisibility(url, id, visibility) {
         visibility: visibility,
       }),
     });
-    if (res.status === 403) {
-      router.push({ name: "Forbidden" });
-    } else if (res.status === 401) {
-      localStorage.clear();
-      router.push("/login");
-    }
     return res;
   } catch (error) {
     console.log(`error: ${error}`);
   }
 }
+
+const editPatchItem = async (url, editItem) => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${url}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+
+      body: JSON.stringify({
+        ...editItem,
+      }),
+    });
+    if (res.ok) {
+      const editedItem = await res.json();
+      return editedItem;
+    }
+  } catch (error) {
+    console.log(`error: ${error}`);
+  }
+};
 
 export {
   getItems,
@@ -251,4 +234,5 @@ export {
   isAuthenticated,
   addToken,
   changeBoardVisibility,
+  editPatchItem,
 };

@@ -9,8 +9,8 @@ class CollabManagement {
     return this.collabs;
   }
 
-  setCollabs(collabs) {
-    this.collabs = collabs;
+  setCollabs(collabs = []) {
+    this.collabs.length = 0;
     collabs.forEach((collab) => {
       this.collabs.push(collab);
     });
@@ -18,6 +18,14 @@ class CollabManagement {
 
   addCollab(collab) {
     this.collabs.push(collab);
+  }
+
+  updateCollab(id, updateItems) {
+    const index = this.collabs.findIndex((e) => e.id === Number(id));
+    this.collabs.splice(index, 1, {
+      ...this.collabs[index],
+      ...updateItems,
+    });
   }
 
   removeCollab(id) {

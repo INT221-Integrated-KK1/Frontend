@@ -29,15 +29,10 @@ class StatusManagement {
 
   editStatus(id, updateStatus) {
     const index = this.statuses.findIndex((Status) => Status.id === id);
-    console.log(id);
-    console.log(index);
-    console.log(updateStatus);
-    // this.statuses[index.id-1] = {
      this.statuses[index] = {
       ...this.statuses[index],
       ...updateStatus,
     };
-    console.log(this.statuses[index]);
   }
 }
 

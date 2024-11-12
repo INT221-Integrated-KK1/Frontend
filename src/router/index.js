@@ -1,5 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { ref } from "vue";
+import { addToken, getItemById, getItems } from "@/libs/fetchUtils";
+import VueJwtDecode from "vue-jwt-decode";
+
+import Login from "@/views/Login.vue";
+import Board from "@/views/Board.vue";
+import TaskTable from "@/views/TaskTable.vue";
+import StatusTable from "@/views/StatusTable.vue";
+import CollaboratorTable from "@/views/CollaboratorTable.vue";
+
 import TaskDetail from "@/components/modals/task/TaskDetail.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
 import EditTaskModal from "@/components/modals/task/EditTaskModal.vue";
@@ -9,17 +17,46 @@ import EditStatusModal from "@/components/modals/status/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/modals/status/DeleteStatusModal.vue";
 import AddBoardModal from "@/components/modals/board/AddBoardModal.vue";
 
-import VueJwtDecode from "vue-jwt-decode";
-import NotFound from "@/views/NotFound.vue";
-import Login from "@/views/Login.vue";
-import Board from "@/views/Board.vue";
-import TaskTable from "@/views/TaskTable.vue";
-import StatusTable from "@/views/StatusTable.vue";
-import CollaboratorTable from "@/views/CollaboratorTable.vue";
-import AccessDenied from "@/views/AccessDenied.vue";
-import Conflict from "@/views/Conflict.vue";
+import NotFound from "@/views/errors/NotFound.vue";
+import AccessDenied from "@/views/errors/AccessDenied.vue";
+import Conflict from "@/views/errors/Conflict.vue";
 
-import { addToken, getItemById } from "@/libs/fetchUtils";
+const checkWriteAccess = async (to, from, next) => {
+  try {
+    const boardId = to.params.boardId;
+    const userOid = localStorage.getItem("oid");
+
+    const boardItems = await getItemById(
+      import.meta.env.VITE_BASE_BOARDS_URL,
+      boardId
+    );
+    const collabMembers = await getItems(
+      `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`
+    );
+
+    const isOwner = boardItems.owner.oid === userOid;
+    const hasWriteAccess = collabMembers.some(
+      (member) => member.accessRight === "WRITE" 
+    );
+
+    if (isOwner || hasWriteAccess) {
+      console.log("aaaa    " + isOwner, hasWriteAccess);
+      
+      next();
+    } else {
+      window.alert(
+        "Access denied, you do not have permission to view this page."
+      );
+      router.go(-1);
+    }
+  } catch (error) {
+    console.error(`Error fetching board details: ${error.message}`);
+    window.alert(
+      "An error occurred while fetching board details. Please try again later."
+    );
+    router.go(-1);
+  }
+};
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,83 +97,24 @@ const router = createRouter({
           name: "addtask",
           component: AddTaskModal,
           beforeEnter: async (to, from, next) => {
-            try {
-              const notOwner = ref(false);
-              const boardId = to.params.boardId;
-              const boardItems = await getItemById(
-                import.meta.env.VITE_BASE_BOARDS_URL,
-                boardId
-              );
-              console.log("boardItem", boardItems);
-
-              boardItems.owner.name === localStorage.getItem("username")
-                ? (notOwner.value = false)
-                : (notOwner.value = true);
-
-              if (notOwner.value === true) {
-                next({ name: "Forbidden" });
-              } else {
-                next();
-              }
-            } catch (error) {
-              console.error(`Error fetching board details: ${error}`);
-              next({ name: "Forbidden" });
-            }
+            await checkWriteAccess(to, from, next);
           },
         },
         {
           path: "task/:taskId/delete",
           name: "deleteTask",
           component: DeleteTaskModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const notOwner = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItem = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     boardItem.owner.name === localStorage.getItem("username")
-          //       ? (notOwner.value = false)
-          //       : (notOwner.value = true);
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
         {
           path: "task/:taskId/edit",
           name: "editTaskModal",
           component: EditTaskModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const notOwner = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItem = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     boardItem.owner.name === localStorage.getItem("username")
-          //       ? (notOwner.value = false)
-          //       : (notOwner.value = true);
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     // next({ name: "Forbidden" });
-          //   }
-          // },
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
       ],
     },
@@ -150,81 +128,24 @@ const router = createRouter({
           name: "addstatus",
           component: AddStatusModal,
           beforeEnter: async (to, from, next) => {
-            try {
-              const notOwner = ref(false);
-              const boardId = to.params.boardId;
-              const boardItem = await getItemById(
-                import.meta.env.VITE_BASE_BOARDS_URL,
-                boardId
-              );
-              boardItem.owner.name === localStorage.getItem("username")
-                ? (notOwner.value = false)
-                : (notOwner.value = true);
-
-              if (notOwner.value === true) {
-                next({ name: "Forbidden" });
-              } else {
-                next();
-              }
-            } catch (error) {
-              console.error(`Error fetching board details: ${error}`);
-              next({ name: "Forbidden" });
-            }
+            await checkWriteAccess(to, from, next);
           },
         },
         {
           path: ":id/edit",
           name: "editstatus",
           component: EditStatusModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const notOwner = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItem = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     boardItem.owner.name === localStorage.getItem("username")
-          //       ? (notOwner.value = false)
-          //       : (notOwner.value = true);
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
         {
           path: ":id/delete",
           name: "deletestatus",
           component: DeleteStatusModal,
-          // beforeEnter: async (to, from, next) => {
-          //   try {
-          //     const notOwner = ref(false);
-          //     const boardId = to.params.boardId;
-          //     const boardItem = await getItemById(
-          //       import.meta.env.VITE_BASE_BOARDS_URL,
-          //       boardId
-          //     );
-          //     boardItem.owner.name === localStorage.getItem("username")
-          //       ? (notOwner.value = false)
-          //       : (notOwner.value = true);
-
-          //     if (notOwner.value === true) {
-          //       next({ name: "Forbidden" });
-          //     } else {
-          //       next();
-          //     }
-          //   } catch (error) {
-          //     console.error(`Error fetching board details: ${error}`);
-          //     next({ name: "Forbidden" });
-          //   }
-          // },
+          beforeEnter: async (to, from, next) => {
+            await checkWriteAccess(to, from, next);
+          },
         },
       ],
     },
@@ -234,24 +155,19 @@ const router = createRouter({
       component: CollaboratorTable,
     },
     {
-      path: "/:catchAll(.*)",
-      name: "NotFound",
-      component: NotFound,
-    },
-    {
-      path: "/404",
-      name: "NotFound",
-      component: NotFound,
-    },
-    {
-      path: "/403",
+      path: "/forbidden",
       name: "Forbidden",
       component: AccessDenied,
     },
     {
-      path: "/409",
+      path: "/conflict",
       name: "Conflict",
       component: Conflict,
+    },
+    {
+      path: "/:catchAll(.*)",
+      name: "NotFound",
+      component: NotFound,
     },
   ],
 });
@@ -259,7 +175,6 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const haveToken = localStorage.getItem("token");
   const haveRefreshToken = localStorage.getItem("refresh_token");
-
 
   if (haveRefreshToken) {
     try {
@@ -320,11 +235,7 @@ router.beforeEach(async (to, from, next) => {
       next();
     }
   } else {
-    if (to.name !== "login" && !localStorage.getItem("token")) {
-      next({ name: "login" });
-    } else {
-      next();
-    }
+    next();
   }
 });
 

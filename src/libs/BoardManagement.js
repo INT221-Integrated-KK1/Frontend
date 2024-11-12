@@ -25,9 +25,18 @@ class BoardManagement {
     };
   }
 
-  deleteBoard(id) {
-    const index = this.boards.findIndex((e) => e.id === Number(id));
-    this.boards.splice(index, 1);
+  deleteBoard(id, boardType) {
+    if (boardType == "collab") {
+      const index = this.boards.collabBoards.findIndex(
+        (e) => e.id === Number(id)
+      );
+      this.boards.collabBoards.splice(index, 1);
+    } else if (boardType == "personal") {
+      const index = this.boards.personalBoards.findIndex(
+        (e) => e.id === Number(id)
+      );
+      this.boards.personalBoards.splice(index, 1);
+    }
   }
 }
 

@@ -5,9 +5,9 @@ import { BoardManagement } from '@/libs/BoardManagement';
 import { getItems } from '@/libs/fetchUtils';
 
 const router = useRouter();
-const openSidebar = ref(true);
 
-// Retrieve the sidebar state from localStorage on component mount
+const unAuthorized = localStorage.getItem('token') === null;
+const openSidebar = ref(true);
 onMounted(() => {
     const savedSidebarState = localStorage.getItem('openSidebar');
     openSidebar.value = savedSidebarState !== null ? JSON.parse(savedSidebarState) : true;
@@ -15,11 +15,16 @@ onMounted(() => {
 
 const Sidebar = () => {
     openSidebar.value = !openSidebar.value;
-    localStorage.setItem('openSidebar', JSON.stringify(openSidebar.value)); // Save the state in localStorage
+    localStorage.setItem('openSidebar', JSON.stringify(openSidebar.value)); 
 }
+
 
 const OpenBoard = () => {
     router.push({ name: 'board' });
+}
+
+const OpenLogin = () => {
+    router.push({ name: 'login' });
 }
 
 const boardmanager = ref(new BoardManagement());
@@ -46,7 +51,7 @@ onMounted(async () => {
 <template>
     <transition name="slide-fade">
         <div v-if="openSidebar" class=" bg-teal-500 w-60 h-screen p-3 font-bold text-lg text-zinc-950">
-            <div class="m-3">
+            <div  class="m-3">
                 <div class="flex justify-between mb-3">
 
                     <img src="@/assets/Logo-removebg.png" alt="logo" class="w-12 h-12" />
@@ -64,8 +69,9 @@ onMounted(async () => {
 
                 </div>
                 <hr class=" border-2 border-zinc-950 mb-2 " />
-                <div class="font-bold text-lg hover:text-white" role="button" @click="OpenBoard">Home</div>
-                <div class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">Personal Boards</div>
+                <div v-if="!unAuthorized"  class="font-bold text-lg hover:text-white" role="button" @click="OpenBoard">Home</div>
+                <div v-if="!unAuthorized"  class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">Personal Boards</div>
+                <div v-if="unAuthorized"  class="text-lg font-bold hover:text-white" role="button" @click="OpenLogin">Login</div>
 
 
             </div>
@@ -85,7 +91,7 @@ onMounted(async () => {
         </div>
     </transition>
 
-    <div class="flex flex-row fixed bottom-0 bg-slate-200 p-5 py-2 rounded-t-2xl w-auto ml-5">
+    <div v-if="!unAuthorized" class="flex flex-row fixed bottom-0 bg-slate-200 p-5 py-2 rounded-t-2xl w-auto ml-5">
         <div>
             <div class="itbkk-fullname flex items-center text-md font-bold ">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" viewBox="0 0 24 24">

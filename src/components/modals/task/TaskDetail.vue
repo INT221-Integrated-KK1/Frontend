@@ -3,8 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import { getItemById, getItems } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
-import NotFound from "@/views/NotFound.vue";
-import router from "@/router/index.js";
+import NotFound from "@/views/errors/NotFound.vue";
 
 const emit = defineEmits(['closed'])
 const props = defineProps({
@@ -13,7 +12,6 @@ const props = defineProps({
 
 const task = ref(null);
 const statusmanager = ref(new StatusManagement());
-const route = useRoute();
 const { params } = useRoute();
 const routeId = ref(null);
 
@@ -32,7 +30,7 @@ onMounted(async () => {
     task.value = item;
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)
-    
+
     item.owner.name === localStorage.getItem('username') ? notOwner.value = false : notOwner.value = true;
     // if (notOwner.value === true) {
     //   window.alert('Access denied, you do not have permission to view this page.');
@@ -78,7 +76,7 @@ const formatToLocalTime = (dateTimeString) => {
 </script>
 
 <template>
-  <div  class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div class="text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">

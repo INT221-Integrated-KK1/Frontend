@@ -24,6 +24,7 @@ async function loginHandler() {
         localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('username', decode.name);
         localStorage.setItem('oid', decode.oid);
+        localStorage.setItem('email', decode.email);
     } catch (error) {
         console.error("Error fetching task details:", error)
         localStorage.clear();

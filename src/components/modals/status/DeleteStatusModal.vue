@@ -1,10 +1,8 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { getItemById, getItems, deleteItemById, editItem, deleteAndTransfer } from "../../../libs/fetchUtils.js";
+import { ref, watch } from "vue";
+import { getItemById, getItems, deleteItemById, deleteAndTransfer } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/libs/StatusManagement.js";
-import NotFound from "@/views/NotFound.vue";
-import router from "@/router";
 
 const route = useRoute();
 const tranferModal = ref(false);
@@ -16,36 +14,46 @@ const statusmanager = ref(new StatusManagement());
 const emit = defineEmits(["taskNotfound", "close", "statusDeleted"]);
 const count = ref(0);
 const selectId = ref();
+const transfer = ref(0)
 const boardId = route.params.boardId;
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const notOwner = ref(false);
-onMounted(async () => {
+
+const props = defineProps({
+    deleteModal: Boolean,
+    idDelete: Number,
+});
+
+watch(
+    () => [props.deleteModal, route.name],
+    async ([deleteModal, routeName]) => {
+        if (deleteModal || routeName === 'deletestatus') {
+            await fetchTaskDetails(id || props.idDelete);
+        }
+    },
+    { immediate: true }
+);
+async function fetchTaskDetails(id) {
     try {
         task.value = await getItemById(statusUrl, id);
         const taskItems = await getItems(taskUrl);
         const statusItems = await getItems(statusUrl);
-        const BoardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         if (taskItems.some(task => task.status.id === id)) {
             count.value = taskItems.filter(task => task.status.id === id).length;
             tranferModal.value = true;
+            confirmModal.value = false;
             statusmanager.value.setStatuses(statusItems);
             statusmanager.value.deleteStatus(id);
         } else {
             confirmModal.value = true;
         }
 
-        console.log(BoardItems);
-        BoardItems.owner.oid === localStorage.getItem('oid') ? notOwner.value = false : notOwner.value = true;
-        if (notOwner.value === true) {
-            router.push({ name: 'Forbidden' });
-        }
     } catch (error) {
         console.error("Error fetching task details:", error)
         emit("taskNotfound");
     }
-});
-const transfer = ref(0)
+};
 
 async function transferConfirm(transferId) {
     if (transferId != undefined) {
@@ -88,7 +96,7 @@ async function DeleteStatus(deletedId) {
 </script>
 
 <template>
-    <div v-if="$route.name === 'deletestatus'">
+    <div v-if="deleteModal || $route.name === 'deletestatus'">
         <div v-if="tranferModal" class="text-black fixed z-10 inset-0 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
                 <div class="bg-white w-1/2 p-6 rounded shadow-lg">
@@ -150,8 +158,6 @@ async function DeleteStatus(deletedId) {
             </div>
         </div>
     </div>
-
-    <NotFound v-if="task === undefined" />
 </template>
 
 <style scoped></style>

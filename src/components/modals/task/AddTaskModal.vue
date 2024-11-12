@@ -2,8 +2,7 @@
 import { onMounted, ref } from "vue";
 import { getItems, addItem, getItemById } from "@/libs/fetchUtils.js";
 import { StatusManagement } from "@/libs/StatusManagement";
-import { useRoute } from 'vue-router'; 
-import router from "@/router/index.js";
+import { useRoute } from 'vue-router';
 
 const title = ref("");
 const description = ref("");
@@ -86,22 +85,19 @@ const AddTask = async () => {
 
   }
 };
-const notOwner = ref(false);
 
 onMounted(async () => {
   try {
-    const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
-    const items = await getItems(url);
+    const items = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`);
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     statusmanager.value.setStatuses(items);
     status.value = items[0].id;
-    console.log(boardItems.owner.name);   
+    console.log(boardItems.owner.name);
+
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
 });
-
-
 </script>
 
 <template>
@@ -144,7 +140,7 @@ onMounted(async () => {
           <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
             <button @click="AddTask"
               :class="title === '' || title === ' ' ? disabled : 'itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3 '"
-              :disabled="checkWhiteSpace(title) || notOwner === true">
+              :disabled="checkWhiteSpace(title)">
               Save
             </button>
           </router-link>
