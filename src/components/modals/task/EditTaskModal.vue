@@ -37,11 +37,14 @@ const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 
 watch(
-  async () => {
+  () => [props.showEditModal, route.name],
+  async ([showEditModal, routeName]) => {
+    if (showEditModal || routeName === 'editTaskModal') {
       const idToUse = !isNaN(taskId) ? taskId : props.idEdit;
       if (idToUse) {
         await fetchTaskDetails(idToUse);
         initialTask = JSON.stringify(task);
+      }
     }
   },
   { immediate: true }

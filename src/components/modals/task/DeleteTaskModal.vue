@@ -20,10 +20,13 @@ const props = defineProps({
 });
 
 watch(
-  async () => {
-    const idToUse = !isNaN(taskId) ? taskId : props.idDelete;
-    if (idToUse) {
-      await fetchTaskDetails(idToUse);
+  () => [props.showDeleteModal, route.name],
+  async ([showDeleteModal, routeName]) => {
+    if (showDeleteModal || routeName === 'deleteTask') {
+      const idToUse = !isNaN(taskId) ? taskId : props.idDelete;
+      if (idToUse) {
+        await fetchTaskDetails(idToUse);
+      }
     }
   },
   { immediate: true }

@@ -33,7 +33,6 @@ class StatusManagement {
       ...this.statuses[index],
       ...updateStatus,
     };
-    console.log(this.statuses[index]);
   }
 }
 

@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref, reactive, computed } from "vue";
+import { watch, reactive, computed } from "vue";
 import { getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 
@@ -19,26 +19,29 @@ const boardId = params.boardId;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 
 const status = reactive({
-    id: 1,
+    id: 0,
     name: "",
     description: ""
 });
 
-let initialTask = "";
+
 watch(
-    async () => {
-        const idToUse = !isNaN(id) ? id : props.idEdit;
-        if (idToUse) {
-            await fetchTaskDetails(idToUse);
+    () => [props.editModal, route.name],
+    async ([editModal, routeName]) => {
+        if (editModal || routeName === 'editstatus') {
+            await fetchTaskDetails(id || props.idEdit);
             initialTask = JSON.stringify(status);
         }
     },
     { immediate: true }
 );
-
 async function fetchTaskDetails(id) {
     try {
         const items = await getItemById(statusUrl, id);
+        if (!items) {
+            console.error("No status found with the given ID");
+            return;
+        }
         status.id = items.id;
         status.name = items.name;
         status.description = items.description;
@@ -59,25 +62,17 @@ const checkWhiteSpace = (title) => {
     return /^\s*$/.test(title);
 };
 
+let initialTask = "";
+const isFormModified = computed(() => JSON.stringify(status) !== initialTask);
 
-const isFormModified = computed(() => JSON.stringify(status) !== initialTask.value);
-
-
-
-const EditStatus = () => {
+const confirmChange = () => {
     if (isFormModified.value) {
-        isLoaded.value = false;
-        emit('saveChanges', status, id);
+        emit('saveChanges', status, id || props.idEdit);
     }
 }
 
 const countOptionalCharacters = (text) => {
-    if (text === null || text === undefined) {
-        text = "";
-        return text.trim().length;
-    } else {
-        return text.trim().length;
-    }
+    return (text ?? "").trim().length;
 }
 </script>
 
@@ -106,7 +101,7 @@ const countOptionalCharacters = (text) => {
                 <div class="flex justify-end mt-4 col-start-3">
                     <router-link :to="{ name: 'status' }">
                         <button class='itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3'
-                            @click="EditStatus" :disabled="!isFormModified || checkWhiteSpace(status.name)">
+                            @click="confirmChange" :disabled="!isFormModified || checkWhiteSpace(status.name)">
                             Save
                         </button>
                     </router-link>

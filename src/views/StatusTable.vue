@@ -10,6 +10,7 @@ import AlertBox from "@/components/AlertBox.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
 import { useRoute } from 'vue-router';
+
 const { params } = useRoute();
 const boardId = params.boardId;
 const readAccess = ref(false);
@@ -112,6 +113,7 @@ const updatedStatusName = ref("");
 const saveChanges = async (statusProp, id) => {
 
     updatedStatusName.value = statusProp.name.trim();
+    
     if (statusProp.description === "") {
         statusProp.description = null;
     }
@@ -135,7 +137,9 @@ const saveChanges = async (statusProp, id) => {
         name: statusProp.name,
         description: statusProp.description
     };
+
     const existingStatus = await getItemById(statusUrl, id);
+    
     if (!existingStatus) {
         closeEditModal();
         showUpdatedError.value = true;
@@ -176,6 +180,7 @@ const EmptyStyle = "italic text-slate-400 font-semibold";
 const deleteModal = ref(false);
 const showDeleted = ref(false);
 const showDeletedError = ref(false);
+const idDelete = ref(0);
 
 const closeDeleteModal = () => {
     deleteModal.value = false;
@@ -185,6 +190,7 @@ async function showDeleteModals(status) {
     try {
         const items = await getItemById(statusUrl, status.id);
         if (items !== undefined) {
+            idDelete.value = status.id;
             deleteModal.value = true;
         } else {
             showDeletedError.value = true;
@@ -355,17 +361,13 @@ const handleStatusDeletedNotfound = () => {
         <AddStatusModal @statusAdded="handleStatusAdded" />
     </router-link>
 
-    <!-- <Teleport to="body">
-        <EditStatusModal v-if="editModal" @close="closeEditModal" @saveChanges="saveChanges" />
-    </Teleport> -->
-
     <Teleport to="body">
-        <EditStatusModal :editModal="editModal" @close="closeEditModal" @saveChanges="saveChanges" />
+        <EditStatusModal :editModal="editModal" :idEdit="idEdit" @close="closeEditModal" @saveChanges="saveChanges" />
     </Teleport>
 
     <Teleport to="body">
-        <DeleteStatusModal v-if="deleteModal == true" @close="closeDeleteModal" @statusDeleted="handleStatusDeleted"
-            @taskNotfound="handleStatusDeletedNotfound()" />
+        <DeleteStatusModal :deleteModal="deleteModal" :idDelete="idDelete" @close="closeDeleteModal"
+            @statusDeleted="handleStatusDeleted" @taskNotfound="handleStatusDeletedNotfound()" />
     </Teleport>
 
 </template>
