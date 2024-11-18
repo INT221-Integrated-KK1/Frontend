@@ -2,7 +2,7 @@
 import { ref, watch } from "vue";
 import { getItemById, getItems, deleteItemById, deleteAndTransfer } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import { StatusManagement } from "@/libs/StatusManagement.js";
+import { StatusManagement } from "@/stores/StatusManagement.js";
 
 const route = useRoute();
 const tranferModal = ref(false);
@@ -59,8 +59,8 @@ async function transferConfirm(transferId) {
     if (transferId != undefined) {
         confirmModal.value = true;
         tranferModal.value = false;
-        await getItemById(statusUrl, id);
-        await deleteAndTransfer(statusUrl, id, transferId);
+        await getItemById(statusUrl, id || props.idDelete);
+        await deleteAndTransfer(statusUrl, id || props.idDelete, transferId);
         transfer.value = 1;
         confirmModal.value = true;
     } else {
@@ -143,7 +143,7 @@ async function DeleteStatus(deletedId) {
                         <div class="text-right">
                             <router-link :to="{ name: 'status' }">
                                 <button class="btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                                    @click="DeleteStatus(id)">
+                                    @click="DeleteStatus(id || props.idDelete)">
                                     Confirm
                                 </button>
                             </router-link>

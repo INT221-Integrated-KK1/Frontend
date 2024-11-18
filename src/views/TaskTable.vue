@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
-import { TaskManagement } from "@/libs/TaskManagement.js";
+import { TaskManagement } from "@/stores/TaskManagement.js";
 import Sidebar from "@/components/Sidebar.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
 import EditTaskModal from "@/components/modals/task/EditTaskModal.vue";
@@ -19,7 +19,7 @@ import router from "@/router";
 const readAccess = ref(false);
 const unAuthorized = localStorage.getItem('token') === null;
 
-const taskmanager = ref(new TaskManagement());
+const taskmanager = TaskManagement();
 const todo = ref([]);
 
 const taskId = ref(null);
@@ -72,14 +72,14 @@ onMounted(async () => {
         if (collabItems[i].accessRight === "READ") {
           readAccess.value = true;
         }
-      } 
+      }
     }
     board.value = boardItems;
     todo.value = items;
     statuses.value = statusItems;
-    taskmanager.value.setTasks(items);
-    taskmanager.value.sortTask("default");
-    
+    taskmanager.setTasks(items);
+    taskmanager.sortTask("default");
+
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -89,10 +89,15 @@ onMounted(async () => {
 // ----------------------------------- add handler -----------------------------------
 
 async function handleTaskAdded(addedTasks) {
-  if (addedTasks !== null) {
+  if (addedTasks.status >= 400) {
+    showAddedError.value = true;
+    setTimeout(() => {
+      showAddedError.value = false;
+    }, 3000);
+  } else if (addedTasks !== null || addedTasks.title !== undefined ) {
     addedTitle.value = addedTasks.title;
-    taskmanager.value.addTask({ ...addedTasks });
-    todo.value = taskmanager.value.getTask();
+    taskmanager.addTask({ ...addedTasks });
+    todo.value = taskmanager.getTask();
     showAdded.value = true;
     setTimeout(() => {
       showAdded.value = false;
@@ -118,8 +123,8 @@ const handleClose = () => {
 };
 
 const handleTaskDeleted = (deletedid) => {
-  taskmanager.value.deleteTask(deletedid);
-  todo.value = taskmanager.value.getTask();
+  taskmanager.deleteTask(deletedid);
+  todo.value = taskmanager.getTask();
   showDeleteModal.value = false;
   showDeleted.value = true;
   setTimeout(() => {
@@ -154,7 +159,7 @@ async function editHandler(id) {
   }
 }
 
-const saveChanges = async (getTaskProp, id) => {
+const handleTaskEdit = async (getTaskProp, id) => {
 
   const checkinput = ref(0);
 
@@ -214,18 +219,7 @@ const saveChanges = async (getTaskProp, id) => {
         }, 3000);
         closeEditModal();
       } else {
-        const ShowEditedTask = {
-          id: id,
-          title: getTaskProp.title,
-          description: getTaskProp.description,
-          assignees: getTaskProp.assignees,
-          status: {
-            id: getTaskProp.status,
-            name: editedTaskStatus.name
-          }
-        };
-        taskmanager.value.editTask(id, { ...ShowEditedTask });
-
+        taskmanager.editTask(id, { ...item });
         closeEditModal();
         showUpdated.value = true;
         setTimeout(() => {
@@ -238,7 +232,7 @@ const saveChanges = async (getTaskProp, id) => {
       showUpdatedError.value = true;
       setTimeout(() => {
         showUpdatedError.value = false;
-      }, 3000); taskId
+      }, 3000);
     }
   }
 }
@@ -263,15 +257,15 @@ function handleSort() {
   const currentSortType = sortType.value;
   switch (currentSortType) {
     case "asc":
-      taskmanager.value.sortTask("asc");
+      taskmanager.sortTask("asc");
       sortType.value = "desc";
       break;
     case "desc":
-      taskmanager.value.sortTask("desc");
+      taskmanager.sortTask("desc");
       sortType.value = "default";
       break;
     default:
-      taskmanager.value.sortTask("default");
+      taskmanager.sortTask("default");
       sortType.value = "asc";
       break;
   }
@@ -284,8 +278,8 @@ const selectedStatuses = ref([]);
 const clearSelectedStatues = async () => {
   selectedStatuses.value = [];
   const items = await getItems(taskUrl);
-  taskmanager.value.setTasks(items);
-  taskmanager.value.getTask();
+  taskmanager.setTasks(items);
+  taskmanager.getTask();
 };
 
 const applyFilter = async (filter) => {
@@ -298,7 +292,7 @@ const applyFilter = async (filter) => {
       let tasksWithSelectedStatus = todo.value.filter(task => task.status.name.includes(selectedStatuses.value[i]));
       filteredTasks = [...filteredTasks, ...tasksWithSelectedStatus];
     }
-    taskmanager.value.setTasks(filteredTasks);
+    taskmanager.setTasks(filteredTasks);
   }
 };
 
@@ -437,7 +431,7 @@ const getStatusClass = (status) => {
                   </router-link>
                 </div>
 
-                <div v-if="readAccess === true|| unAuthorized" class="tooltip"
+                <div v-if="readAccess === true || unAuthorized" class="tooltip"
                   data-tip="You need to be board owner or has write access to perform this action">
                   <td class="itbkk-button-delete cursor-not-allowed">
                     <!-- <DeleteOffIcons /> -->
@@ -469,7 +463,7 @@ const getStatusClass = (status) => {
 
   <Teleport to="body">
     <EditTaskModal :showEditModal="showEditModal" :idEdit="idEdit" @close="closeEditModal()"
-      @saveChanges="saveChanges" />
+      @taskEdited="handleTaskEdit" />
   </Teleport>
 
   <Teleport to="body">

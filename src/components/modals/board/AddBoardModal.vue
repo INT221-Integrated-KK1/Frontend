@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { addItem, getItems } from '@/libs/fetchUtils';
-import { BoardManagement } from '@/libs/BoardManagement';
+import { BoardManagement } from '@/stores/BoardManagement';
 import router from '@/router';
 
 const board = ref('');
@@ -23,7 +23,7 @@ async function saveBoard() {
   const boardsinput = ref(boardName.value.trim());
   try {
     const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput.value });
-    boardmanager.value.addBoard(items);
+    // boardmanager.value.addBoard(items);
     try {
       const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
       const personalBoards = boardItem.personalBoards;

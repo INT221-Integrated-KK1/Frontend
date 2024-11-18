@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { getItems, addItem, getItemById } from "@/libs/fetchUtils.js";
-import { StatusManagement } from "@/libs/StatusManagement";
+import { StatusManagement } from "@/stores/StatusManagement";
 import { useRoute } from 'vue-router';
 
 const title = ref("");
@@ -28,7 +28,6 @@ const checkWhiteSpace = (title) => {
 const AddTask = async () => {
   const trimTitle = ref(title.value.trim());
   const trimDescription = ref(description.value.trim());
-
   const newItem = {
     title: trimTitle.value,
     description: trimDescription.value,
@@ -77,10 +76,11 @@ const AddTask = async () => {
       if (checkinput.value === 0) {
         emit("taskAdded", items);
       } else {
-        emit("taskAdded", null);
+        emit("taskAdded", items);
       }
     } catch (error) {
       console.log(`Error fetching data: ${error}`);
+      emit("taskAdded", null);
     }
 
   }
@@ -101,7 +101,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="$route.name === 'addtask' || showModal" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="$route.name === 'addtask' || showModal"
+    class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div class="bg-white w-1/2 p-6 rounded shadow-lg grid grid-cols-3 gap-3">
         <div class="col-start-1 col-span-3">

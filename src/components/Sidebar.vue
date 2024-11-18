@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
-import { BoardManagement } from '@/libs/BoardManagement';
+import { BoardManagement } from '@/stores/BoardManagement';
 import { getItems } from '@/libs/fetchUtils';
 
 const router = useRouter();
@@ -15,7 +15,7 @@ onMounted(() => {
 
 const Sidebar = () => {
     openSidebar.value = !openSidebar.value;
-    localStorage.setItem('openSidebar', JSON.stringify(openSidebar.value)); 
+    localStorage.setItem('openSidebar', JSON.stringify(openSidebar.value));
 }
 
 
@@ -51,7 +51,7 @@ onMounted(async () => {
 <template>
     <transition name="slide-fade">
         <div v-if="openSidebar" class=" bg-teal-500 w-60 h-screen p-3 font-bold text-lg text-zinc-950">
-            <div  class="m-3">
+            <div class="m-3">
                 <div class="flex justify-between mb-3">
 
                     <img src="@/assets/Logo-removebg.png" alt="logo" class="w-12 h-12" />
@@ -69,9 +69,12 @@ onMounted(async () => {
 
                 </div>
                 <hr class=" border-2 border-zinc-950 mb-2 " />
-                <div v-if="!unAuthorized"  class="font-bold text-lg hover:text-white" role="button" @click="OpenBoard">Home</div>
-                <div v-if="!unAuthorized"  class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">Personal Boards</div>
-                <div v-if="unAuthorized"  class="text-lg font-bold hover:text-white" role="button" @click="OpenLogin">Login</div>
+                <div v-if="!unAuthorized" class="font-bold text-lg hover:text-white" role="button" @click="OpenBoard">
+                    Home</div>
+                <div v-if="!unAuthorized" class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">
+                    Personal Boards</div>
+                <div v-if="unAuthorized" class="text-lg font-bold hover:text-white" role="button" @click="OpenLogin">
+                    Login</div>
 
 
             </div>

@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { getItemById, getItems } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import { StatusManagement } from "@/libs/StatusManagement.js";
+import { StatusManagement } from "@/stores/StatusManagement.js";
 import NotFound from "@/views/errors/NotFound.vue";
 
 const emit = defineEmits(['closed'])
@@ -30,12 +30,6 @@ onMounted(async () => {
     task.value = item;
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem)
-
-    item.owner.name === localStorage.getItem('username') ? notOwner.value = false : notOwner.value = true;
-    // if (notOwner.value === true) {
-    //   window.alert('Access denied, you do not have permission to view this page.');
-    //   router.go(-1);
-    // }
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -55,12 +49,9 @@ const status = getTaskProp("status");
 const createdOn = computed(() => formatToLocalTime(task.value?.createdOn));
 const updatedOn = computed(() => formatToLocalTime(task.value?.updatedOn));
 
-// const timezoneOffset = new Date().getTimezoneOffset() * 60000;
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const formatToLocalTime = (dateTimeString) => {
   const dateTime = new Date(dateTimeString);
-  // const localTime = new Date(dateTime - timezoneOffset);
-  //return localTime.toLocaleString()
   const localDate = new Date(dateTime.getTime());
   return localDate.toLocaleString("en-GB", {
     day: "2-digit",
@@ -69,7 +60,7 @@ const formatToLocalTime = (dateTimeString) => {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    hour12: false, // Use 24-hour time format
+    hour12: false, 
   });
 };
 

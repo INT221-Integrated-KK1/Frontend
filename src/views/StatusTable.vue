@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { StatusManagement } from "@/libs/StatusManagement.js";
+import { StatusManagement } from "@/stores/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import Sidebar from "@/components/Sidebar.vue";
 import AddStatusModal from "@/components/modals/status/AddStatusModal.vue";
@@ -18,7 +18,7 @@ const readAccess = ref(false);
 const unAuthorized = localStorage.getItem('token') === null;
 const board = ref({});
 const tableType = "status";
-const statusmanager = ref(new StatusManagement());
+const statusmanager = StatusManagement();
 const todo = ref([]);
 const isDefault = (status) => status.name === "No Status" || status.name === "Done";
 
@@ -35,7 +35,7 @@ onMounted(async () => {
             router.push({ name: 'login' });
         }
         todo.value = items;
-        statusmanager.value.setStatuses(items);
+        statusmanager.setStatuses(items);
         const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         board.value = boardItems;
         const collabItems = await getItems(collabUrl);
@@ -61,8 +61,8 @@ const addedTitle = ref("");
 
 const handleStatusAdded = (items) => {
     if (items !== undefined) {
-        statusmanager.value.addStatus(items);
-        todo.value = statusmanager.value.getStatus();
+        statusmanager.addStatus(items);
+        todo.value = statusmanager.getStatus();
         showAdded.value = true;
         setTimeout(() => {
             showAdded.value = false;
@@ -113,7 +113,7 @@ const updatedStatusName = ref("");
 const saveChanges = async (statusProp, id) => {
 
     updatedStatusName.value = statusProp.name.trim();
-    
+
     if (statusProp.description === "") {
         statusProp.description = null;
     }
@@ -139,7 +139,7 @@ const saveChanges = async (statusProp, id) => {
     };
 
     const existingStatus = await getItemById(statusUrl, id);
-    
+
     if (!existingStatus) {
         closeEditModal();
         showUpdatedError.value = true;
@@ -156,7 +156,7 @@ const saveChanges = async (statusProp, id) => {
                 }, 3000);
                 closeEditModal();
             } else {
-                statusmanager.value.editStatus(id, { ...editedStatus });
+                statusmanager.editStatus(id, { ...editedStatus });
                 closeEditModal();
                 showUpdated.value = true;
                 setTimeout(() => {
@@ -208,8 +208,8 @@ async function showDeleteModals(status) {
 };
 
 const handleStatusDeleted = (deletedid) => {
-    statusmanager.value.deleteStatus(deletedid);
-    todo.value = statusmanager.value.getStatus();
+    statusmanager.deleteStatus(deletedid);
+    todo.value = statusmanager.getStatus();
     deleteModal.value = false;
     showDeleted.value = true;
     setTimeout(() => {
@@ -314,7 +314,7 @@ const handleStatusDeletedNotfound = () => {
                                 </div>
                                 <div v-else>
                                     {{ status.description === null || status.description === "" ?
-                                    "No Description Provided" : status.description }}
+                                        "No Description Provided" : status.description }}
                                 </div>
                             </td>
                             <div v-if="!isDefault(status)" class="flex justify-center ">

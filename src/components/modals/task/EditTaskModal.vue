@@ -2,9 +2,9 @@
 import { ref, watch, computed, reactive } from "vue";
 import { getItems, getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import { StatusManagement } from "@/libs/StatusManagement.js";
+import { StatusManagement } from "@/stores/StatusManagement.js";
 
-const emit = defineEmits(['close', 'saveChanges', 'status-updated']);
+const emit = defineEmits(['close', 'taskEdited']);
 const route = useRoute();
 const boardId = route.params.boardId;
 const taskId = route.params.taskId;
@@ -96,7 +96,7 @@ const formatToLocalTime = (dateTimeString) => {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false // Use 24-hour time format
+    hour12: false 
   });
 };
 
@@ -104,9 +104,9 @@ const isFormModified = computed(() => {
   return JSON.stringify(task) !== initialTask;
 });
 
-const saveChanges = () => {
+const taskEdited = () => {
   if (isFormModified.value) {
-    emit("saveChanges", task, task.id || props.idEdit);
+    emit("taskEdited", task, task.id || props.idEdit);
   }
 };
 
@@ -165,7 +165,7 @@ const countOptionalCharacters = (text) => {
         <div class="flex justify-end mt-4 col-start-3">
           <router-link :to="{ name: 'task', params: { boardId: route.params.boardId } }">
             <button class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3"
-              @click="saveChanges" :disabled="!isFormModified || checkWhiteSpace(task.title)">
+              @click="taskEdited" :disabled="!isFormModified || checkWhiteSpace(task.title)">
               Save
             </button>
           </router-link>

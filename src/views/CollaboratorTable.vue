@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { getItemById, getItems, editPatchItem, deleteItemById } from "@/libs/fetchUtils";
-import { CollabManagement } from "@/libs/CollabManagement";
+import { CollabManagement } from "@/stores/CollabManagement";
 import Sidebar from "@/components/Sidebar.vue";
 import CollabModal from "@/components/modals/board/CollabModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
@@ -24,7 +24,7 @@ const tableType = ref("Collaborator");
 const { params } = useRoute();
 const boardId = params.boardId;
 const board = ref([]);
-const collabmanager = ref(new CollabManagement());
+const collabmanager = CollabManagement();
 
 const openAddModal = () => {
     actionType.value = 'add';
@@ -50,7 +50,7 @@ function handleAddCollab(addCollab) {
     if (addCollab === undefined || addCollab === null) {
         showAddedCollab.value = false;
     } else {
-        collabmanager.value.addCollab(addCollab);
+        collabmanager.addCollab(addCollab);
         addedCollabName.value = addCollab.name;
         showAddedCollab.value = true;
         setTimeout(() => {
@@ -75,7 +75,7 @@ const handleUpdateCollab = async (oid, accessRight) => {
                 accessRight: collabItem.accessLevel,
                 addedOn: collabItem.addedOn
             }
-            collabmanager.value.updateCollab(collabItem.collabsId, { ...collabEdit });
+            collabmanager.updateCollab(collabItem.collabsId, { ...collabEdit });
             updatedTitle.value = collabItem.collabsName;
             showUpdated.value = true;
             setTimeout(() => {
@@ -93,7 +93,7 @@ const handleRemoveCollab = async (collab) => {
     } else {
         try {
             await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, collab);
-            collabmanager.value.removeCollab(collab);
+            collabmanager.removeCollab(collab);
             showDeleted.value = true;
             setTimeout(() => {
                 showDeleted.value = false;
@@ -112,7 +112,7 @@ const closeModal = () => {
 onMounted(async () => {
     try {
         const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
-        
+
         if (collabMembers.status === 403) {
             window.alert("Access denied, you do not have permission to view this board");
             router.go(-1);
@@ -132,7 +132,7 @@ onMounted(async () => {
         const boardItem = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         boardItem.owner.oid === localStorage.getItem('oid') ? Owner.value = true : Owner.value = false;
         board.value = boardItem;
-        collabmanager.value.setCollabs(collabMembers);
+        collabmanager.setCollabs(collabMembers);
         console.log("collabMembers", collabMembers);
     } catch (error) {
         console.error("Error fetching task details:", error)
