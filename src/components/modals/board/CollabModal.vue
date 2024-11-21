@@ -23,14 +23,13 @@ async function confirmChange() {
                 accessRight: accessRight.value
             };
             const addCollab = await addItem(url, inputItem)
-
             if (addCollab.status === 404) {
                 window.alert("The user does not exist.");
             } else if (addCollab.status === 409) {
                 if (email.value === localStorage.getItem('email')) {
                     window.alert("Board owner cannot be collaborator of his/her own board.");
                 } else {
-                    window.alert("The user is already the collaborator of this board.");
+                    window.alert("The user is already the collaborator or pending collaborator of this board.");
                 }
             } else {
                 const recentCollab = await getItemById(url, addCollab.collabsId);

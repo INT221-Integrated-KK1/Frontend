@@ -7,12 +7,15 @@ import Sidebar from "@/components/Sidebar.vue";
 import CollabModal from "@/components/modals/board/CollabModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import router from "@/router";
+import LoadingPage from "./LoadingPage.vue";
 
 const readAccess = ref(false);
 
 const showModal = ref(false);
 const actionType = ref('');
 const collabItem = ref(null);
+const isPending = ref(true)
+const isLoading = ref(false);
 
 const Owner = ref(false);
 const showAddedCollab = ref(false);
@@ -111,6 +114,7 @@ const closeModal = () => {
 
 onMounted(async () => {
     try {
+        isLoading.value = true;
         const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
 
         if (collabMembers.status === 403) {
@@ -136,6 +140,8 @@ onMounted(async () => {
         console.log("collabMembers", collabMembers);
     } catch (error) {
         console.error("Error fetching task details:", error)
+    } finally {
+        isLoading.value = false;
     }
 })
 
@@ -143,7 +149,7 @@ onMounted(async () => {
 
 <template>
 
-
+    <LoadingPage :isLoading="isLoading" />
     <div class="flex">
         <div>
             <Sidebar />
@@ -208,7 +214,8 @@ onMounted(async () => {
                         <tr v-for="(collab, index) in collabmanager.getCollabs()" :key="index"
                             class="h-16 border-solid border-2 border-black">
                             <td class="font-semibold text-center">{{ index + 1 }}</td>
-                            <td class="">{{ collab.name || collab.collabsName }}</td>
+                            <td class="">{{ collab.name || collab.collabsName }} <a v-if="isPending"> (Pending
+                                    Invite)</a></td>
                             <td class="">{{ collab.email || collab.collabsEmail }}</td>
                             <td class="">
                                 <div v-if="Owner === false"

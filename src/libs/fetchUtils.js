@@ -81,7 +81,12 @@ async function addItem(url, newItem) {
         ...newItem,
       }),
     });
-    const addedItem = await res.json();
+    let addedItem;
+    try {
+      addedItem = await res.json();
+    } catch (error) {
+      addedItem = res;
+    }
     return addedItem;
   } catch (error) {
     console.log(`error: ${error}`);

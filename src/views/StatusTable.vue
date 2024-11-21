@@ -10,10 +10,12 @@ import AlertBox from "@/components/AlertBox.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
 import { useRoute } from 'vue-router';
+import LoadingPage from "./LoadingPage.vue";
 
 const { params } = useRoute();
 const boardId = params.boardId;
 const readAccess = ref(false);
+const isLoading = ref(false);
 
 const unAuthorized = localStorage.getItem('token') === null;
 const board = ref({});
@@ -26,6 +28,7 @@ const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 onMounted(async () => {
     try {
+        isLoading.value = true;
         const items = await getItems(statusUrl);
         if (items.status === 403) {
             window.alert("Access denied, you do not have permission to view this board");
@@ -50,6 +53,8 @@ onMounted(async () => {
 
     } catch (error) {
         console.error("Error fetching tasks:", error);
+    } finally {
+        isLoading.value = false;
     }
 });
 
@@ -228,6 +233,7 @@ const handleStatusDeletedNotfound = () => {
 </script>
 
 <template>
+    <LoadingPage :isLoading="isLoading" />
     <div class="flex">
         <div>
             <Sidebar />
@@ -314,7 +320,7 @@ const handleStatusDeletedNotfound = () => {
                                 </div>
                                 <div v-else>
                                     {{ status.description === null || status.description === "" ?
-                                        "No Description Provided" : status.description }}
+                                    "No Description Provided" : status.description }}
                                 </div>
                             </td>
                             <div v-if="!isDefault(status)" class="flex justify-center ">

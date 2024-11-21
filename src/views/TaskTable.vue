@@ -15,6 +15,7 @@ import BoardVisibility from "@/components/modals/board/BoardVisibility.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
 import router from "@/router";
+import LoadingPage from "./LoadingPage.vue";
 
 const readAccess = ref(false);
 const unAuthorized = localStorage.getItem('token') === null;
@@ -26,6 +27,7 @@ const taskId = ref(null);
 const EmptyStyle = "italic text-slate-400 font-semibold";
 
 const statuses = ref([]);
+const isLoading = ref(false);
 
 
 const showEditModal = ref(false);
@@ -55,6 +57,7 @@ const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 
 onMounted(async () => {
   try {
+    isLoading.value = true;
     const items = await getItems(taskUrl);
     if (items.status === 403) {
       window.alert("Access denied, you do not have permission to view this board");
@@ -82,6 +85,8 @@ onMounted(async () => {
 
   } catch (error) {
     console.error("Error fetching task details:", error);
+  } finally {
+    isLoading.value = false;
   }
 
 });
@@ -318,7 +323,7 @@ const getStatusClass = (status) => {
 </script>
 
 <template>
-
+  <LoadingPage :isLoading="isLoading" />
   <div class="flex">
     <div>
       <Sidebar />
@@ -338,8 +343,7 @@ const getStatusClass = (status) => {
 
         <div class="flex">
           <!-- toggle -->
-          <BoardVisibility :boardId="boardId" class="tooltip"
-            data-tip="You need to be board owner or has write access to perform this action" />
+          <BoardVisibility :boardId="boardId" />
 
           <!-- manage collaborator -->
           <RouterLink :to="{ name: 'collabTable', params: { boardId: params.boardId } }">
