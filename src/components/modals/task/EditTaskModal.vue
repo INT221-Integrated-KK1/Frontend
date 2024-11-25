@@ -3,14 +3,16 @@ import { ref, watch, computed, reactive } from "vue";
 import { getItems, getItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/stores/StatusManagement.js";
+import { FileManagement } from "@/stores/FileManagement.js";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 
-const emit = defineEmits(['close', 'taskEdited']);
+const emit = defineEmits(['close', 'taskEdited', 'filesAdded']);
 const route = useRoute();
 const boardId = route.params.boardId;
 const taskId = route.params.taskId;
 
 const statusmanager = ref(new StatusManagement());
+const filemanager = ref(new FileManagement());
 
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided";
@@ -34,6 +36,8 @@ const task = reactive({
   updatedOn: "",
 });
 
+const files = ref([]);
+
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 
@@ -51,6 +55,33 @@ watch(
   { immediate: true }
 );
 
+// file handle
+const handleFiles = (event) => {
+  const selectedFiles = Array.from(event.target.files);
+  files.value = [...files.value, ...selectedFiles].slice(0, 10);
+  console.log(files.value);
+  
+  if (files.value.length > 10) {
+    selectedFiles.value = files.value.slice(0, 10);
+  }
+};
+
+const removeFile = (index) => {
+  files.value.splice(index, 1);
+};
+
+const isImage = (file) => file.type.startsWith("image/");
+const getFilePreview = (file) => URL.createObjectURL(file);
+
+function getFileType(fileName) {
+  return fileName.substring(fileName.lastIndexOf('.')) || '';
+}
+
+function getFileName(fileName) {
+  return fileName.substring(0, fileName.lastIndexOf('.'));
+}
+
+
 
 async function fetchTaskDetails(id) {
   try {
@@ -64,7 +95,12 @@ async function fetchTaskDetails(id) {
 
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem);
+    // const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${id}`);
+    
+    // filemanager.value.setFiles(attachmentItem.data);
+    // console.log(filemanager.value.getFiles());
 
+    files.value = filemanager.value.getFiles();
     task.id = item.id;
     task.title = item.title;
     task.description = item.description ?? "";
@@ -105,35 +141,19 @@ const isFormModified = computed(() => {
   return JSON.stringify(task) !== initialTask;
 });
 
+
 const taskEdited = () => {
   if (isFormModified.value) {
     emit("taskEdited", task, task.id || props.idEdit);
+  }
+  if (files.value.length > 0 ) {
+    emit("filesAdded", files.value, task.id || props.idEdit);
   }
 };
 
 const countOptionalCharacters = (text) => {
   return (text ?? "").trim().length;
 };
-
-const files = ref([]);
-
-const handleFiles = (event) => {
-  const selectedFiles = Array.from(event.target.files);
-  files.value = [...files.value, ...selectedFiles].slice(0, 10);
-  console.log(files.value);
-  console.log(selectedFiles);
-
-  if (files.value.length > 10) {
-    selectedFiles.value = files.value.slice(0, 10);
-  }
-};
-
-const removeFile = (index) => {
-  files.value.splice(index, 1);
-};
-
-const isImage = (file) => file.type.startsWith("image/");
-const getFilePreview = (file) => URL.createObjectURL(file);
 
 </script>
 
@@ -195,7 +215,7 @@ const getFilePreview = (file) => URL.createObjectURL(file);
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(task.updatedOn) }}</h1>
         </div>
 
-        <div v-if="files.length > 1" class="col-start-4 col-span-1 row-span-3 bg-slate-50 p-3 rounded-md">
+        <div v-if="files.length > 0" class="col-start-4 col-span-1 row-span-3 bg-slate-50 p-3 rounded-md">
           <div class="">
             <h1 class="font-bold pb-2">Attachment Preview : </h1>
             <ul>
@@ -207,7 +227,7 @@ const getFilePreview = (file) => URL.createObjectURL(file);
                     <img v-if="isImage(file)" :src="getFilePreview(file)" alt="File Preview"
                       @click="openImagePreview(file)" class="size-10 rounded mr-2" />
                     <div v-else>
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-8 mr-2" viewBox="0 0 24 24">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-10 mr-2" viewBox="0 0 24 24">
                         <path fill="#55a3d3"
                           d="M18 22a2 2 0 0 0 2-2V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2zM13 4l5 5h-5zM7 8h3v2H7zm0 4h10v2H7zm0 4h10v2H7z" />
                       </svg>
@@ -215,7 +235,10 @@ const getFilePreview = (file) => URL.createObjectURL(file);
                   </a>
                   <div :class="{ 'text-red-500': ((file.size / (1024 * 1024)).toFixed(2)) > 10.00 }">
                     <a :href="getFilePreview(file)" :download="file.name">
-                      <p class="w-[150px] text-xs text-ellipsis overflow-hidden text-warp ">{{ file.name }}</p>
+                      <p class="w-16 text-xs text-ellipsis overflow-hidden text-warp ">
+                        {{ getFileName(file.name) }}
+                       <span class="inline">{{ getFileType(file.name) }}</span>
+                      </p>
                       <p class="text-xs text-base-content/70">
                       {{ file.size < 1024 * 1024 ? (file.size / 1024).toFixed(2) + ' KB' : (file.size / (1024 * 1024)).toFixed(2) + ' MB' }}
                       </p>

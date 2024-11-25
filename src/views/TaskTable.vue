@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
+import { getItems, getItemById, editItem, addItem } from "@/libs/fetchUtils.js";
 import { TaskManagement } from "@/stores/TaskManagement.js";
 import Sidebar from "@/components/Sidebar.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
@@ -99,7 +99,7 @@ async function handleTaskAdded(addedTasks) {
     setTimeout(() => {
       showAddedError.value = false;
     }, 3000);
-  } else if (addedTasks !== null || addedTasks.title !== undefined ) {
+  } else if (addedTasks !== null || addedTasks.title !== undefined) {
     addedTitle.value = addedTasks.title;
     taskmanager.addTask({ ...addedTasks });
     todo.value = taskmanager.getTask();
@@ -317,6 +317,66 @@ const getStatusClass = (status) => {
       return { class: "bg-gray-200 text-gray-800 rounded" };
   }
 };
+async function handlefilesAdded(files, taskId) {
+  try {
+    const formData = new FormData();
+    let errorfile = [];
+    let duplicateFiles = [];
+
+    for (const file of files) {
+      if (file.size > 20 * 1024 * 1024) {
+        errorfile.push(file.name);
+        continue;
+      } else if (formData.getAll("files").some(existingFile => existingFile.name === file.name)) {
+        duplicateFiles.push(file.name);
+        continue;
+      } else {
+        formData.append("files", file);
+      }
+    }
+
+    if (errorfile.length > 0) {
+      window.alert(
+        "Each file cannot be larger than 20MB. The following files are not added: " + errorfile.join(", ")
+      );
+
+      console.log(errorfile);
+      console.log(errorfile.join(", "));
+
+    }
+
+    if (duplicateFiles.length > 0) {
+      window.alert(
+        "File with the same filename cannot be added or updated to the attachments. Please delete the attachment and add again to update the file.\n" +
+        "The following files have duplicate names: " + duplicateFiles.join(", ")
+      );
+
+      console.log(duplicateFiles);
+      console.log(duplicateFiles.join(", "));
+      
+    } else {
+      if (formData.has("files")) {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log("Files added successfully:", result);
+        } else {
+          console.error("Error adding files:", response.statusText);
+        }
+      } else {
+        console.log("No valid files to upload.");
+      }
+    }
+
+
+  } catch (error) {
+    console.error("Error while uploading files:", error);
+  }
+}
 
 
 
@@ -467,7 +527,7 @@ const getStatusClass = (status) => {
 
   <Teleport to="body">
     <EditTaskModal :showEditModal="showEditModal" :idEdit="idEdit" @close="closeEditModal()"
-      @taskEdited="handleTaskEdit" />
+      @taskEdited="handleTaskEdit" @filesAdded="handlefilesAdded" />
   </Teleport>
 
   <Teleport to="body">

@@ -154,7 +154,7 @@ const router = createRouter({
       component: CollaboratorTable,
     },
     {
-      path: "/board/:boardId/collab/invitations",
+      path: "/board/:boardId/collab/invitations/:invitationId",
       name: "invitations",
       component: InviteCollaborator,
     },

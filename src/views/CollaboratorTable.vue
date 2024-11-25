@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { getItemById, getItems, editPatchItem, deleteItemById } from "@/libs/fetchUtils";
+import { getItemById, getItems, addItem, editPatchItem, deleteItemById } from "@/libs/fetchUtils";
 import { CollabManagement } from "@/stores/CollabManagement";
 import Sidebar from "@/components/Sidebar.vue";
 import CollabModal from "@/components/modals/board/CollabModal.vue";
@@ -49,7 +49,6 @@ const openRemoveModal = (collab) => {
 
 
 function handleAddCollab(addCollab) {
-    console.log("addCollab in CollboratorTable", addCollab);
     if (addCollab === undefined || addCollab === null) {
         showAddedCollab.value = false;
     } else {
@@ -105,6 +104,53 @@ const handleRemoveCollab = async (collab) => {
             console.error(`Error removing access right: ${error}`);
         }
     }
+}
+
+async function handleiInviteCollab(inputItem) {
+    try {
+        const inviteCollab = await addItem(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invite`, inputItem);
+
+        if (inviteCollab.status === 404) {
+            window.alert("AccessRight incorrect Please Check format (READ , WRITE) only");
+        } else if (inviteCollab.status === 409) {
+            window.alert("The user is already the collaborator or pending collaborator of this board.");
+        } else if (inviteCollab.status === 200) {
+            console.log(inviteCollab.message);
+        }
+  
+        const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+        const item = getPendingCollab.data;
+        for (let i = 0; i < item.length; i++) {
+            if (item[i].board.id === boardId && item[i].collaboratorEmail === inputItem.collaboratorEmail) {
+                console.log("item", item[i]);
+                // const collab = {
+                //     name: item[i].collaboratorName,
+                //     email: item[i].collaboratorEmail,
+                //     accessRight: item[i].accessRight,
+                // }
+                // collabmanager.addCollab(collab);
+                // const addCollab = await addItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, inputItem)
+                // if (addCollab.status === 404) {
+                //     window.alert("The user does not exist.");
+                // } else if (addCollab.status === 409) {
+                //     if (email.value === localStorage.getItem('email')) {
+                //         window.alert("Board owner cannot be collaborator of his/her own board.");
+                //     } else {
+                //         window.alert("The user is already the collaborator or pending collaborator of this board.");
+                //     }
+                // } else {
+                //     const recentCollab = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, addCollab.collabsId);
+                //     collabmanager.addCollab(recentCollab);
+                // }
+            }
+        }
+        
+        
+        
+    } catch (error) {
+        console.error(`Error add collab: ${error}`);
+    } 
+
 }
 
 const closeModal = () => {
@@ -265,7 +311,7 @@ onMounted(async () => {
 
     <CollabModal :showModal="showModal" :readAccess="readAccess" :boardId="boardId" :actionType="actionType"
         :collabItem="collabItem" @addCollab="handleAddCollab" @closeModal="closeModal"
-        @removeCollab="handleRemoveCollab" @editCollab="handleUpdateCollab" />
+        @removeCollab="handleRemoveCollab" @editCollab="handleUpdateCollab" @inviteCollab="handleiInviteCollab" />
 
 </template>
 

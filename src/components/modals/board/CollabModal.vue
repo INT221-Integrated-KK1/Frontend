@@ -13,15 +13,22 @@ const props = defineProps({
 });
 
 const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${props.boardId}/collabs`;
-const emit = defineEmits(["addCollab", "editCollab", "removeCollab", "closeModal"]);
+const emit = defineEmits(["addCollab", "editCollab", "removeCollab", "closeModal", "inviteCollab"]);
 
 async function confirmChange() {
     if (props.actionType === 'add') {
         try {
             const inputItem = {
                 email: email.value,
+                // collaboratorEmail: email.value,
                 accessRight: accessRight.value
             };
+            
+            // emit("inviteCollab", inputItem);
+            // console.log("sending inviteCollab: ", inputItem);
+            // emit("closeModal")
+            
+
             const addCollab = await addItem(url, inputItem)
             if (addCollab.status === 404) {
                 window.alert("The user does not exist.");

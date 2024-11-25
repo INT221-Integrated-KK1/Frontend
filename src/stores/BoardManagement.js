@@ -34,16 +34,12 @@ const BoardManagement = defineStore("boardManagement", {
         const index = this.boards.collabBoards.findIndex(
           (e) => e.id === Number(id)
         );
-        if (index !== -1) {
-          this.boards.collabBoards.splice(index, 1);
-        }
+        this.boards.collabBoards.splice(index, 1);
       } else if (boardType === "personal") {
         const index = this.boards.personalBoards.findIndex(
           (e) => e.id === Number(id)
         );
-        if (index !== -1) {
-          this.boards.personalBoards.splice(index, 1);
-        }
+        this.boards.personalBoards.splice(index, 1);
       }
     },
   },
