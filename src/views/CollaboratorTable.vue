@@ -1,18 +1,21 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { getItemById, getItems, editPatchItem, deleteItemById } from "@/libs/fetchUtils";
-import { CollabManagement } from "@/libs/CollabManagement";
+import { getItemById, getItems, addItem, editPatchItem, deleteItemById } from "@/libs/fetchUtils";
+import { CollabManagement } from "@/stores/CollabManagement";
 import Sidebar from "@/components/Sidebar.vue";
 import CollabModal from "@/components/modals/board/CollabModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import router from "@/router";
+import LoadingPage from "./LoadingPage.vue";
 
 const readAccess = ref(false);
 
 const showModal = ref(false);
 const actionType = ref('');
 const collabItem = ref(null);
+const isPending = ref(true)
+const isLoading = ref(false);
 
 const Owner = ref(false);
 const showAddedCollab = ref(false);
@@ -24,7 +27,7 @@ const tableType = ref("Collaborator");
 const { params } = useRoute();
 const boardId = params.boardId;
 const board = ref([]);
-const collabmanager = ref(new CollabManagement());
+const collabmanager = CollabManagement();
 
 const openAddModal = () => {
     actionType.value = 'add';
@@ -46,11 +49,10 @@ const openRemoveModal = (collab) => {
 
 
 function handleAddCollab(addCollab) {
-    console.log("addCollab in CollboratorTable", addCollab);
     if (addCollab === undefined || addCollab === null) {
         showAddedCollab.value = false;
     } else {
-        collabmanager.value.addCollab(addCollab);
+        collabmanager.addCollab(addCollab);
         addedCollabName.value = addCollab.name;
         showAddedCollab.value = true;
         setTimeout(() => {
@@ -75,7 +77,7 @@ const handleUpdateCollab = async (oid, accessRight) => {
                 accessRight: collabItem.accessLevel,
                 addedOn: collabItem.addedOn
             }
-            collabmanager.value.updateCollab(collabItem.collabsId, { ...collabEdit });
+            collabmanager.updateCollab(collabItem.collabsId, { ...collabEdit });
             updatedTitle.value = collabItem.collabsName;
             showUpdated.value = true;
             setTimeout(() => {
@@ -93,7 +95,7 @@ const handleRemoveCollab = async (collab) => {
     } else {
         try {
             await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, collab);
-            collabmanager.value.removeCollab(collab);
+            collabmanager.removeCollab(collab);
             showDeleted.value = true;
             setTimeout(() => {
                 showDeleted.value = false;
@@ -104,6 +106,53 @@ const handleRemoveCollab = async (collab) => {
     }
 }
 
+async function handleiInviteCollab(inputItem) {
+    try {
+        const inviteCollab = await addItem(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invite`, inputItem);
+
+        if (inviteCollab.status === 404) {
+            window.alert("AccessRight incorrect Please Check format (READ , WRITE) only");
+        } else if (inviteCollab.status === 409) {
+            window.alert("The user is already the collaborator or pending collaborator of this board.");
+        } else if (inviteCollab.status === 200) {
+            console.log(inviteCollab.message);
+        }
+  
+        const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+        const item = getPendingCollab.data;
+        for (let i = 0; i < item.length; i++) {
+            if (item[i].board.id === boardId && item[i].collaboratorEmail === inputItem.collaboratorEmail) {
+                console.log("item", item[i]);
+                // const collab = {
+                //     name: item[i].collaboratorName,
+                //     email: item[i].collaboratorEmail,
+                //     accessRight: item[i].accessRight,
+                // }
+                // collabmanager.addCollab(collab);
+                // const addCollab = await addItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, inputItem)
+                // if (addCollab.status === 404) {
+                //     window.alert("The user does not exist.");
+                // } else if (addCollab.status === 409) {
+                //     if (email.value === localStorage.getItem('email')) {
+                //         window.alert("Board owner cannot be collaborator of his/her own board.");
+                //     } else {
+                //         window.alert("The user is already the collaborator or pending collaborator of this board.");
+                //     }
+                // } else {
+                //     const recentCollab = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, addCollab.collabsId);
+                //     collabmanager.addCollab(recentCollab);
+                // }
+            }
+        }
+        
+        
+        
+    } catch (error) {
+        console.error(`Error add collab: ${error}`);
+    } 
+
+}
+
 const closeModal = () => {
     showModal.value = false;
 };
@@ -111,8 +160,9 @@ const closeModal = () => {
 
 onMounted(async () => {
     try {
+        isLoading.value = true;
         const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
-        
+
         if (collabMembers.status === 403) {
             window.alert("Access denied, you do not have permission to view this board");
             router.go(-1);
@@ -132,10 +182,12 @@ onMounted(async () => {
         const boardItem = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         boardItem.owner.oid === localStorage.getItem('oid') ? Owner.value = true : Owner.value = false;
         board.value = boardItem;
-        collabmanager.value.setCollabs(collabMembers);
+        collabmanager.setCollabs(collabMembers);
         console.log("collabMembers", collabMembers);
     } catch (error) {
         console.error("Error fetching task details:", error)
+    } finally {
+        isLoading.value = false;
     }
 })
 
@@ -143,7 +195,7 @@ onMounted(async () => {
 
 <template>
 
-
+    <LoadingPage :isLoading="isLoading" />
     <div class="flex">
         <div>
             <Sidebar />
@@ -208,7 +260,8 @@ onMounted(async () => {
                         <tr v-for="(collab, index) in collabmanager.getCollabs()" :key="index"
                             class="h-16 border-solid border-2 border-black">
                             <td class="font-semibold text-center">{{ index + 1 }}</td>
-                            <td class="">{{ collab.name || collab.collabsName }}</td>
+                            <td class="">{{ collab.name || collab.collabsName }} <a v-if="isPending"> (Pending
+                                    Invite)</a></td>
                             <td class="">{{ collab.email || collab.collabsEmail }}</td>
                             <td class="">
                                 <div v-if="Owner === false"
@@ -258,7 +311,7 @@ onMounted(async () => {
 
     <CollabModal :showModal="showModal" :readAccess="readAccess" :boardId="boardId" :actionType="actionType"
         :collabItem="collabItem" @addCollab="handleAddCollab" @closeModal="closeModal"
-        @removeCollab="handleRemoveCollab" @editCollab="handleUpdateCollab" />
+        @removeCollab="handleRemoveCollab" @editCollab="handleUpdateCollab" @inviteCollab="handleiInviteCollab" />
 
 </template>
 

@@ -13,24 +13,30 @@ const props = defineProps({
 });
 
 const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${props.boardId}/collabs`;
-const emit = defineEmits(["addCollab", "editCollab", "removeCollab", "closeModal"]);
+const emit = defineEmits(["addCollab", "editCollab", "removeCollab", "closeModal", "inviteCollab"]);
 
 async function confirmChange() {
     if (props.actionType === 'add') {
         try {
             const inputItem = {
                 email: email.value,
+                // collaboratorEmail: email.value,
                 accessRight: accessRight.value
             };
-            const addCollab = await addItem(url, inputItem)
+            
+            // emit("inviteCollab", inputItem);
+            // console.log("sending inviteCollab: ", inputItem);
+            // emit("closeModal")
+            
 
+            const addCollab = await addItem(url, inputItem)
             if (addCollab.status === 404) {
                 window.alert("The user does not exist.");
             } else if (addCollab.status === 409) {
                 if (email.value === localStorage.getItem('email')) {
                     window.alert("Board owner cannot be collaborator of his/her own board.");
                 } else {
-                    window.alert("The user is already the collaborator of this board.");
+                    window.alert("The user is already the collaborator or pending collaborator of this board.");
                 }
             } else {
                 const recentCollab = await getItemById(url, addCollab.collabsId);

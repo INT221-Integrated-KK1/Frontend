@@ -1,11 +1,12 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onBeforeMount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
 import { deleteItemById, getItems } from '@/libs/fetchUtils';
-import { BoardManagement } from '@/libs/BoardManagement';
+import { BoardManagement } from '@/stores/BoardManagement';
 import LeaveBoardModal from '@/components/modals/board/LeaveBoardModal.vue';
 import AlertBox from '@/components/AlertBox.vue';
+import LoadingPage from './LoadingPage.vue';
 
 const router = useRouter();
 const emit = defineEmits(['save-board-sidebar']);
@@ -20,6 +21,7 @@ const tableType = ref('board');
 const showDeleted = ref(false);
 const showDeletedError = ref(false);
 const showEditModal = ref(false);
+const isLoading = ref(false);
 
 const openAddModal = () => {
   router.push({ name: 'addboard' });
@@ -74,8 +76,10 @@ async function leaveBoard(boardId) {
 
 }
 
+
 onMounted(async () => {
   try {
+    isLoading.value = true;
     const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
     boardmanager.value.setBoards(items);
     personalBoards.value = items.personalBoards;
@@ -86,12 +90,17 @@ onMounted(async () => {
 
   } catch (error) {
     console.error('Error fetching personalBoards:', error);
+  } finally {
+    isLoading.value = false;
   }
 });
 
 </script>
 
 <template>
+  
+  <LoadingPage :isLoading="isLoading"/>
+
   <div class="flex ">
     <div>
       <Sidebar />
@@ -174,7 +183,7 @@ onMounted(async () => {
                   </div>
                   <ul tabindex="0" class="dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
                     <li class="w-full text-base p-2 rounded-lg hover:bg-red-600 hover:text-white"
-                      @click="openLeaveModal(board.id, board.name, boardType )"><a>Leave</a></li>
+                      @click="openLeaveModal(board.id, board.name, boardType)"><a>Leave</a></li>
                   </ul>
                 </div>
               </div>
@@ -185,8 +194,8 @@ onMounted(async () => {
     </div>
   </div>
   <LeaveBoardModal :showRemoveModal="showRemoveModal" :showEditModal="showEditModal" :boardId="boardId"
-    :boardName="boardName" :boardType="boardType" @leaveBoardCollab="leaveBoard(boardId)" @deleteBoard="deleteBoard(boardId)"
-    @closeModal="closeModal" />
+    :boardName="boardName" :boardType="boardType" @leaveBoardCollab="leaveBoard(boardId)"
+    @deleteBoard="deleteBoard(boardId)" @closeModal="closeModal" />
 
 </template>
 

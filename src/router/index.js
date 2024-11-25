@@ -7,6 +7,7 @@ import Board from "@/views/Board.vue";
 import TaskTable from "@/views/TaskTable.vue";
 import StatusTable from "@/views/StatusTable.vue";
 import CollaboratorTable from "@/views/CollaboratorTable.vue";
+import InviteCollaborator from "@/views/InviteCollaborator.vue";
 
 import TaskDetail from "@/components/modals/task/TaskDetail.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
@@ -36,12 +37,10 @@ const checkWriteAccess = async (to, from, next) => {
 
     const isOwner = boardItems.owner.oid === userOid;
     const hasWriteAccess = collabMembers.some(
-      (member) => member.accessRight === "WRITE" 
+      (member) => member.accessRight === "WRITE"
     );
 
     if (isOwner || hasWriteAccess) {
-      console.log("aaaa    " + isOwner, hasWriteAccess);
-      
       next();
     } else {
       window.alert(
@@ -153,6 +152,11 @@ const router = createRouter({
       path: "/board/:boardId/collab",
       name: "collabTable",
       component: CollaboratorTable,
+    },
+    {
+      path: "/board/:boardId/collab/invitations/:invitationId",
+      name: "invitations",
+      component: InviteCollaborator,
     },
     {
       path: "/forbidden",
