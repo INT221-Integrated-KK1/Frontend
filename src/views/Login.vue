@@ -33,14 +33,9 @@ async function loginHandler() {
         showLoginAlert.value = false;
         try {
             const board = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-            // PBI 24
-            // const boardLength = board.personalBoards.length ? board.personalBoards.length : 0;
-            // if (boardLength === 1) {
-            //     router.push({ name: "task", params: { boardId: board.personalBoards[0].id } });
-            // } else {
-            //     router.push("/board");
-            // }
-            if (board.length !== 1) {
+            if (router.currentRoute.value.name === 'invitations') {
+                router.push("/invitation");
+            } else if (board.length !== 1) {
                 router.push("/board");
             } else if (board.length === 1) {
                 router.push({ name: "task", params: { boardId: board[0].id } });

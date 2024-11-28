@@ -57,6 +57,24 @@ const checkWriteAccess = async (to, from, next) => {
   }
 };
 
+const checkIsLogin = async (to, from, next) => {
+  const haveToken = localStorage.getItem("token");
+
+  if (from.name === "invitations" && !haveToken) {
+    next({
+      name: "invitations",
+      params: {
+        invitationId: from.params.invitationId,
+        boardId: from.params.invitationId,
+      },
+    });
+  } else if (!haveToken) {
+    next({ name: "login" });
+  } else {
+    next();
+  }
+};
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -157,6 +175,9 @@ const router = createRouter({
       path: "/board/:boardId/collab/invitations/:invitationId",
       name: "invitations",
       component: InviteCollaborator,
+      beforeEnter: async (to, from, next) => {
+        await checkIsLogin(to, from, next);
+      },
     },
     {
       path: "/forbidden",
@@ -234,6 +255,14 @@ router.beforeEach(async (to, from, next) => {
     if (res.status === 401) {
       localStorage.clear();
       next({ name: "login" });
+    } else if (from.name === "invitations") {
+      next({
+        name: "invitations",
+        params: {
+          invitationId: from.params.invitationId,
+          boardId: from.params.invitationId,
+        },
+      });
     } else {
       localStorage.setItem("token", res.token);
       next();

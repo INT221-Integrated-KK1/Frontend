@@ -1,14 +1,13 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { getItemById, getItems, addItem, editPatchItem, deleteItemById } from "@/libs/fetchUtils";
+import { getItemById, getItems, addItem, editPatchItem, deleteItemById, editItem } from "@/libs/fetchUtils";
 import { CollabManagement } from "@/stores/CollabManagement";
 import Sidebar from "@/components/Sidebar.vue";
 import CollabModal from "@/components/modals/board/CollabModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import router from "@/router";
 import LoadingPage from "./LoadingPage.vue";
-
 const readAccess = ref(false);
 
 const showModal = ref(false);
@@ -24,6 +23,7 @@ const showDeleted = ref(false);
 const addedCollabName = ref("");
 const updatedTitle = ref("");
 const tableType = ref("Collaborator");
+const statusType = ref("PENDING");
 const { params } = useRoute();
 const boardId = params.boardId;
 const board = ref([]);
@@ -35,6 +35,7 @@ const openAddModal = () => {
 };
 
 const openEditModal = (collab) => {
+    statusType.value = collab.status;
     actionType.value = 'edit';
     collabItem.value = collab;
     showModal.value = true;
@@ -42,6 +43,7 @@ const openEditModal = (collab) => {
 
 
 const openRemoveModal = (collab) => {
+    statusType.value = collab.status;
     actionType.value = 'remove';
     collabItem.value = collab;
     showModal.value = true;
@@ -61,14 +63,46 @@ function handleAddCollab(addCollab) {
     }
 }
 
-const handleUpdateCollab = async (oid, accessRight) => {
-    const updateAccess = {
-        accessRight: accessRight
-    };
+const handleUpdateCollab = async (oid, accessRight, statusType) => {
     if (Owner.value === false) {
         router.push({ name: 'Forbidden' });
+    } else if (statusType != undefined) {
+        const updateInvite = {
+            accessRight: accessRight,
+            status: statusType
+        }
+        try {
+            await fetch(`${import.meta.env.VITE_BASE_URL}api/invitations/${oid}/edit`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ...updateInvite }),
+            });
+
+            const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+            const item = getPendingCollab.data;
+            for (let i = 0; i < item.length; i++) {
+                if (item[i].id === oid) {
+                    {
+                        const collab = {
+                            name: item[i].name,
+                            email: item[i].email,
+                            accessRight: item[i].accessRight,
+                        }
+                        collabmanager.updateCollab(item[i].id, { ...collab });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(`Error updating access right: ${error}`);
+        }
+
     } else {
         try {
+            const updateAccess = {
+                accessRight: accessRight
+            };
             const collabItem = await editPatchItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs/${oid}`, updateAccess);
             const collabEdit = {
                 oid: collabItem.collabsId,
@@ -89,13 +123,33 @@ const handleUpdateCollab = async (oid, accessRight) => {
     }
 }
 
-const handleRemoveCollab = async (collab) => {
+
+const handleRemoveCollab = async (id, statusType) => {
     if (Owner.value === false) {
         router.push({ name: 'Forbidden' });
+    } else if (statusType != undefined) {
+        try {
+            const token = localStorage.getItem("token");
+            await fetch(`${import.meta.env.VITE_BASE_URL}api/invitations/${id}/cancel`, {
+
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+            });
+            collabmanager.removeCollab(id);
+            showDeleted.value = true;
+            setTimeout(() => {
+                showDeleted.value = false;
+            }, 3000);
+        } catch (error) {
+            console.error(`Error removing access right: ${error}`);
+        }
     } else {
         try {
-            await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, collab);
-            collabmanager.removeCollab(collab);
+            await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, id);
+            collabmanager.removeCollab(id);
             showDeleted.value = true;
             setTimeout(() => {
                 showDeleted.value = false;
@@ -108,48 +162,43 @@ const handleRemoveCollab = async (collab) => {
 
 async function handleiInviteCollab(inputItem) {
     try {
-        const inviteCollab = await addItem(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invite`, inputItem);
-
-        if (inviteCollab.status === 404) {
-            window.alert("AccessRight incorrect Please Check format (READ , WRITE) only");
-        } else if (inviteCollab.status === 409) {
+        isLoading.value = true;
+        if (collabmanager.getCollabs().find(collab => collab.email === inputItem.collaboratorEmail)) {
             window.alert("The user is already the collaborator or pending collaborator of this board.");
-        } else if (inviteCollab.status === 200) {
-            console.log(inviteCollab.message);
-        }
-  
-        const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
-        const item = getPendingCollab.data;
-        for (let i = 0; i < item.length; i++) {
-            if (item[i].board.id === boardId && item[i].collaboratorEmail === inputItem.collaboratorEmail) {
-                console.log("item", item[i]);
-                // const collab = {
-                //     name: item[i].collaboratorName,
-                //     email: item[i].collaboratorEmail,
-                //     accessRight: item[i].accessRight,
-                // }
-                // collabmanager.addCollab(collab);
-                // const addCollab = await addItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, inputItem)
-                // if (addCollab.status === 404) {
-                //     window.alert("The user does not exist.");
-                // } else if (addCollab.status === 409) {
-                //     if (email.value === localStorage.getItem('email')) {
-                //         window.alert("Board owner cannot be collaborator of his/her own board.");
-                //     } else {
-                //         window.alert("The user is already the collaborator or pending collaborator of this board.");
-                //     }
-                // } else {
-                //     const recentCollab = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, addCollab.collabsId);
-                //     collabmanager.addCollab(recentCollab);
-                // }
+        } else {
+            const inviteCollab = await addItem(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invite`, inputItem);
+            if (inviteCollab.status === 404) {
+                window.alert("AccessRight incorrect Please Check format (READ , WRITE) only");
+            } else if (inviteCollab.status === 409) {
+                window.alert("The user is already the collaborator or pending collaborator of this board.");
+            } else if (inviteCollab.status === 200) {
+                console.log(inviteCollab.message);
             }
         }
-        
-        
-        
+
+        const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+
+        const item = getPendingCollab.data;
+        for (let i = 0; i < item.length; i++) {
+            if (item[i].email === inputItem.collaboratorEmail && item[i].boardId === boardId) {
+                console.log("item", item[i]);
+                const collab = {
+                    name: item[i].name,
+                    email: item[i].email,
+                    accessRight: item[i].accessRight,
+                    status: item[i].status
+                }
+                collabmanager.addCollab(collab);
+
+            }
+
+        }
+
     } catch (error) {
         console.error(`Error add collab: ${error}`);
-    } 
+    } finally {
+        isLoading.value = false;
+    }
 
 }
 
@@ -161,6 +210,8 @@ const closeModal = () => {
 onMounted(async () => {
     try {
         isLoading.value = true;
+
+        const pending = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
         const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
 
         if (collabMembers.status === 403) {
@@ -183,6 +234,34 @@ onMounted(async () => {
         boardItem.owner.oid === localStorage.getItem('oid') ? Owner.value = true : Owner.value = false;
         board.value = boardItem;
         collabmanager.setCollabs(collabMembers);
+        if (pending.data.length > 0) {
+            for (let i = 0; i < pending.data.length; i++) {
+                 collabmanager.addCollab(pending.data[i]);
+                if (pending.data[i].status === 'ACCEPTED' && collabMembers.find(collab => collab.email === pending.data[i].email) === undefined) {
+                    const inputItem = {
+                        email: pending.data[i].email,
+                        accessRight: pending.data[i].accessRight
+                    };
+                    const addCollab = await addItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, inputItem)
+                    console.log("addCollab: ", addCollab);
+
+                    if (addCollab.status === 404) {
+                        window.alert("The user does not exist.");
+                    } else if (addCollab.status === 409) {
+                        window.alert("The user is already the collaborator or pending co llaborator of this board.");
+                        if (email.value === localStorage.getItem('email')) {
+                            window.alert("Board owner cannot be collaborator of his/her own board.");
+                        } else {
+                            window.alert("The user is already the collaborator or pending collaborator of this board.");
+                        }
+                    } else {
+                       
+                    }
+                }
+            }
+        }
+        
+        console.log("pending", pending);
         console.log("collabMembers", collabMembers);
     } catch (error) {
         console.error("Error fetching task details:", error)
@@ -260,8 +339,8 @@ onMounted(async () => {
                         <tr v-for="(collab, index) in collabmanager.getCollabs()" :key="index"
                             class="h-16 border-solid border-2 border-black">
                             <td class="font-semibold text-center">{{ index + 1 }}</td>
-                            <td class="">{{ collab.name || collab.collabsName }} <a v-if="isPending"> (Pending
-                                    Invite)</a></td>
+                            <td class="">{{ collab.status === 'PENDING' ? (collab.name || collab.collabsName) +
+                                ' (Pending Invite)' : collab.name || collab.collabsName }} </td>
                             <td class="">{{ collab.email || collab.collabsEmail }}</td>
                             <td class="">
                                 <div v-if="Owner === false"
@@ -288,12 +367,12 @@ onMounted(async () => {
                             <td>
                                 <div v-if="Owner === false" class="tooltip"
                                     data-tip="You need to be board owner to perform this action">
-                                    <button
-                                        class="btn  bg-slate-300 text-white hover:bg-slate-400 cursor-not-allowed">Remove</button>
+                                    <button class="btn  bg-slate-300 text-white hover:bg-slate-400 cursor-not-allowed">
+                                        {{ collab.status === 'PENDING' ? 'Cancel' : 'Remove' }}</button>
                                 </div>
                                 <div v-else>
-                                    <button class="btn btn-outline btn-error"
-                                        @click="openRemoveModal(collab)">Remove</button>
+                                    <button class="btn btn-outline btn-error" @click="openRemoveModal(collab)"> {{
+                                        collab.status === 'PENDING' ? 'Cancel' : 'Remove' }}</button>
                                 </div>
                             </td>
                         </tr>
@@ -310,7 +389,7 @@ onMounted(async () => {
     </div>
 
     <CollabModal :showModal="showModal" :readAccess="readAccess" :boardId="boardId" :actionType="actionType"
-        :collabItem="collabItem" @addCollab="handleAddCollab" @closeModal="closeModal"
+        :collabItem="collabItem" :statusType="statusType" @addCollab="handleAddCollab" @closeModal="closeModal"
         @removeCollab="handleRemoveCollab" @editCollab="handleUpdateCollab" @inviteCollab="handleiInviteCollab" />
 
 </template>

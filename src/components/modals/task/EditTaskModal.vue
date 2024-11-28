@@ -95,12 +95,12 @@ async function fetchTaskDetails(id) {
 
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem);
-    // const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${id}`);
-    
-    // filemanager.value.setFiles(attachmentItem.data);
-    // console.log(filemanager.value.getFiles());
 
     files.value = filemanager.value.getFiles();
+    console.log("files: ", files.value);
+    console.log("filemanager: ", filemanager.value.getFiles());
+    
+    
     task.id = item.id;
     task.title = item.title;
     task.description = item.description ?? "";
@@ -163,7 +163,7 @@ const countOptionalCharacters = (text) => {
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div :class="[
         'bg-white p-6 rounded shadow-lg grid gap-3 grid-flow-row-dense',
-  files.length > 1 ? 'grid-cols-4 w-2/3' : 'grid-cols-3 w-1/2'
+  files.length > 0 ? 'grid-cols-4 w-2/3' : 'grid-cols-3 w-1/2'
       ]">
         <div class="col-start-1 col-span-3">
           <h1 class="font-bold text-2xl py-2 mb-2">Edit Task</h1>

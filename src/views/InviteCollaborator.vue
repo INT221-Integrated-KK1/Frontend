@@ -11,7 +11,7 @@ const invitationId = params.invitationId
 const boardOwnerName = ref("")
 const accessRight = ref("")
 const boardName = ref("")
-const collaboratorEmail = ref("")
+const email = ref("")
 
 
 async function handleAccept() {
@@ -19,24 +19,23 @@ async function handleAccept() {
         await addItem(`${import.meta.env.VITE_BASE_URL}api/invitations/${invitationId}/accept`);
 
         const inputItem = {
-            collaboratorEmail: collaboratorEmail.value,
+            email: email.value,
             accessRight: accessRight.value
         };
 
         const addCollab = await addItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, inputItem)
+        console.log("addCollab: ", addCollab);
+        
         if (addCollab.status === 404) {
             window.alert("The user does not exist.");
         } else if (addCollab.status === 409) {
             window.alert("The user is already the collaborator or pending collaborator of this board.");
-            if (collaboratorEmail.value === localStorage.getItem('email')) {
+            if (email.value === localStorage.getItem('email')) {
                 window.alert("Board owner cannot be collaborator of his/her own board.");
             } else {
                 window.alert("The user is already the collaborator or pending collaborator of this board.");
             }
         } else {
-            // const recentCollab = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, addCollab.collabsId);
-            // collabmanager.addCollab(recentCollab);
-            window.alert("Invitation accepted");
             router.push({ name: 'task', params: { boardId: boardId } });
         }
     } catch (error) {
@@ -47,7 +46,7 @@ async function handleAccept() {
 async function handleDecline() {
     try {
         await addItem(`${import.meta.env.VITE_BASE_URL}api/invitations/${invitationId}/decline`);
-        window.alert("Invitation declined");
+        router.go(-1);
     } catch (error) {
         console.log(`Error handleDecline: ${error}`);
     }
@@ -59,13 +58,20 @@ onMounted(async () => {
         const inviteItems = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`)
         let item = inviteItems.data.find(item => item.id === Number(invitationId));
 
+        if (localStorage.getItem('email') !== item.email || !localStorage.getItem('email')) {
+            window.alert("You are not the recipient of this invitation.");
+            router.go(-1);
+        }
+
         boardOwnerName.value = boardItems.owner.name;
         boardName.value = boardItems.name;
         accessRight.value = item.accessRight;
-        collaboratorEmail.value = item.collaboratorEmail;
-
+        email.value = item.email;
+        
     } catch (error) {
         console.log(`Error get boardItems: ${error}`);
+        window.alert("The invitation does not exist anymore.");
+        router.go(-1);
     }
 
 })
