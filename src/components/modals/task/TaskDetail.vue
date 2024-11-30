@@ -1,24 +1,23 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { getItemById, getItems } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/stores/StatusManagement.js";
 import { FileManagement } from "@/stores/FileManagement";
+const route = useRoute();
 
 const emit = defineEmits(['closed'])
 const props = defineProps({
-  id: Number
+  id: Number,
+  showTaskDetail: Boolean
 });
 
 const task = ref(null);
 const statusmanager = ref(new StatusManagement());
 const filemanager = ref(new FileManagement());
 const { params } = useRoute();
-const routeId = ref(null);
+const routeId = Number(params.taskId);
 
-if (props.id === undefined) {
-  routeId.value = params.taskId;
-}
 const boardId = params.boardId;
 const taskId = ref(props.id || routeId.value);
 
@@ -26,9 +25,26 @@ const taskId = ref(props.id || routeId.value);
 const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 
+
+watch(
+  () => [route.name, props.showTaskDetail],
+  async ([routeName, show]) => {
+    if (routeName === 'taskdetail' || show) {
+      console.log("routeId: ", Number(routeId));
+  
+      const idToUse = !isNaN(routeId) ? routeId : props.id;
+      console.log("idToUse: ", idToUse);
+      
+      if (idToUse) {
+        await fetchTaskDetails(idToUse);
+      }
+    }
+  },
+  { immediate: true }
+);
+
 // file handle
 const isImage = (file) => file.fileType.startsWith("image/");
-const getFilePreview = (file) => file.fileUrl || encodeURI(file.fileUrl);
 
 function getFileType(fileName) {
   return fileName.substring(fileName.lastIndexOf('.')) || '';
@@ -38,16 +54,20 @@ function getFileName(fileName) {
   return fileName.substring(0, fileName.lastIndexOf('.'));
 }
 
-// let blobImage = [];
-onMounted(async () => {
+
+async function fetchTaskDetails(id) {
   try {
-    const item = await getItemById(taskUrl, taskId.value);
+    console.log("fetchTaskDetails id: ", id);
+
+    const item = await getItemById(taskUrl, id);
     task.value = item;
 
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem);
 
-    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${taskId.value}`);
+    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${id}`);
+    console.log("attachmentItem: ", attachmentItem);
+    
     filemanager.value.setFiles(attachmentItem.data);
     console.log(filemanager.value.getFiles());
 
@@ -55,9 +75,9 @@ onMounted(async () => {
       if (isImage(filemanager.value.getFiles()[i])) {
         const fileName = decodeURIComponent(filemanager.value.getFiles()[i].fileName);
         const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}api/attachment/${taskId.value}/${filemanager.value.getFiles()[i].fileName}`,{
-            method:"GET", 
-          }
+          `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${filemanager.value.getFiles()[i].fileName}`, {
+          method: "GET",
+        }
         );
 
         if (response.ok) {
@@ -75,7 +95,7 @@ onMounted(async () => {
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
-});
+};
 
 
 const EmptyStyle = "italic text-slate-400";
@@ -110,7 +130,7 @@ const formatToLocalTime = (dateTimeString) => {
 </script>
 
 <template>
-  <div class="text-black fixed z-10 inset-0 overflow-y-auto">
+  <div v-if="props.showTaskDetail || route.name === 'taskdetail'" class="text-black fixed z-10 inset-0 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
       <div :class="[
         'bg-white p-6 rounded shadow-lg grid gap-3 grid-flow-row-dense',
@@ -174,9 +194,9 @@ const formatToLocalTime = (dateTimeString) => {
                         {{ getFileName(file.fileName) }}
                         <span class="inline">{{ getFileType(file.fileName) }}</span>
                       </p>
-                      <!-- <p class="text-xs text-base-content/70">
+                      <p class="text-xs text-base-content/70">
                         {{ file.size < 1024 * 1024 ? (file.size / 1024).toFixed(2) + ' KB' : (file.size / (1024 *
-                          1024)).toFixed(2) + ' MB' }} </p> -->
+                          1024)).toFixed(2) + ' MB' }} </p>
                     </a>
                   </div>
                 </div>

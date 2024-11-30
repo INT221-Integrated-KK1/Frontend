@@ -347,7 +347,7 @@ async function handlefilesAdded(files, taskId) {
 
     if (duplicateFiles.length > 0) {
       window.alert(
-        "File with the same filename cannot be added or updated to the attachments. Please delete the attachment and add again to update the file.\n" +
+        "File with the same filename cannot be added or updated to the attachments. Please delete the id and add again to update the file.\n" +
         "The following files have duplicate names: " + duplicateFiles.join(", ")
       );
 
@@ -356,7 +356,7 @@ async function handlefilesAdded(files, taskId) {
       
     } else {
       if (formData.has("files")) {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/id/${taskId}/attachments`, {
           method: "POST",
           body: formData,
         });
@@ -531,7 +531,7 @@ async function handlefilesAdded(files, taskId) {
   </Teleport>
 
   <Teleport to="body">
-    <TaskDetail :id="taskId" v-if="showTaskDetail" @closed="isTaskDetailModalOpen" />
+    <TaskDetail :id="taskId" :showTaskDetail="showTaskDetail" @closed="isTaskDetailModalOpen" />
   </Teleport>
 
   <Teleport to="body">
