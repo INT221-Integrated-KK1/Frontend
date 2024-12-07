@@ -10,7 +10,7 @@ import TaskDetail from "@/components/modals/task/TaskDetail.vue";
 import Sort from "@/components/Sort.vue";
 import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
-import { useRoute } from 'vue-router';
+import { RouterView, useRoute } from 'vue-router';
 import BoardVisibility from "@/components/modals/board/BoardVisibility.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
@@ -150,19 +150,6 @@ const handleTaskDeletedNotfound = () => {
 const closeEditModal = () => {
   showEditModal.value = false;
 };
-const idEdit = ref(0);
-async function editHandler(id) {
-  const items = await getItemById(taskUrl, id);
-  if (items !== undefined) {
-    showEditModal.value = true;
-    idEdit.value = id;
-  } else {
-    showUpdatedError.value = true;
-    setTimeout(() => {
-      showUpdatedError.value = false;
-    }, 3000);
-  }
-}
 
 const handleTaskEdit = async (getTaskProp, id) => {
 
@@ -200,7 +187,6 @@ const handleTaskEdit = async (getTaskProp, id) => {
 
   const existingTask = await getItemById(taskUrl, id);
   const existingStatus = await getItems(statusUrl);
-  const editedTaskStatus = await getItemById(statusUrl, editedTask.status);
 
   if (!existingTask) {
     closeEditModal();
@@ -356,7 +342,7 @@ async function handlefilesAdded(files, taskId) {
       
     } else {
       if (formData.has("files")) {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/id/${taskId}/attachments`, {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
           method: "POST",
           body: formData,
         });
@@ -489,7 +475,7 @@ async function handlefilesAdded(files, taskId) {
                 </div>
                 <div v-else>
                   <router-link :to="{ name: 'editTaskModal', params: { boardId: params.boardId, taskId: task.id } }">
-                    <td class="itbkk-button-edit" @click="editHandler(task.id)">
+                    <td class="itbkk-button-edit" >
                       <EditIcons :isOff="readAccess || unAuthorized" />
                     </td>
                   </router-link>
@@ -526,7 +512,7 @@ async function handlefilesAdded(files, taskId) {
   </Teleport>
 
   <Teleport to="body">
-    <EditTaskModal :showEditModal="showEditModal" :idEdit="idEdit" @close="closeEditModal()"
+    <EditTaskModal @close="closeEditModal"
       @taskEdited="handleTaskEdit" @filesAdded="handlefilesAdded" />
   </Teleport>
 

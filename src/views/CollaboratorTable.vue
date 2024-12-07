@@ -163,43 +163,46 @@ const handleRemoveCollab = async (id, statusType) => {
 async function handleiInviteCollab(inputItem) {
     try {
         isLoading.value = true;
-        if (collabmanager.getCollabs().find(collab => collab.email === inputItem.collaboratorEmail)) {
-            window.alert("The user is already the collaborator or pending collaborator of this board.");
-        } else {
-            const inviteCollab = await addItem(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invite`, inputItem);
-            if (inviteCollab.status === 404) {
-                window.alert("AccessRight incorrect Please Check format (READ , WRITE) only");
-            } else if (inviteCollab.status === 409) {
-                window.alert("The user is already the collaborator or pending collaborator of this board.");
-            } else if (inviteCollab.status === 200) {
-                console.log(inviteCollab.message);
-            }
+        const existingCollab = collabmanager.getCollabs().find(collab => collab.email === inputItem.collaboratorEmail);
+        
+        if (existingCollab) {
+            window.alert("The user is already a collaborator or pending collaborator of this board.");
+            return;
         }
 
-        const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+        if (localStorage.email === inputItem.collaboratorEmail) {
+            window.alert("You cannot invite yourself to be a collaborator of this board.");
+            return;
+        }
 
-        const item = getPendingCollab.data;
-        for (let i = 0; i < item.length; i++) {
-            if (item[i].email === inputItem.collaboratorEmail && item[i].boardId === boardId) {
-                console.log("item", item[i]);
-                const collab = {
-                    name: item[i].name,
-                    email: item[i].email,
-                    accessRight: item[i].accessRight,
-                    status: item[i].status
+        const inviteCollab = await addItem(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invite`, inputItem);
+
+        if (inviteCollab.status === 404) {
+            window.alert("User not found or AccessRight incorrect. Please recheck.");
+        } else if (inviteCollab.status === 409) {
+            window.alert("The user is already a collaborator or pending collaborator of this board.");
+        } else if (inviteCollab.status === 200) {
+            console.log(inviteCollab.message);
+            const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+            const pendingCollabs = getPendingCollab.data;
+
+            pendingCollabs.forEach(item => {
+                if (item.email === inputItem.collaboratorEmail && item.boardId === boardId) {
+                    const collab = {
+                        name: item.name,
+                        email: item.email,
+                        accessRight: item.accessRight,
+                        status: item.status
+                    };
+                    collabmanager.addCollab(collab);
                 }
-                collabmanager.addCollab(collab);
-
-            }
-
+            });
         }
-
     } catch (error) {
-        console.error(`Error add collab: ${error}`);
+        console.error(`Error adding collaborator: ${error}`);
     } finally {
         isLoading.value = false;
     }
-
 }
 
 const closeModal = () => {
@@ -236,31 +239,14 @@ onMounted(async () => {
         collabmanager.setCollabs(collabMembers);
         if (pending.data.length > 0) {
             for (let i = 0; i < pending.data.length; i++) {
-                 collabmanager.addCollab(pending.data[i]);
-                if (pending.data[i].status === 'ACCEPTED' && collabMembers.find(collab => collab.email === pending.data[i].email) === undefined) {
-                    const inputItem = {
-                        email: pending.data[i].email,
-                        accessRight: pending.data[i].accessRight
-                    };
-                    const addCollab = await addItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, inputItem)
-                    console.log("addCollab: ", addCollab);
-
-                    if (addCollab.status === 404) {
-                        window.alert("The user does not exist.");
-                    } else if (addCollab.status === 409) {
-                        window.alert("The user is already the collaborator or pending co llaborator of this board.");
-                        if (email.value === localStorage.getItem('email')) {
-                            window.alert("Board owner cannot be collaborator of his/her own board.");
-                        } else {
-                            window.alert("The user is already the collaborator or pending collaborator of this board.");
-                        }
-                    } else {
-                       
-                    }
+                if (pending.data[i].status === 'PENDING') {
+                    collabmanager.addCollab(pending.data[i]);
+                } else if (pending.data[i].status === 'ACCEPTED' || pending.data[i].status === 'CANCEL') {
+                    collabmanager.removeCollab(pending.data[i].id);
                 }
             }
         }
-        
+
         console.log("pending", pending);
         console.log("collabMembers", collabMembers);
     } catch (error) {

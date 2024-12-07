@@ -60,20 +60,16 @@ const checkWriteAccess = async (to, from, next) => {
 const checkIsLogin = async (to, from, next) => {
   const haveToken = localStorage.getItem("token");
 
-  if (from.name === "invitations" && !haveToken) {
+  if (!haveToken) {
     next({
-      name: "invitations",
-      params: {
-        invitationId: from.params.invitationId,
-        boardId: from.params.invitationId,
-      },
+      name: "login",
+      query: { redirect: to.fullPath }, 
     });
-  } else if (!haveToken) {
-    next({ name: "login" });
   } else {
     next();
   }
 };
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

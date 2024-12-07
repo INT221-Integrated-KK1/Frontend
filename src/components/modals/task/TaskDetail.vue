@@ -81,6 +81,8 @@ async function fetchTaskDetails(id) {
         );
 
         if (response.ok) {
+          console.log(`Fetched file ${fileName}:`, response);
+          
           // const blob = await response.blob();
           // blobImage.push(fileName +" "+ blob.size);
           // console.log(`Blob for file ${fileName}:`, blob);
