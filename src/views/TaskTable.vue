@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { getItems, getItemById, editItem, addItem } from "@/libs/fetchUtils.js";
+import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
 import { TaskManagement } from "@/stores/TaskManagement.js";
 import Sidebar from "@/components/Sidebar.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
@@ -10,7 +10,7 @@ import TaskDetail from "@/components/modals/task/TaskDetail.vue";
 import Sort from "@/components/Sort.vue";
 import Filter from "@/components/Filter.vue";
 import AlertBox from "@/components/AlertBox.vue";
-import { RouterView, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import BoardVisibility from "@/components/modals/board/BoardVisibility.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
@@ -54,10 +54,10 @@ const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 
-
 onMounted(async () => {
   try {
     isLoading.value = true;
+
     const items = await getItems(taskUrl);
     if (items.status === 403) {
       window.alert("Access denied, you do not have permission to view this board");
@@ -66,6 +66,7 @@ onMounted(async () => {
       window.alert("Unauthorized, please login to view this board");
       router.push({ name: 'login' });
     }
+
     const statusItems = await getItems(statusUrl);
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     const collabItems = await getItems(collabUrl);
@@ -77,6 +78,12 @@ onMounted(async () => {
         }
       }
     }
+
+    for (let i = 0; i < items.length; i++) {
+      const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${items[i].id}`);
+      items[i] = { ...items[i], attachments: attachmentItem.data.length, attachmentItem: attachmentItem.data };
+    }
+
     board.value = boardItems;
     todo.value = items;
     statuses.value = statusItems;
@@ -188,7 +195,13 @@ const handleTaskEdit = async (getTaskProp, id) => {
   const existingTask = await getItemById(taskUrl, id);
   const existingStatus = await getItems(statusUrl);
 
-  if (!existingTask) {
+  if (editedTask === existingTask) {
+    closeEditModal();
+    showUpdatedError.value = true;
+    setTimeout(() => {
+      showUpdatedError.value = false;
+    }, 3000);
+  } else if (!existingTask) {
     closeEditModal();
     showUpdatedError.value = true;
     setTimeout(() => {
@@ -231,10 +244,10 @@ const handleTaskEdit = async (getTaskProp, id) => {
 
 // ----------------------------------- task details handler -----------------------------------
 
-function taskDetailsHandler(id) {
-  taskId.value = id;
-  showTaskDetail.value = true;
-}
+// function taskDetailsHandler(id) {
+//   taskId.value = id;
+//   showTaskDetail.value = true;
+// }
 
 function isTaskDetailModalOpen() {
   showTaskDetail.value = false;
@@ -303,66 +316,79 @@ const getStatusClass = (status) => {
       return { class: "bg-gray-200 text-gray-800 rounded" };
   }
 };
-async function handlefilesAdded(files, taskId) {
+
+// ----------------------------------- attachment handler -----------------------------------
+
+async function handleFiles(files, taskId, removeFiles) {
   try {
-    const formData = new FormData();
-    let errorfile = [];
-    let duplicateFiles = [];
-
-    for (const file of files) {
-      if (file.size > 20 * 1024 * 1024) {
-        errorfile.push(file.name);
-        continue;
-      } else if (formData.getAll("files").some(existingFile => existingFile.name === file.name)) {
-        duplicateFiles.push(file.name);
-        continue;
-      } else {
-        formData.append("files", file);
-      }
+    if (removeFiles) {
+      console.log("Removing files:", removeFiles);
+      await handleRemoveFiles(taskId, removeFiles);
     }
 
-    if (errorfile.length > 0) {
-      window.alert(
-        "Each file cannot be larger than 20MB. The following files are not added: " + errorfile.join(", ")
-      );
-
-      console.log(errorfile);
-      console.log(errorfile.join(", "));
-
+    if (files !== taskmanager.getTaskById(taskId).attachmentItem) {
+      await handleAddFiles(taskId, files);
     }
 
-    if (duplicateFiles.length > 0) {
-      window.alert(
-        "File with the same filename cannot be added or updated to the attachments. Please delete the id and add again to update the file.\n" +
-        "The following files have duplicate names: " + duplicateFiles.join(", ")
-      );
-
-      console.log(duplicateFiles);
-      console.log(duplicateFiles.join(", "));
-      
-    } else {
-      if (formData.has("files")) {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log("Files added successfully:", result);
-        } else {
-          console.error("Error adding files:", response.statusText);
-        }
-      } else {
-        console.log("No valid files to upload.");
-      }
-    }
-
-
+    console.log("File operations completed successfully.");
   } catch (error) {
-    console.error("Error while uploading files:", error);
+    console.error("Error during file operations:", error);
   }
 }
+
+async function handleAddFiles(taskId, files) {
+  try {
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log("Files uploaded successfully:", result);
+      taskmanager.editTask(taskId, { attachments: result.data.length });
+    } else {
+      console.error("Error adding files:", response);
+    }
+  } catch (error) {
+    console.error("Error during file addition:", error);
+  }
+}
+
+async function handleRemoveFiles(taskId, removeFiles) {
+  for (let i = 0; i < removeFiles.length; i++) {
+    try {
+      const fileId = taskmanager
+        .getTaskById(taskId)
+        .attachmentItem.find((attachment) => attachment.fileName === removeFiles[i].name).id;
+
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${fileId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        console.log("File deleted successfully:", removeFiles[i].name);
+        taskmanager.editTask(taskId, {
+          attachments: taskmanager.getTaskById(taskId).attachments - 1,
+        });
+      } else {
+        console.error("Error deleting file:", removeFiles[i].name, response);
+      }
+    } catch (error) {
+      console.error("Error during file removal:", error, removeFiles[i]);
+    }
+  }
+}
+
+
 
 
 
@@ -431,10 +457,11 @@ async function handlefilesAdded(files, taskId) {
         <table class="table w-3/4 mt-5 border-solid border-2 rounded-m border-black">
           <thead>
             <tr class="bg-orange-200 
-         border-solid border-2 border-black text-xl text-black">
+         border-solid border-2 border-black text-xl text-black text-center">
               <th class="w-20"></th>
               <th class="font-bold">Title</th>
               <th class="font-bold">Assignees</th>
+              <th class="font-bold">Attachment</th>
               <th class="font-bold">
                 <Sort @click="handleSort" />
               </th>
@@ -450,16 +477,20 @@ async function handlefilesAdded(files, taskId) {
 
               <th class="font-semibold text-center">{{ index + 1 }}</th>
 
-              <router-link :to="{ name: 'taskdetail', params: { boardId: params.boardId, taskId: task.id } }">
-                <td @click="taskDetailsHandler(task.id)" class="itbkk-title cursor-pointer">
-                  <span class=" block py-2 text-center">{{ task.title }}</span>
-                </td>
-              </router-link>
 
-              <td class="itbkk-assignees" :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
+              <td  class="itbkk-title text-center">
+                <router-link :to="{ name: 'taskdetail', params: { boardId: params.boardId, taskId: task.id } }">
+                  {{ task.title }}
+                </router-link>
+              </td>
+
+              <td class="itbkk-assignees text-center"
+                :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
                 {{ task.assignees === null || task.assignees === "" ? "Unassigned" : task.assignees
                 }}
               </td>
+
+              <td class="text-center"> {{ task.attachments > 0 ? task.attachments : '-' }}</td>
 
 
               <td class="itbkk-status itbkk-button-action" :class="getStatusClass(task.status.name).class">
@@ -475,7 +506,7 @@ async function handlefilesAdded(files, taskId) {
                 </div>
                 <div v-else>
                   <router-link :to="{ name: 'editTaskModal', params: { boardId: params.boardId, taskId: task.id } }">
-                    <td class="itbkk-button-edit" >
+                    <td class="itbkk-button-edit">
                       <EditIcons :isOff="readAccess || unAuthorized" />
                     </td>
                   </router-link>
@@ -512,12 +543,11 @@ async function handlefilesAdded(files, taskId) {
   </Teleport>
 
   <Teleport to="body">
-    <EditTaskModal @close="closeEditModal"
-      @taskEdited="handleTaskEdit" @filesAdded="handlefilesAdded" />
+    <EditTaskModal @close="closeEditModal" @taskEdited="handleTaskEdit" @filesAdded="handleFiles" />
   </Teleport>
 
   <Teleport to="body">
-    <TaskDetail :id="taskId" :showTaskDetail="showTaskDetail" @closed="isTaskDetailModalOpen" />
+    <TaskDetail @closed="isTaskDetailModalOpen" />
   </Teleport>
 
   <Teleport to="body">

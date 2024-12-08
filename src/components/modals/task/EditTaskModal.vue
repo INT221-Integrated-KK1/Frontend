@@ -34,6 +34,7 @@ let task = reactive({
 });
 
 const files = ref([]);
+const removeFiles = ref([]);
 
 
 onMounted(async () => {
@@ -54,35 +55,77 @@ watch(
 
 const handleFiles = async (event) => {
   const selectedFiles = Array.from(event.target.files || event.dataTransfer.files);
-  files.value = [...files.value, ...selectedFiles].slice(0, 10);
+
+  files.value = [...files.value, ...selectedFiles];
+
   for (let i = 0; i < files.value.length; i++) {
-    if (isImage(files.value[i])) {
-      const fileName = decodeURIComponent(files.value[i].name);
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/${fileName}`, {
-        method: "GET",
-      });
-      if (response.ok) {
-        files.value[i].fileUrl = URL.createObjectURL(await response.blob());
-      } else {
-        files.value[i].fileUrl = null;
-      }
-    }
+    files.value[i].fileUrl = URL.createObjectURL(files.value[i]);
   }
 };
 
-async function removeFile(index) {
-  // try {
-    files.value.splice(index, 1);
-    // const exist = await getItemById(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/${fileName}`);
-    // if (exist) {
-    //   await deleteItemById(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/${fileName}`);
-    // }
+function removeFile(index) {
+  console.log(files.value[index]);
+  removeFiles.value.push(files.value[index]);
 
-  // } catch (error) {
-  //   console.error("Error removing file:", error);
-  // }
+
+  files.value.splice(index, 1);
+  console.log("files", files.value);
+
+
+  console.log("removeFiles", removeFiles.value);
 }
+
+const MAX_FILE_SIZE_MB = 20;
+
+const invalidFiles = computed(() => {
+  const fileNames = new Set();
+  const duplicateNames = new Set();
+  const oversizedFiles = [];
+  const errors = [];
+
+  for (const file of files.value) {
+
+    if (files.value.length > 10) {
+      errors.push("Maximum of 10 files can be uploaded at a time.");
+      break;
+    }
+
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      oversizedFiles.push(file.name);
+    }
+    if (fileNames.has(file.name)) {
+      duplicateNames.add(file.name);
+    }
+    fileNames.add(file.name);
+
+  }
+
+  if (oversizedFiles.length > 0) {
+    errors.push(
+      `Each file cannot be larger than ${MAX_FILE_SIZE_MB}MB. The following files are not added: ${oversizedFiles.join(", ")}`
+    );
+  }
+  if (duplicateNames.size > 0) {
+    errors.push(
+      `Files with the same filename cannot be added or updated. Please delete the duplicate and add again to update. Duplicate file names: ${Array.from(duplicateNames).join(", ")}`
+    );
+  }
+
+  return errors;
+});
+
+
+const duplicateFileNames = computed(() => {
+  const fileNameCount = {};
+  files.value.forEach((file) => {
+    fileNameCount[file.name] = (fileNameCount[file.name] || 0) + 1;
+  });
+  return new Set(Object.keys(fileNameCount).filter((name) => fileNameCount[name] > 1));
+});
+
+const isSaveDisabled = computed(() => {
+  return invalidFiles.value.length > 0 || duplicateFileNames.value.size > 0;
+});
 
 
 const isImage = (file) => file.type.startsWith("image/");
@@ -90,6 +133,9 @@ const getFilePreview = (file) => {
   return file.fileUrl || URL.createObjectURL(file);
 };
 
+
+const initialTask = ref("");
+const initialFiles = ref([]);
 
 async function fetchTaskDetails(id) {
   try {
@@ -121,7 +167,7 @@ async function fetchTaskDetails(id) {
         if (isImage(files.value[i])) {
           const fileName = decodeURIComponent(files.value[i].name);
           const response = await fetch(
-            `${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/${fileName}`, {
+            `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${fileName}`, {
             method: "GET",
           });
           if (response.ok) {
@@ -132,7 +178,7 @@ async function fetchTaskDetails(id) {
         }
       }
     }
-
+    initialFiles.value = files.value.map((file) => ({ name: file.name, size: file.size, type: file.type }));
 
 
     const item = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, id);
@@ -153,7 +199,11 @@ async function fetchTaskDetails(id) {
     task.status.description = item.status.description;
     task.createdOn = item.createdOn;
     task.updatedOn = item.updatedOn;
+    task.attachmentItem = attachmentItem.data;
 
+    initialTask.value = JSON.stringify(task);
+    console.log(files.value);
+    
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -163,7 +213,6 @@ const checkWhiteSpace = (title) => {
   return /^\s*$/.test(title);
 };
 
-let initialTask = "";
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const formatToLocalTime = (dateTimeString) => {
@@ -181,19 +230,26 @@ const formatToLocalTime = (dateTimeString) => {
 };
 
 const isFormModified = computed(() => {
-  return JSON.stringify(task) !== initialTask;
+  const isTaskModified = JSON.stringify(task) !== initialTask.value;
+  const areFilesModified = files.value.length !== initialFiles.value.length
+  return isTaskModified || areFilesModified;
 });
 
 
 const taskEdited = () => {
+  console.log("Form submitted");
   if (isFormModified.value) {
     emit("taskEdited", task, task.id);
-  }
-  if (files.value.length > 0) {
-    emit("filesAdded", files.value, task.id);
+    console.log("Task Edited Emitted");
+
+    if (files.value.length !== initialFiles.value.length || removeFiles.value.length > 0) {
+      emit("filesAdded", files.value, task.id, removeFiles.value);
+      console.log("Files Added Emitted");
+    }
   }
   router.push({ name: 'task', params: { boardId: route.params.boardId } });
 };
+
 
 const handleClose = () => {
   taskId = null;
@@ -214,7 +270,14 @@ const countOptionalCharacters = (text) => {
   return (text ?? "").trim().length;
 };
 
-
+function downloadFile(file) {
+  const link = document.createElement("a");
+  link.href = file.fileUrl;
+  link.download = file.name || "download";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 </script>
 
@@ -292,57 +355,56 @@ const countOptionalCharacters = (text) => {
               </div>
 
               <!-- File Preview -->
-              <div v-if="files.length > 0" class=" bg-slate-50 p-3 rounded-lg ">
-                <div class="">
-                  <h1 class="font-bold pb-2">Attachment Preview : </h1>
-                  <ul class="flex overflow-x-auto">
-                    <li v-for="(file, index) in files" :key="index"
-                      class="flex items-center p-2 m-2 rounded-lg bg-sky-100 hover:bg-sky-200 shadow-sm  justify-between">
-                      <a :href="file.fileUrl" target="_blank" >
-                        <img v-if="isImage(file)" :src="file.fileUrl" alt="File Preview"
-                          class="size-10 rounded-md shadow-md mr-8" />
+              <div v-if="files.length > 0" class="bg-slate-50 p-3 rounded-lg">
+                <h1 class="font-bold pb-2">Attachment Preview</h1>
+                <div class="flex flex-wrap gap-4">
+                  <div v-for="(file, index) in files" :key="index"
+                    class="flex flex-col items-center justify-between bg-sky-50 p-3 rounded-lg shadow hover:shadow-md transition-shadow duration-200 w-36">
 
-                        <div v-else>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="size-10 mr-2" viewBox="0 0 24 24">
-                            <path fill="#55a3d3"
-                              d="M18 22a2 2 0 0 0 2-2V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2zM13 4l5 5h-5zM7 8h3v2H7zm0 4h10v2H7zm0 4h10v2H7z" />
-                          </svg>
-                        </div>
-                      </a>
-                        <div class="pr-2">
-                          <a :href="getFilePreview(file)">
-                          </a>
-                          <div :class="{ 'text-red-500': ((file.size / (1024 * 1024)).toFixed(2)) > 10.00 }">
-                            <a :href="getFilePreview(file)" :download="file.name" target="_blank">
-                              <p class=" text-ellipsis overflow-hidden text-warp ">
-                                {{ file.name }}
-                              </p>
-                              <p class="text-xs text-base-content/70"
-                                :class="{ 'text-red-500': ((file.size / (1024 * 1024)).toFixed(2)) > 10.00 }">
-                                {{ file.size < 1024 * 1024 ? (file.size / 1024).toFixed(2) + ' KB' : (file.size / (1024
-                                  * 1024)).toFixed(2) + ' MB' }} </p>
-                            </a>
-                          </div>
-                        </div>
-                        <button @click="removeFile(index)" class="justify-self-end">
-                          <DeleteIcons />
-                        </button>
+                    <!-- File Preview -->
+                    <a :href="file.fileUrl" target="_blank"
+                      class="block relative w-full h-20 overflow-hidden rounded-lg">
+                      <img v-if="isImage(file)" :src="file.fileUrl" alt="File Preview"
+                        class="w-full h-full object-cover" />
+                      <div v-else class="flex items-center justify-center h-full w-full bg-sky-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-sky-500" viewBox="0 0 24 24">
+                          <path fill="currentColor"
+                            d="M18 22a2 2 0 0 0 2-2V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2zM13 4l5 5h-5zM7 8h3v2H7zm0 4h10v2H7zm0 4h10v2H7z" />
+                        </svg>
+                      </div>
+                    </a>
 
-                    </li>
-                  </ul>
+                    <!-- File Info -->
+                    <a :href="file.fileUrl" :download="file.name" class="cursor-pointer" target="_blank"
+                      @click.prevent="downloadFile(file)">
+                      <div class="mt-3 w-full text-center">
+                        <p class="text-sm font-medium">{{ file.name }}</p>
+                      </div>
+                    </a>
+
+                    <!-- Remove Button -->
+                    <button @click.prevent.stop="removeFile(index)"
+                      class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100 "
+                      aria-label="Remove File">
+                      <DeleteIcons />
+                    </button>
+                  </div>
                 </div>
               </div>
+
 
 
 
             </div>
 
 
-
+            <div v-if="invalidFiles.length > 0" class="text-red-500 mb-4 col-start-1">
+              <p v-for="(error, index) in invalidFiles" :key="index">{{ error }}</p>
+            </div>
 
             <div class="flex justify-end mt-4 col-start-3">
               <button type="submit" class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3"
-                :disabled="!isFormModified || checkWhiteSpace(task.title)">
+                :disabled="!isFormModified || checkWhiteSpace(task.title) || isSaveDisabled">
                 Save
               </button>
               <router-link :to="{ name: 'task', params: { boardId: route.params.boardId } }">
