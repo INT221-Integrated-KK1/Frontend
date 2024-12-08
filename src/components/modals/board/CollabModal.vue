@@ -8,6 +8,7 @@ const props = defineProps({
     boardId: String,
     readAccess: Boolean,
     actionType: String,
+    statusType: String,
     showModal: Boolean,
     collabItem: Object
 });
@@ -19,41 +20,26 @@ async function confirmChange() {
     if (props.actionType === 'add') {
         try {
             const inputItem = {
-                email: email.value,
-                // collaboratorEmail: email.value,
+                collaboratorEmail: email.value,
                 accessRight: accessRight.value
             };
             
-            // emit("inviteCollab", inputItem);
-            // console.log("sending inviteCollab: ", inputItem);
-            // emit("closeModal")
+            emit("inviteCollab", inputItem);
+            console.log("sending inviteCollab: ", inputItem);
+            emit("closeModal")
             
 
-            const addCollab = await addItem(url, inputItem)
-            if (addCollab.status === 404) {
-                window.alert("The user does not exist.");
-            } else if (addCollab.status === 409) {
-                if (email.value === localStorage.getItem('email')) {
-                    window.alert("Board owner cannot be collaborator of his/her own board.");
-                } else {
-                    window.alert("The user is already the collaborator or pending collaborator of this board.");
-                }
-            } else {
-                const recentCollab = await getItemById(url, addCollab.collabsId);
-                emit("addCollab", recentCollab);
-                email.value = "";
-                accessRight.value = "READ";
-                emit("closeModal")
-            }
         } catch (error) {
             console.error(`Error add collab: ${error}`);
         }
     } else if (props.actionType === 'edit') {
-        emit("editCollab", props.collabItem.oid, props.collabItem.accessRight === "READ" ? "WRITE" : "READ");
+        console.log("prop statusType: ", props.statusType);
+        
+        emit("editCollab", props.collabItem.oid || props.collabItem.id , props.collabItem.accessRight === "READ" ? "WRITE" : "READ", props.statusType);
         emit("closeModal")
 
     } else if (props.actionType === 'remove') {
-        emit("removeCollab", props.collabItem.oid);
+        emit("removeCollab", props.collabItem.oid || props.collabItem.id, props.statusType);
         emit("closeModal")
     }
 
