@@ -1,28 +1,25 @@
 <script setup>
-import { ref, watch, computed, reactive } from "vue";
-import { getItems, getItemById } from "@/libs/fetchUtils.js";
+import { ref, computed, reactive, onMounted, watch } from "vue";
+import { getItems, getItemById, deleteItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/stores/StatusManagement.js";
-import { FileManagement } from "@/stores/FileManagement.js";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
+import router from "@/router";
 
 const emit = defineEmits(['close', 'taskEdited', 'filesAdded']);
 const route = useRoute();
-const boardId = route.params.boardId;
-const taskId = route.params.taskId;
+
+
+let boardId = null;
+let taskId = null;
+
 
 const statusmanager = ref(new StatusManagement());
-const filemanager = ref(new FileManagement());
 
 const EmptyAssigneeText = "Unassigned";
 const EmptyDescriptionText = "No Description Provided";
 
-const props = defineProps({
-  showEditModal: Boolean,
-  idEdit: Number,
-});
-
-const task = reactive({
+let task = reactive({
   id: 0,
   title: "",
   description: "",
@@ -37,70 +34,163 @@ const task = reactive({
 });
 
 const files = ref([]);
+const removeFiles = ref([]);
 
-const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
-const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+
+onMounted(async () => {
+  boardId = route.params.boardId;
+  taskId = Number(route.params.taskId);
+});
 
 watch(
-  () => [props.showEditModal, route.name],
-  async ([showEditModal, routeName]) => {
-    if (showEditModal || routeName === 'editTaskModal') {
-      const idToUse = !isNaN(taskId) ? taskId : props.idEdit;
-      if (idToUse) {
-        await fetchTaskDetails(idToUse);
-        initialTask = JSON.stringify(task);
-      }
+  () => [route.name, route.params.taskId],
+  async ([newRouteName, newTaskId]) => {
+    if (newRouteName === 'editTaskModal' && newTaskId) {
+      await fetchTaskDetails(newTaskId);
     }
   },
   { immediate: true }
 );
 
-// file handle
-const handleFiles = (event) => {
-  const selectedFiles = Array.from(event.target.files);
-  files.value = [...files.value, ...selectedFiles].slice(0, 10);
-  console.log(files.value);
-  
-  if (files.value.length > 10) {
-    selectedFiles.value = files.value.slice(0, 10);
+
+const handleFiles = async (event) => {
+  const selectedFiles = Array.from(event.target.files || event.dataTransfer.files);
+
+  files.value = [...files.value, ...selectedFiles];
+
+  for (let i = 0; i < files.value.length; i++) {
+    files.value[i].fileUrl = URL.createObjectURL(files.value[i]);
   }
+  
 };
 
-const removeFile = (index) => {
+function removeFile(index) {
+  console.log(files.value[index]);
+  removeFiles.value.push(files.value[index]);
+
+
   files.value.splice(index, 1);
-};
+  console.log("files", files.value);
+
+
+  console.log("removeFiles", removeFiles.value);
+}
+
+const MAX_FILE_SIZE_MB = 20;
+
+const invalidFiles = computed(() => {
+  const fileNames = new Set();
+  const duplicateNames = new Set();
+  const oversizedFiles = [];
+  const errors = [];
+
+  for (const file of files.value) {
+
+    if (files.value.length > 10) {
+      errors.push("Maximum of 10 files can be uploaded at a time.");
+      break;
+    }
+
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      oversizedFiles.push(file.name);
+    }
+    if (fileNames.has(file.name)) {
+      duplicateNames.add(file.name);
+    }
+    fileNames.add(file.name);
+
+  }
+
+  if (oversizedFiles.length > 0) {
+    errors.push(
+      `Each file cannot be larger than ${MAX_FILE_SIZE_MB}MB. The following files are not added: ${oversizedFiles.join(", ")}`
+    );
+  }
+  if (duplicateNames.size > 0) {
+    errors.push(
+      `Files with the same filename cannot be added or updated. Please delete the duplicate and add again to update. Duplicate file names: ${Array.from(duplicateNames).join(", ")}`
+    );
+  }
+
+  return errors;
+});
+
+
+const duplicateFileNames = computed(() => {
+  const fileNameCount = {};
+  files.value.forEach((file) => {
+    fileNameCount[file.name] = (fileNameCount[file.name] || 0) + 1;
+  });
+  return new Set(Object.keys(fileNameCount).filter((name) => fileNameCount[name] > 1));
+});
+
+const isSaveDisabled = computed(() => {
+  return invalidFiles.value.length > 0 || duplicateFileNames.value.size > 0;
+});
+
 
 const isImage = (file) => file.type.startsWith("image/");
-const getFilePreview = (file) => URL.createObjectURL(file);
-
-function getFileType(fileName) {
-  return fileName.substring(fileName.lastIndexOf('.')) || '';
-}
-
-function getFileName(fileName) {
-  return fileName.substring(0, fileName.lastIndexOf('.'));
-}
+const getFilePreview = (file) => {
+  return file.fileUrl || URL.createObjectURL(file);
+};
 
 
+const initialTask = ref("");
+const initialFiles = ref([]);
 
 async function fetchTaskDetails(id) {
   try {
 
-    const item = await getItemById(taskUrl, id);
+    files.value = [];
+    task.value = {
+      id: 0,
+      title: "",
+      description: "",
+      assignees: "",
+      status: {
+        id: 1,
+        name: "",
+        description: "",
+      },
+      createdOn: "",
+      updatedOn: "",
+    };
+
+    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${id}`);
+
+    if (attachmentItem.data.length > 0) {
+      attachmentItem.data.forEach((item) => {
+        const file = new File([item.file], item.fileName, { type: item.fileType });
+        files.value = [...files.value, file];
+      });
+
+      for (let i = 0; i < files.value.length; i++) {
+        if (isImage(files.value[i])) {
+          const fileName = decodeURIComponent(files.value[i].name);
+          const response = await fetch(
+            `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${fileName}`, {
+            method: "GET",
+          });
+          if (response.ok) {
+            files.value[i].fileUrl = URL.createObjectURL(await response.blob());
+          } else {
+            files.value[i].fileUrl = null;
+          }
+        }
+      }
+    }
+    initialFiles.value = files.value.map((file) => ({ name: file.name, size: file.size, type: file.type }));
+
+
+    const item = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, id);
 
     if (!item) {
-      console.error("No task found with the given ID");
-      return;
+      emit("taskEdited", null, null);
     }
 
-    const statusItem = await getItems(statusUrl);
+    const statusItem = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`);
     statusmanager.value.setStatuses(statusItem);
-    // const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${id}`);
-    
-    // filemanager.value.setFiles(attachmentItem.data);
-    // console.log(filemanager.value.getFiles());
 
-    files.value = filemanager.value.getFiles();
     task.id = item.id;
     task.title = item.title;
     task.description = item.description ?? "";
@@ -110,6 +200,10 @@ async function fetchTaskDetails(id) {
     task.status.description = item.status.description;
     task.createdOn = item.createdOn;
     task.updatedOn = item.updatedOn;
+    task.attachmentItem = attachmentItem.data;
+
+    initialTask.value = JSON.stringify(task);
+    console.log(files.value);
 
   } catch (error) {
     console.error("Error fetching task details:", error);
@@ -120,7 +214,6 @@ const checkWhiteSpace = (title) => {
   return /^\s*$/.test(title);
 };
 
-let initialTask = "";
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const formatToLocalTime = (dateTimeString) => {
@@ -133,142 +226,198 @@ const formatToLocalTime = (dateTimeString) => {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false 
+    hour12: false
   });
 };
 
 const isFormModified = computed(() => {
-  return JSON.stringify(task) !== initialTask;
+  const isTaskModified = JSON.stringify(task) !== initialTask.value;
+  const areFilesModified = files.value.length !== initialFiles.value.length
+  return isTaskModified || areFilesModified;
 });
 
 
 const taskEdited = () => {
+  console.log("Form submitted");
   if (isFormModified.value) {
-    emit("taskEdited", task, task.id || props.idEdit);
+    emit("taskEdited", task, task.id);
+    console.log("Task Edited Emitted");
+
+    if (files.value.length !== initialFiles.value.length || removeFiles.value.length > 0) {
+      emit("filesAdded", files.value, task.id, removeFiles.value);
+      console.log("Files Added Emitted");
+    }
   }
-  if (files.value.length > 0 ) {
-    emit("filesAdded", files.value, task.id || props.idEdit);
-  }
+  router.push({ name: 'task', params: { boardId: route.params.boardId } });
+};
+
+
+const handleClose = () => {
+  taskId = null;
+  emit("close");
+
+};
+
+const handleDrop = (event) => {
+  event.preventDefault();
+  handleFiles(event);
+};
+
+const handleDragOver = (event) => {
+  event.preventDefault();
 };
 
 const countOptionalCharacters = (text) => {
   return (text ?? "").trim().length;
 };
 
+function downloadFile(file) {
+  const link = document.createElement("a");
+  link.href = file.fileUrl;
+  link.download = file.name || "download";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 </script>
 
 <template>
-  <div v-if="props.showEditModal || $route.name === 'editTaskModal'"
-    class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
-      <div :class="[
-        'bg-white p-6 rounded shadow-lg grid gap-3 grid-flow-row-dense',
-  files.length > 1 ? 'grid-cols-4 w-2/3' : 'grid-cols-3 w-1/2'
-      ]">
-        <div class="col-start-1 col-span-3">
-          <h1 class="font-bold text-2xl py-2 mb-2">Edit Task</h1>
-          <h1 class="font-bold mt-2">Title:</h1>
-          <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
-            v-model="task.title" />
-          <span class="text-gray-500 text-sm"
-            :class="{ 'text-red-500': task.title.trim().length > 100 || task.title.trim().length === 0 }">
-            {{ task.title.trim().length }} / 100 characters
-          </span>
+  <div v-if="$route.name === 'editTaskModal'" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
+    <form @submit.prevent="taskEdited">
+      <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
+        <div :class="[
+          'bg-white p-6 rounded shadow-lg grid gap-3 grid-flow-row-dense grid-cols-3 w-1/2'
+        ]">
+          <div class="col-start-1 col-span-3">
+            <h1 class="font-bold text-2xl py-2 mb-2">Edit Task</h1>
+            <h1 class="font-bold mt-2">Title:</h1>
+            <input class="itbkk-title p-2 border-solid border-2 border-grey w-full mb-3 break-words"
+              v-model="task.title" />
+            <span class="text-gray-500 text-sm"
+              :class="{ 'text-red-500': task.title.trim().length > 100 || task.title.trim().length === 0 }">
+              {{ task.title.trim().length }} / 100 characters
+            </span>
 
-          <hr class="my-3" />
-        </div>
-
-        <div class="col-start-1 col-span-2 row-start-auto">
-          <h1 class="font-bold">Description :</h1>
-          <textarea
-            class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-[14rem] break-words"
-            :class="{ EmptyStyle: task.description === '' }" v-model="task.description"
-            :placeholder="EmptyDescriptionText"></textarea>
-          <span class="text-gray-500 text-sm"
-            :class="{ 'text-red-500': countOptionalCharacters(task.description) > 500 }">
-            {{ countOptionalCharacters(task.description) }} / 500 characters
-          </span>
-        </div>
-        <div class="col-start-3 col-span-1 row-start-auto">
-          <h1 class="font-bold">Assignees :</h1>
-          <textarea
-            class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full break-words"
-            :class="{ EmptyStyle: task.assignees === '' }" v-model="task.assignees"
-            :placeholder="EmptyAssigneeText"></textarea>
-          <span class="text-gray-500 text-sm" :class="{ 'text-red-500': countOptionalCharacters(task.assignees) > 30 }">
-            {{ countOptionalCharacters(task.assignees) }} / 30 characters
-          </span>
-          <h1 class="font-bold pt-3">Status :</h1>
-          <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="task.status.id">
-            <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.id">
-              {{ status.name }}
-            </option>
-          </select>
-          <div class="col-start-3 col-span-1 row-start-auto mb-5">
-            <h1 class="font-bold pb-2">Attachment : </h1>
-            <input type="file" multiple @change="handleFiles"
-              class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" />
+            <hr class="my-3" />
           </div>
 
-          <h1 class="font-bold itbkk-timezone">Timezone: {{ timezone }}</h1>
-          <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(task.createdOn) }}</h1>
-          <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(task.updatedOn) }}</h1>
-        </div>
+          <div class="col-start-1 col-span-2 row-start-auto">
+            <h1 class="font-bold">Description :</h1>
+            <textarea
+              class="itbkk-description placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full h-64 break-words"
+              :class="{ EmptyStyle: task.description === '' }" v-model="task.description"
+              :placeholder="EmptyDescriptionText"></textarea>
+            <span class="text-gray-500 text-sm"
+              :class="{ 'text-red-500': countOptionalCharacters(task.description) > 500 }">
+              {{ countOptionalCharacters(task.description) }} / 500 characters
+            </span>
+          </div>
+          <div class="col-start-3 col-span-1 row-start-auto">
+            <h1 class="font-bold">Assignees :</h1>
+            <textarea
+              class="itbkk-assignees placeholder:italic placeholder:text-slate-400 p-2 border-solid border-2 border-grey w-full break-words"
+              :class="{ EmptyStyle: task.assignees === '' }" v-model="task.assignees"
+              :placeholder="EmptyAssigneeText"></textarea>
+            <span class="text-gray-500 text-sm"
+              :class="{ 'text-red-500': countOptionalCharacters(task.assignees) > 30 }">
+              {{ countOptionalCharacters(task.assignees) }} / 30 characters
+            </span>
+            <h1 class="font-bold pt-3">Status :</h1>
+            <select class="p-2 border-solid border-2 border-grey w-full mb-5 itbkk-status" v-model="task.status.id">
+              <option v-for="(status, index) in statusmanager.getStatus()" :key="index" :value="status.id">
+                {{ status.name }}
+              </option>
+            </select>
 
-        <div v-if="files.length > 0" class="col-start-4 col-span-1 row-span-3 bg-slate-50 p-3 rounded-md">
-          <div class="">
-            <h1 class="font-bold pb-2">Attachment Preview : </h1>
-            <ul>
-              <li v-for="(file, index) in files" :key="index"
-                class="flex items-center p-2 m-2 rounded-lg bg-sky-100 hover:bg-sky-200 shadow-sm  justify-between">
+            <h1 class="font-bold itbkk-timezone">Timezone: {{ timezone }}</h1>
 
-                <div class="flex items-center pr-2">
-                  <a :href="getFilePreview(file)" target="_blank">
-                    <img v-if="isImage(file)" :src="getFilePreview(file)" alt="File Preview"
-                      @click="openImagePreview(file)" class="size-10 rounded mr-2" />
-                    <div v-else>
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-10 mr-2" viewBox="0 0 24 24">
-                        <path fill="#55a3d3"
-                          d="M18 22a2 2 0 0 0 2-2V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2zM13 4l5 5h-5zM7 8h3v2H7zm0 4h10v2H7zm0 4h10v2H7z" />
-                      </svg>
-                    </div>
-                  </a>
-                  <div :class="{ 'text-red-500': ((file.size / (1024 * 1024)).toFixed(2)) > 10.00 }">
-                    <a :href="getFilePreview(file)" :download="file.name">
-                      <p class="w-16 text-xs text-ellipsis overflow-hidden text-warp ">
-                        {{ getFileName(file.name) }}
-                       <span class="inline">{{ getFileType(file.name) }}</span>
-                      </p>
-                      <p class="text-xs text-base-content/70">
-                      {{ file.size < 1024 * 1024 ? (file.size / 1024).toFixed(2) + ' KB' : (file.size / (1024 * 1024)).toFixed(2) + ' MB' }}
-                      </p>
+            <h1 class="font-bold itbkk-created-on">Created On: {{ formatToLocalTime(task.createdOn) }}</h1>
+            <h1 class="font-bold itbkk-updated-on">Updated On: {{ formatToLocalTime(task.updatedOn) }}</h1>
+          </div>
+
+          <div class="col-start-1 col-span-3">
+
+            <!-- File Drop Zone -->
+            <div class="col-span-4">
+              <h1 class="font-bold mb-4">File Drop and Upload:</h1>
+              <div
+                class="mb-4 text-center rounded-xl border-dashed border-2 border-gray-300 hover:border-sky-500 transition duration-300 ease-in-out transform hover:shadow-md"
+                @dragover="handleDragOver" @drop="handleDrop">
+                <label for="fileInput" class="p-8 cursor-pointer flex flex-col items-center space-y-2">
+                  <svg class="w-7 h-7 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2" d="m7 8l5-5l5 5m-5 7V3m10 12v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4" />
+                  </svg>
+                  <span class="text-gray-600">Drag and drop your files here</span>
+                  <span class="text-gray-500 text-sm">(or click to select)</span>
+                </label>
+                <input type="file" accept="*" id="fileInput" class="hidden" multiple @change="handleFiles">
+              </div>
+
+              <!-- File Preview -->
+              <div v-if="files.length > 0" class="bg-slate-50 p-3 rounded-lg">
+                <h1 class="font-bold pb-2">Attachment Preview</h1>
+                <div class="flex flex-wrap gap-4">
+                  <div v-for="(file, index) in files" :key="index"
+                    class="flex flex-col items-center justify-between bg-sky-50 p-3 rounded-lg shadow hover:shadow-md transition-shadow duration-200 w-36">
+
+                    <!-- File Preview -->
+                    <a :href="file.fileUrl" target="_blank"
+                      class="block relative w-full h-20 overflow-hidden rounded-lg">
+                      <img v-if="isImage(file)" :src="file.fileUrl" alt="File Preview"
+                        class="w-full h-full object-cover" />
+                      <div v-else class="flex items-center justify-center h-full w-full bg-sky-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-sky-500" viewBox="0 0 24 24">
+                          <path fill="currentColor"
+                            d="M18 22a2 2 0 0 0 2-2V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2zM13 4l5 5h-5zM7 8h3v2H7zm0 4h10v2H7zm0 4h10v2H7z" />
+                        </svg>
+                      </div>
                     </a>
+
+                    <!-- File Info -->
+                    <a :href="file.fileUrl" :download="file.name" class="cursor-pointer" target="_blank"
+                      @click.prevent="downloadFile(file)">
+                      <div class="mt-3 w-full text-center">
+                        <p class="text-sm font-medium">{{ file.name }}</p>
+                      </div>
+                    </a>
+
+                    <!-- Remove Button -->
+                    <button @click.prevent.stop="removeFile(index)"
+                      class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100 "
+                      aria-label="Remove File">
+                      <DeleteIcons />
+                    </button>
                   </div>
                 </div>
-                <button @click="removeFile(index)" class="justify-self-end">
-                  <DeleteIcons />
-                </button>
+              </div>
 
-              </li>
-            </ul>
+
+
+
+            </div>
+
+
+            <div v-if="invalidFiles.length > 0" class="text-red-500 mb-4 col-start-1">
+              <p v-for="(error, index) in invalidFiles" :key="index">{{ error }}</p>
+            </div>
+
+            <div class="flex justify-end mt-4 col-start-3">
+              <button type="submit" class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3"
+                :disabled="!isFormModified || checkWhiteSpace(task.title) || isSaveDisabled">
+                Save
+              </button>
+              <router-link :to="{ name: 'task', params: { boardId: route.params.boardId } }">
+                <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white" @click="handleClose">
+                  Close
+                </button>
+              </router-link>
+            </div>
           </div>
         </div>
-
-        <div class="flex justify-end mt-4 col-start-3">
-          <router-link :to="{ name: 'task', params: { boardId: route.params.boardId } }">
-            <button class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3" @click="taskEdited"
-              :disabled="!isFormModified || checkWhiteSpace(task.title)">
-              Save
-            </button>
-          </router-link>
-          <router-link :to="{ name: 'task', params: { boardId: route.params.boardId } }">
-            <button class="itbkk-button-cancel btn bg-red-500 hover:bg-red-700 text-white" @click="$emit('close')">
-              Close
-            </button>
-          </router-link>
-        </div>
       </div>
-    </div>
+    </form>
   </div>
 </template>
 

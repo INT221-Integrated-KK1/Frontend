@@ -17,53 +17,50 @@ async function loginHandler() {
         alert("Please fill in the username and password");
         return;
     }
-    const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
+
     try {
+        const data = await isAuthenticated(import.meta.env.VITE_BASE_USER_URL, inputForm);
+
+        if (!data || !data.access_token) {
+            if (data.message === "Username or Password is incorrect." || data === undefined) {
+                showLoginAlert.value = true;
+                setTimeout(() => {
+                    showLoginAlert.value = false;
+                }, 3000);
+            } else {
+                alert("Something went wrong: " + data);
+            }
+            return;
+        }
+
         let decode = VueJwtDecode.decode(data.access_token);
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('username', decode.name);
         localStorage.setItem('oid', decode.oid);
         localStorage.setItem('email', decode.email);
-    } catch (error) {
-        console.error("Error fetching task details:", error)
-        localStorage.clear();
-    }
-    if (data.access_token) {
+
         showLoginAlert.value = false;
-        try {
-            const board = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-            // PBI 24
-            // const boardLength = board.personalBoards.length ? board.personalBoards.length : 0;
-            // if (boardLength === 1) {
-            //     router.push({ name: "task", params: { boardId: board.personalBoards[0].id } });
-            // } else {
-            //     router.push("/board");
-            // }
-            if (board.length !== 1) {
+
+        const redirectPath = router.currentRoute.value.query.redirect || null;
+
+        if (redirectPath) {
+            router.push(redirectPath);
+        } else {
+            const boards = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+            if (boards.length !== 1) {
                 router.push("/board");
-            } else if (board.length === 1) {
-                router.push({ name: "task", params: { boardId: board[0].id } });
-                console.log(board[0].id);
+            } else if (boards.length === 1) {
+                router.push({ name: "task", params: { boardId: boards[0].id } });
             }
-
-        } catch (error) {
-            console.error("Error fetching task details:", error)
-            localStorage.clear();
         }
-        localStorage.setItem('token', data.access_token);
-        console.log(data.access_token);
-
-    } else if (data.message === "Username or Password is incorrect." || data === undefined) {
-
-        showLoginAlert.value = true;
-        setTimeout(() => {
-            showLoginAlert.value = false;
-        }, 3000);
-    } else {
-        alert("Something went wrong: " + data);
+    } catch (error) {
+        console.error("Error during login:", error);
+        localStorage.clear();
+        alert("An error occurred. Please try again later.");
     }
-};
+}
+
 const isPasswordToggle = ref(false);
 
 const showPassword = () => {
