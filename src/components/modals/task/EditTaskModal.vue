@@ -67,13 +67,7 @@ const handleFiles = async (event) => {
 function removeFile(index) {
   console.log(files.value[index]);
   removeFiles.value.push(files.value[index]);
-
-
   files.value.splice(index, 1);
-  console.log("files", files.value);
-
-
-  console.log("removeFiles", removeFiles.value);
 }
 
 const MAX_FILE_SIZE_MB = 20;
@@ -192,7 +186,6 @@ async function fetchTaskDetails(id) {
 
     initialFiles.value = files.value.map((file) => ({ name: file.name, size: file.size, type: file.type }));
 
-
     const item = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, id);
 
     if (!item) {
@@ -243,8 +236,8 @@ const formatToLocalTime = (dateTimeString) => {
 
 const isFormModified = computed(() => {
   const isTaskModified = JSON.stringify(task) !== initialTask.value;
-  const areFilesModified = files.value.length !== initialFiles.value.length
-  return isTaskModified || areFilesModified;
+  const areFilesModified = files.value.length !== initialFiles.value.length ;
+  return isTaskModified || areFilesModified || removeFiles.value.length > 0;
 });
 
 
@@ -256,7 +249,7 @@ const taskEdited = () => {
 
     if (files.value.length !== initialFiles.value.length || removeFiles.value.length > 0) {
       emit("filesAdded", files.value, task.id, removeFiles.value);
-      console.log("Files Added Emitted");
+      removeFiles.value = [];
     }
   }
   router.push({ name: 'task', params: { boardId: route.params.boardId } });
@@ -265,8 +258,8 @@ const taskEdited = () => {
 
 const handleClose = () => {
   taskId = null;
+  removeFiles.value = [];
   emit("close");
-
 };
 
 const handleDrop = (event) => {
