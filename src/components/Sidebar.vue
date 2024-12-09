@@ -1,131 +1,178 @@
 <script setup>
-import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
-import { BoardManagement } from '@/libs/BoardManagement';
-import { getItems } from '@/libs/fetchUtils';
+import { useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
+import { getItems } from "@/libs/fetchUtils";
 
 const router = useRouter();
 
-const unAuthorized = localStorage.getItem('token') === null;
-const openSidebar = ref(true);
+const unAuthorized = localStorage.getItem("token") === null;
+const openSidebar = ref(true); // Controls the visibility of the sidebar
+const collapsedSidebar = ref(false); // Controls the expanded/narrow state of the sidebar
+const name = localStorage.getItem("username") || "Guest";
+const boards = ref([]);
+
 onMounted(() => {
-    const savedSidebarState = localStorage.getItem('openSidebar');
-    openSidebar.value = savedSidebarState !== null ? JSON.parse(savedSidebarState) : true;
+  const savedSidebarState = localStorage.getItem("openSidebar");
+  openSidebar.value = savedSidebarState !== null ? JSON.parse(savedSidebarState) : true;
+
+  const savedCollapsedState = localStorage.getItem("collapsedSidebar");
+  collapsedSidebar.value =
+    savedCollapsedState !== null ? JSON.parse(savedCollapsedState) : false;
+
+  // Fetch boards on mount
+  fetchBoards();
 });
 
-const Sidebar = () => {
-    openSidebar.value = !openSidebar.value;
-    localStorage.setItem('openSidebar', JSON.stringify(openSidebar.value)); 
-}
-
+const toggleCollapseSidebar = () => {
+  collapsedSidebar.value = !collapsedSidebar.value;
+  localStorage.setItem("collapsedSidebar", JSON.stringify(collapsedSidebar.value));
+};
 
 const OpenBoard = () => {
-    router.push({ name: 'board' });
-}
+  router.push({ name: "board" });
+};
 
 const OpenLogin = () => {
-    router.push({ name: 'login' });
-}
+  router.push({ name: "login" });
+};
 
-const boardmanager = ref(new BoardManagement());
-const name = localStorage.getItem('username');
+const signOut = () => {
+  localStorage.clear();
+  router.push({ name: "login" });
+};
 
-function signOut() {
-    localStorage.clear();
-    router.push({ name: 'login' });
-}
-
-const boards = ref([]);
-onMounted(async () => {
-    try {
-        const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-        boardmanager.value.setBoards(items);
-        boards.value = items;
-    } catch (error) {
-        console.error('Error fetching boards:', error);
-    }
-});
+const fetchBoards = async () => {
+  try {
+    const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+    boards.value = items;
+  } catch (error) {
+    console.error("Error fetching boards:", error);
+  }
+};
 </script>
 
-
 <template>
-    <transition name="slide-fade">
-        <div v-if="openSidebar" class=" bg-teal-500 w-60 h-screen p-3 font-bold text-lg text-zinc-950">
-            <div  class="m-3">
-                <div class="flex justify-between mb-3">
+  <!-- Sidebar -->
+  <transition name="slide-fade">
+    <div
+      v-if="openSidebar"
+      :class="[
+        'bg-[#2193b0] h-screen p-4 font-bold text-lg text-white fixed z-10 transition-all duration-300',
+        collapsedSidebar ? 'w-15' : 'w-60',
+      ]"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <img
+          v-if="!collapsedSidebar"
+          src="@/assets/Logos.png"
+          alt="logo"
+          class="w-14 h-14"
+        />
+        <button @click="toggleCollapseSidebar" class="hover:text-gray-200">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+            />
+          </svg>
+        </button>
+      </div>
+      <hr class="border-gray-400 mb-4" />
 
-                    <img src="@/assets/Logo-removebg.png" alt="logo" class="w-12 h-12" />
-
-                    <div @click="Sidebar" role="button">
-
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24">
-                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                stroke-width="2">
-                                <path d="m9 14l-4-4l4-4" />
-                                <path d="M5 10h11a4 4 0 1 1 0 8h-1" />
-                            </g>
-                        </svg>
-                    </div>
-
-                </div>
-                <hr class=" border-2 border-zinc-950 mb-2 " />
-                <div v-if="!unAuthorized"  class="font-bold text-lg hover:text-white" role="button" @click="OpenBoard">Home</div>
-                <div v-if="!unAuthorized"  class="text-lg font-bold hover:text-white" role="button" @click="OpenBoard">Personal Boards</div>
-                <div v-if="unAuthorized"  class="text-lg font-bold hover:text-white" role="button" @click="OpenLogin">Login</div>
-
-
-            </div>
-
-        </div>
-
-    </transition>
-    <transition name="slide-fade">
-        <div v-if="openSidebar === false" @click="Sidebar">
-            <div
-                class="w-14 h-14 bg-teal-500 rounded-full flex justify-center justify-items-center text-center p-2 m-3 text-xl font-bold hover:text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-10" viewBox="0 0 24 24">
-                    <path fill="currentColor"
-                        d="M3 3h18a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1m6 2v14h11V5z" />
-                </svg>
-            </div>
-        </div>
-    </transition>
-
-    <div v-if="!unAuthorized" class="flex flex-row fixed bottom-0 bg-slate-200 p-5 py-2 rounded-t-2xl w-auto ml-5">
-        <div>
-            <div class="itbkk-fullname flex items-center text-md font-bold ">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    <path fill="currentColor" fill-opacity="0.25"
-                        d="M3 11c0-3.771 0-5.657 1.172-6.828S7.229 3 11 3h2c3.771 0 5.657 0 6.828 1.172S21 7.229 21 11v2c0 3.771 0 5.657-1.172 6.828S16.771 21 13 21h-2c-3.771 0-5.657 0-6.828-1.172S3 16.771 3 13z" />
-                    <circle cx="12" cy="10" r="4" fill="currentColor" />
-                    <path fill="currentColor" fill-rule="evenodd"
-                        d="M18.946 20.253a.23.23 0 0 1-.14.25C17.605 21 15.836 21 13 21h-2c-2.835 0-4.605 0-5.806-.498a.23.23 0 0 1-.14-.249C5.483 17.292 8.429 15 12 15s6.517 2.292 6.946 5.253"
-                        clip-rule="evenodd" />
-                </svg>
-                {{ name }}
-            </div>
-
-            <button @click="signOut" class="justify-items-end text-sm  font-bold mr-5 hover:text-rose-500">
-                Sign Out
-            </button>
-        </div>
-
+      <!-- Sidebar Links -->
+      <ul class="space-y-4">
+        <li>
+          <a
+            class="flex items-center space-x-3 hover:text-gray-200 cursor-pointer"
+            @click="OpenBoard"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
+              <path
+                d="M8.543 2.232a.75.75 0 0 0-1.085 0l-5.25 5.5A.75.75 0 0 0 2.75 9H4v4a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 1 1 2 0v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V9h1.25a.75.75 0 0 0 .543-1.268l-5.25-5.5Z"
+              />
+            </svg>
+            <span v-if="!collapsedSidebar">Home</span>
+          </a>
+        </li>
+        <li>
+          <a
+            class="flex items-center space-x-3 hover:text-gray-200 cursor-pointer"
+            @click="OpenBoard"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
+              <path
+                d="M5 3.5A1.5 1.5 0 0 1 6.5 2h3A1.5 1.5 0 0 1 11 3.5H5ZM4.5 5A1.5 1.5 0 0 0 3 6.5v.041a3.02 3.02 0 0 1 .5-.041h9c.17 0 .337.014.5.041V6.5A1.5 1.5 0 0 0 11.5 5h-7ZM12.5 8h-9A1.5 1.5 0 0 0 2 9.5v3A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 12.5 8Z"
+              />
+            </svg>
+            <span v-if="!collapsedSidebar">Personal Boards</span>
+          </a>
+        </li>
+        <li>
+          <a
+            class="flex items-center space-x-3 hover:text-gray-200 cursor-pointer"
+            @click="OpenBoard"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
+              />
+            </svg>
+            <span v-if="!collapsedSidebar">Collaborator Boards</span>
+          </a>
+        </li>
+      </ul>
     </div>
+  </transition>
+
+  <!-- Main Content -->
+  <div :class="openSidebar ? (collapsedSidebar ? 'ml-20' : 'ml-60') : 'ml-0'">
+    <div class="p-1">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+        <!-- Board cards -->
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
+/* Sidebar slide transition */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-    transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
-
 .slide-fade-enter-from {
-    transform: translateX(-100%);
-    opacity: 0;
+  transform: translateX(-100%);
+  opacity: 0;
 }
-
 .slide-fade-leave-to {
-    transform: translateX(-100%);
-    opacity: 0;
+  transform: translateX(-100%);
+  opacity: 0;
 }
 </style>
