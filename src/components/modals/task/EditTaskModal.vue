@@ -90,10 +90,11 @@ const invalidFiles = computed(() => {
       errors.push("Maximum of 10 files can be uploaded at a time.");
       break;
     }
-
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+    
+    if (file.size > 20 * 1024 * 1024) {
       oversizedFiles.push(file.name);
     }
+
     if (fileNames.has(file.name)) {
       duplicateNames.add(file.name);
     }
@@ -376,19 +377,27 @@ function downloadFile(file) {
                     </a>
 
                     <!-- File Info -->
-                    <a :href="file.fileUrl" :download="file.name" class="cursor-pointer" target="_blank"
-                      @click.prevent="downloadFile(file)">
+                    <a :href="file.fileUrl" class="cursor-pointer" target="_blank">
                       <div class="mt-3 w-full text-center">
                         <p class="text-sm font-medium">{{ file.name }}</p>
                       </div>
                     </a>
 
-                    <!-- Remove Button -->
-                    <button @click.prevent.stop="removeFile(index)"
-                      class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100 "
-                      aria-label="Remove File">
-                      <DeleteIcons />
-                    </button>
+                    <div class="flex items-center justify-center">
+                      <button @click.prevent="downloadFile(file)"
+                        class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100  mr-2"
+                        aria-label="Remove File">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                          <path fill="currentColor"
+                            d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11zm-6 4q-.825 0-1.412-.587T4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413T18 20z" />
+                        </svg>
+                      </button>
+                      <button @click.prevent="removeFile(index)" class="mt-2  w-8 h-8  rounded-full bg-sky-100 "
+                        aria-label="Remove File">
+                        <DeleteIcons />
+                      </button>
+                    </div>
+
                   </div>
                 </div>
               </div>

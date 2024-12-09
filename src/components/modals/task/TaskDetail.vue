@@ -3,7 +3,6 @@ import { ref, onMounted, computed, watch } from "vue";
 import { getItemById, getItems } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/stores/StatusManagement.js";
-import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 const route = useRoute();
 
 const emit = defineEmits(['closed'])
@@ -14,9 +13,6 @@ const props = defineProps({
 
 const task = ref(null);
 const statusmanager = ref(new StatusManagement());
-const { params } = useRoute();
-const routeId = Number(params.taskId);
-
 let boardId = null;
 let taskId = null;
 
@@ -31,8 +27,6 @@ watch(
   () => [route.name, route.params.taskId],
   async ([newRouteName, newTaskId]) => {
     if (newRouteName === 'taskdetail' && newTaskId) {
-      console.log("newTaskId", newTaskId);
-
       await fetchTaskDetails(newTaskId);
     }
   },
@@ -44,9 +38,23 @@ watch(
 const files = ref([]);
 const isImage = (file) => file.type.startsWith("image/");
 
+
+watch(files, (newFiles) => {
+  newFiles.forEach(async (file) => {
+    if (isImage(file) && !file.fileUrl) {
+      const response = await fetch(file.sourceUrl);
+      if (response.ok) {
+        file.fileUrl = URL.createObjectURL(await response.blob());
+      }
+    }
+  });
+});
+
 const getFilePreview = (file) => {
   return file.fileUrl || URL.createObjectURL(file);
 };
+
+
 
 async function fetchTaskDetails(id) {
   try {
@@ -64,6 +72,7 @@ async function fetchTaskDetails(id) {
 
     console.log("attachmentItem", attachmentItem);
 
+
     if (attachmentItem.data.length > 0) {
       attachmentItem.data.forEach((item) => {
         const file = new File([item.file], item.fileName, { type: item.fileType });
@@ -71,6 +80,8 @@ async function fetchTaskDetails(id) {
       });
 
       for (let i = 0; i < files.value.length; i++) {
+        console.log("File URL:", files.value[i].fileUrl);
+
         if (isImage(files.value[i])) {
           const fileName = decodeURIComponent(files.value[i].name);
           const response = await fetch(
@@ -194,14 +205,23 @@ function downloadFile(file) {
               </a>
 
 
-              <a :href="file.fileUrl" :download="file.name" class="cursor-pointer" target="_blank"
-                @click.prevent="downloadFile(file)">
+              <!-- File Info -->
+              <a :href="file.fileUrl" class="cursor-pointer" target="_blank">
                 <div class="mt-3 w-full text-center">
                   <p class="text-sm font-medium">{{ file.name }}</p>
                 </div>
               </a>
 
-
+              <div class="flex items-center justify-center">
+                <button @click.prevent="downloadFile(file)"
+                  class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100  mr-2"
+                  aria-label="Remove File">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                      d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11zm-6 4q-.825 0-1.412-.587T4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413T18 20z" />
+                  </svg>
+                </button>
+              </div>
 
             </div>
           </div>
