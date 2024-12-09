@@ -55,14 +55,14 @@ watch(
 
 const handleFiles = async (event) => {
   const selectedFiles = Array.from(event.target.files || event.dataTransfer.files);
-
+  for (let i = 0; i < selectedFiles.length; i++) {
+    selectedFiles[i].fileUrl = URL.createObjectURL(selectedFiles[i] || selectedFiles[i].fileUrl);
+  }
   files.value = [...files.value, ...selectedFiles];
 
-  for (let i = 0; i < files.value.length; i++) {
-    files.value[i].fileUrl = URL.createObjectURL(files.value[i]);
-  }
-  
 };
+
+
 
 function removeFile(index) {
   console.log(files.value[index]);
@@ -90,7 +90,7 @@ const invalidFiles = computed(() => {
       errors.push("Maximum of 10 files can be uploaded at a time.");
       break;
     }
-    
+
     if (file.size > 20 * 1024 * 1024) {
       oversizedFiles.push(file.name);
     }
@@ -131,9 +131,31 @@ const isSaveDisabled = computed(() => {
 
 
 const isImage = (file) => file.type.startsWith("image/");
-const getFilePreview = (file) => {
-  return file.fileUrl || URL.createObjectURL(file);
-};
+
+async function getFilePreview(file, id) {
+  const promises = files.value.map(async (file, i) => {
+    if (isImage(file)) {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${decodeURIComponent(file.name)}`,
+          { method: "GET" }
+        );
+        if (response.ok) {
+          const blob = await response.blob();
+          file.fileUrl = URL.createObjectURL(blob);
+        } else {
+          file.fileUrl = null;
+        }
+      } catch (error) {
+        console.error("Error fetching file preview:", error);
+        file.fileUrl = null;
+      }
+    }
+  });
+  await Promise.all(promises);
+}
+
+
 
 
 const initialTask = ref("");
@@ -165,21 +187,9 @@ async function fetchTaskDetails(id) {
         files.value = [...files.value, file];
       });
 
-      for (let i = 0; i < files.value.length; i++) {
-        if (isImage(files.value[i])) {
-          const fileName = decodeURIComponent(files.value[i].name);
-          const response = await fetch(
-            `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${fileName}`, {
-            method: "GET",
-          });
-          if (response.ok) {
-            files.value[i].fileUrl = URL.createObjectURL(await response.blob());
-          } else {
-            files.value[i].fileUrl = null;
-          }
-        }
-      }
+      getFilePreview(files, id);
     }
+
     initialFiles.value = files.value.map((file) => ({ name: file.name, size: file.size, type: file.type }));
 
 
@@ -366,7 +376,7 @@ function downloadFile(file) {
                     <!-- File Preview -->
                     <a :href="file.fileUrl" target="_blank"
                       class="block relative w-full h-20 overflow-hidden rounded-lg">
-                      <img v-if="isImage(file)" :src="file.fileUrl" alt="File Preview"
+                      <img v-if="isImage(file)" :src="decodeURI(file.fileUrl)" alt="File Preview"
                         class="w-full h-full object-cover" />
                       <div v-else class="flex items-center justify-center h-full w-full bg-sky-100">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-sky-500" viewBox="0 0 24 24">
