@@ -3,7 +3,6 @@ import { ref, onMounted, computed, watch } from "vue";
 import { getItemById, getItems } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/stores/StatusManagement.js";
-import { FileManagement } from "@/stores/FileManagement";
 const route = useRoute();
 
 const emit = defineEmits(['closed'])
@@ -14,7 +13,6 @@ const props = defineProps({
 
 const task = ref(null);
 const statusmanager = ref(new StatusManagement());
-const filemanager = ref(new FileManagement());
 let boardId = null;
 let taskId = null;
 
@@ -38,41 +36,27 @@ watch(
 // file handle
 
 const files = ref([]);
-const isImage = (file) => file && file.fileType && file.fileType.includes("image/");
+const isImage = (file) => file.fileType.includes("image/");
 
-
-watch(files, (newFiles) => {
-  newFiles.forEach(async (file) => {
-    if (isImage(file) && !file.fileUrl) {
-      const response = await fetch(file.sourceUrl);
-      if (response.ok) {
-        file.fileUrl = URL.createObjectURL(await response.blob());
-      }
-    }
-  });
-});
 
 
 async function getFilePreview(file, id) {
-  const promises = files.value.map(async (file, i) => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${decodeURIComponent(file.name)}`,
-          { method: "GET" }
-        );
-        if (response.ok) {
-          const blob = await response.blob();
-          file.fileUrl = URL.createObjectURL(blob);
-        } else {
-          file.fileUrl = null;
-        }
-      } catch (error) {
-        console.error("Error fetching file preview:", error);
-        file.fileUrl = null;
-      }
+  try {
+    for (let i = 0; i < file.value.length; i++) {
+
+      file.value[i].fileUrl = null;
+      let fileName = decodeURIComponent(file.value[i].fileName);
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${fileName}`,
+        { method: "GET" }
+      );
+      const blob = await response.blob();
+      file.value[i].fileUrl = URL.createObjectURL(blob);
     }
-  );
-  await Promise.all(promises);
+  } catch (error) {
+    console.error("Error fetching file preview:", error);
+    file.value = [];
+  }
 }
 
 async function fetchTaskDetails(id) {
@@ -89,17 +73,11 @@ async function fetchTaskDetails(id) {
     statusmanager.value.setStatuses(statusItem);
 
     const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${id}`);
-    filemanager.value.setFiles(attachmentItem.data);
-
-    console.log(filemanager.value.getFiles());
-    
     if (attachmentItem.data.length > 0) {
       attachmentItem.data.forEach((item) => {
-        const file = new File([item.file], item.fileName, { type: item.fileType });
-        files.value = [...files.value, file];
+        files.value.push(item);
       });
-
-      getFilePreview(files, id);
+      await getFilePreview(files, id);
     }
 
   } catch (error) {
@@ -107,7 +85,11 @@ async function fetchTaskDetails(id) {
   }
 };
 
-
+const handleClose = () => {
+  files.value = [];
+  files.fileUrl = null;
+  emit('closed');
+};
 
 
 
@@ -143,7 +125,7 @@ const formatToLocalTime = (dateTimeString) => {
 function downloadFile(file) {
   const link = document.createElement("a");
   link.href = file.fileUrl;
-  link.download = file.name || "download";
+  link.download = file.fileName || "download";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -190,15 +172,15 @@ function downloadFile(file) {
           <h1 class="font-bold itbkk-updated-on">Updated On: {{ updatedOn }}</h1>
         </div>
 
-        <div  v-if="filemanager.getFiles().length > 1" class="bg-slate-50 p-3 rounded-lg col-start-1 col-span-3">
+        <div v-if="files.length > 0" class="bg-slate-50 p-3 rounded-lg col-start-1 col-span-3">
           <h1 class="font-bold pb-2">Attachment Preview</h1>
           <div class="flex flex-wrap gap-4">
-            <div v-for="(file, index) in filemanager.getFiles()" :key="index"
+            <div v-for="(file, index) in files" :key="index"
               class="flex flex-col items-center justify-between bg-sky-50 p-3 rounded-lg shadow hover:shadow-md transition-shadow duration-200 w-36">
 
-              <a :href="file.fileUrl" target="_blank" :download="file.name"
+              <a :href="file.fileUrl" target="_blank" :download="file.fileName"
                 class="block relative w-full h-20 overflow-hidden rounded-lg">
-                <img v-if="isImage(file)" :src="encodeURI(file.fileUrl)" alt="File Preview"
+                <img v-if="isImage(file)" :src="file.fileUrl" alt="File Preview"
                   class="w-full h-full object-cover" />
                 <div v-else class="flex items-center justify-center h-full w-full bg-sky-100">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-sky-500" viewBox="0 0 24 24">
@@ -233,7 +215,7 @@ function downloadFile(file) {
 
         <div class="flex justify-end mt-4 col-start-3">
           <RouterLink :to="{ name: 'task' }">
-            <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="emit('closed')">Close</button>
+            <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="handleClose">Close</button>
           </RouterLink>
         </div>
       </div>
