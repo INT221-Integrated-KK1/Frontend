@@ -35,6 +35,7 @@ let task = reactive({
 
 const files = ref([]);
 const removeFiles = ref([]);
+const addFiles = ref([]);
 
 
 onMounted(async () => {
@@ -60,13 +61,17 @@ const handleFiles = async (event) => {
   }
   files.value = [...files.value, ...selectedFiles];
 
+  addFiles.value = [...selectedFiles];
 };
 
 
 
 function removeFile(index) {
-  console.log(files.value[index]);
-  removeFiles.value.push(files.value[index]);
+  if (addFiles.value.includes(files.value[index])) {
+    addFiles.value.splice(addFiles.value.indexOf(files.value[index]), 1);
+  } else {
+    removeFiles.value.push(files.value[index]);
+  }
   files.value.splice(index, 1);
 }
 
@@ -79,21 +84,17 @@ const invalidFiles = computed(() => {
   const errors = [];
 
   for (const file of files.value) {
-
     if (files.value.length > 10) {
       errors.push("Maximum of 10 files can be uploaded at a time.");
       break;
     }
-
     if (file.size > 20 * 1024 * 1024) {
       oversizedFiles.push(file.name);
     }
-
     if (fileNames.has(file.name)) {
       duplicateNames.add(file.name);
     }
     fileNames.add(file.name);
-
   }
 
   if (oversizedFiles.length > 0) {
@@ -124,29 +125,33 @@ const isSaveDisabled = computed(() => {
 });
 
 
-const isImage = (file) => file.type.startsWith("image/");
+const isImage = (file) => {
+  if (file.type) {
+    return file.type.includes("image/");
+  } else if (file.fileType) {
+    return file.fileType.includes("image/")
+  } else {
+    return false;
+  }
+};
 
 async function getFilePreview(file, id) {
-  const promises = files.value.map(async (file, i) => {
-    if (isImage(file)) {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${decodeURIComponent(file.name)}`,
-          { method: "GET" }
-        );
-        if (response.ok) {
-          const blob = await response.blob();
-          file.fileUrl = URL.createObjectURL(blob);
-        } else {
-          file.fileUrl = null;
-        }
-      } catch (error) {
-        console.error("Error fetching file preview:", error);
-        file.fileUrl = null;
-      }
+  try {
+    for (let i = 0; i < file.value.length; i++) {
+      file.value[i].fileUrl = null;
+      let fileName = decodeURIComponent(file.value[i].name);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${fileName}`,
+        { method: "GET" }
+      );
+      const blob = await response.blob();
+      file.value[i].fileUrl = URL.createObjectURL(blob);
     }
-  });
-  await Promise.all(promises);
+  } catch (error) {
+    console.error("Error fetching file preview:", error);
+    file.value = [];
+  }
 }
 
 
@@ -174,14 +179,18 @@ async function fetchTaskDetails(id) {
     };
 
     const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${id}`);
-
     if (attachmentItem.data.length > 0) {
       attachmentItem.data.forEach((item) => {
-        const file = new File([item.file], item.fileName, { type: item.fileType });
-        files.value = [...files.value, file];
+        files.value.push(
+          {
+            name: item.fileName,
+            type: item.fileType,
+            fileUrl: item.fileUrl,
+          }
+        );
       });
 
-      getFilePreview(files, id);
+      await getFilePreview(files, id);
     }
 
     initialFiles.value = files.value.map((file) => ({ name: file.name, size: file.size, type: file.type }));
@@ -207,8 +216,6 @@ async function fetchTaskDetails(id) {
     task.attachmentItem = attachmentItem.data;
 
     initialTask.value = JSON.stringify(task);
-    console.log(files.value);
-
   } catch (error) {
     console.error("Error fetching task details:", error);
   }
@@ -236,19 +243,17 @@ const formatToLocalTime = (dateTimeString) => {
 
 const isFormModified = computed(() => {
   const isTaskModified = JSON.stringify(task) !== initialTask.value;
-  const areFilesModified = files.value.length !== initialFiles.value.length ;
+  const areFilesModified = files.value.length !== initialFiles.value.length;
   return isTaskModified || areFilesModified || removeFiles.value.length > 0;
 });
 
 
 const taskEdited = () => {
-  console.log("Form submitted");
   if (isFormModified.value) {
     emit("taskEdited", task, task.id);
-    console.log("Task Edited Emitted");
 
     if (files.value.length !== initialFiles.value.length || removeFiles.value.length > 0) {
-      emit("filesAdded", files.value, task.id, removeFiles.value);
+      emit("filesAdded", addFiles.value, task.id, removeFiles.value);
       removeFiles.value = [];
     }
   }
@@ -259,6 +264,7 @@ const taskEdited = () => {
 const handleClose = () => {
   taskId = null;
   removeFiles.value = [];
+  files.value = [];
   emit("close");
 };
 
@@ -369,7 +375,7 @@ function downloadFile(file) {
                     <!-- File Preview -->
                     <a :href="file.fileUrl" target="_blank"
                       class="block relative w-full h-20 overflow-hidden rounded-lg">
-                      <img v-if="isImage(file)" :src="decodeURI(file.fileUrl)" alt="File Preview"
+                      <img v-if="isImage(file)" :src="file.fileUrl" alt="File Preview"
                         class="w-full h-full object-cover" />
                       <div v-else class="flex items-center justify-center h-full w-full bg-sky-100">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-sky-500" viewBox="0 0 24 24">

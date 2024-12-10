@@ -319,18 +319,19 @@ const getStatusClass = (status) => {
 
 // ----------------------------------- attachment handler -----------------------------------
 
-async function handleFiles(files, taskId, removeFiles) {
+async function handleFiles(addFiles, taskId, removeFiles) {
   try {
-    if (removeFiles) {
-      console.log("Removing files:", removeFiles);
+
+    if (removeFiles && removeFiles.length > 0) {
       await handleRemoveFiles(taskId, removeFiles);
     }
 
-    if (files !== taskmanager.getTaskById(taskId).attachmentItem) {
-      await handleAddFiles(taskId, files);
+    if (addFiles && addFiles.length > 0) {
+      await handleAddFiles(taskId, addFiles);
     }
 
-    console.log("File operations completed successfully.");
+    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${taskId}`);
+    taskmanager.editTask(taskId, { attachments: attachmentItem.data.length });
   } catch (error) {
     console.error("Error during file operations:", error);
   }
@@ -343,18 +344,11 @@ async function handleAddFiles(taskId, files) {
       formData.append("files", files[i]);
     }
 
-    const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
+    await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
       method: "POST",
       body: formData,
     });
 
-    if (response.ok) {
-      const result = await response.json();
-      console.log("Files uploaded successfully:", result);
-      taskmanager.editTask(taskId, { attachments: result.data.length });
-    } else {
-      console.error("Error adding files:", response);
-    }
   } catch (error) {
     console.error("Error during file addition:", error);
   }
@@ -367,23 +361,15 @@ async function handleRemoveFiles(taskId, removeFiles) {
         .getTaskById(taskId)
         .attachmentItem.find((attachment) => attachment.fileName === removeFiles[i].name).id;
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${fileId}`, {
+      await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${fileId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      if (response.ok) {
-        console.log("File deleted successfully:", removeFiles[i].name);
-        taskmanager.editTask(taskId, {
-          attachments: taskmanager.getTaskById(taskId).attachments - 1,
-        });
-      } else {
-        console.error("Error deleting file:", removeFiles[i].name, response);
-      }
     } catch (error) {
-      console.error("Error during file removal:", error, removeFiles[i]);
+      console.error("Error during file removal:", error);
     }
   }
 }
