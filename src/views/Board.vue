@@ -1,34 +1,40 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import Sidebar from "@/components/Sidebar.vue";
-import AddBoardModal from "@/components/modals/board/AddBoardModal.vue"; // Import AddBoardModal component
-import LeaveBoardModal from "@/components/modals/board/LeaveBoardModal.vue";
-import AlertBox from "@/components/AlertBox.vue";
-import { getItems } from "@/libs/fetchUtils";
-import { BoardManagement } from "@/libs/BoardManagement.js";
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import Sidebar from '@/components/Sidebar.vue';
+import AddBoardModal from '@/components/modals/board/AddBoardModal.vue';
+import { getItems } from '@/libs/fetchUtils';
+import { BoardManagement } from '@/libs/BoardManagement';
+import LeaveBoardModal from '@/components/modals/board/LeaveBoardModal.vue';
+import AlertBox from '@/components/AlertBox.vue';
 
 const router = useRouter();
-const emit = defineEmits(["save-board-sidebar"]);
 const boardmanager = ref(new BoardManagement());
 const personalBoards = ref([]);
 const collabBoards = ref([]);
+const showAddModal = ref(false); // State to control the visibility of the AddBoardModal
 const showRemoveModal = ref(false);
-const showAddModal = ref(false); // State for AddBoardModal visibility
-const boardId = ref("");
-const boardName = ref("");
-const boardType = ref("");
-const tableType = ref("board");
+const boardId = ref('');
+const boardName = ref('');
+const boardType = ref('');
+const tableType = ref('board');
 const showDeleted = ref(false);
 const showDeletedError = ref(false);
 const isLoading = ref(false);
 
 const openAddModal = () => {
-  showAddModal.value = true; // Show AddBoardModal
+  showAddModal.value = true;
 };
 
 const closeAddModal = () => {
-  showAddModal.value = false; // Hide AddBoardModal
+  showAddModal.value = false;
+};
+
+const openDeleteModal = (id, name) => {
+  boardType.value = 'personal';
+  showRemoveModal.value = true;
+  boardId.value = id;
+  boardName.value = name;
 };
 
 onMounted(async () => {
@@ -39,7 +45,7 @@ onMounted(async () => {
     personalBoards.value = items.personalBoards;
     collabBoards.value = items.collabBoards;
   } catch (error) {
-    console.error("Error fetching boards:", error);
+    console.error('Error fetching boards:', error);
   } finally {
     isLoading.value = false;
   }
@@ -48,8 +54,14 @@ onMounted(async () => {
 
 <template>
   <div class="flex">
-    <Sidebar />
+    <!-- Sidebar -->
+    <div>
+      <Sidebar />
+    </div>
+
+    <!-- Main Content -->
     <div class="w-screen bg-slate-50">
+      <!-- Alert -->
       <AlertBox
         :tableType="tableType"
         :showDeleted="showDeleted"
@@ -59,7 +71,6 @@ onMounted(async () => {
       <!-- Personal Boards -->
       <h1 class="text-5xl text-center font-bold mt-10">Personal Boards</h1>
       <div class="mt-10 mx-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        <!-- Add New Board Button -->
         <div
           @click="openAddModal"
           class="itbkk-button-create rounded-xl p-4 cursor-pointer transition transform hover:scale-105 duration-300 ease-in-out text-xl font-semibold text-center flex items-center justify-center h-40 w-auto border-dashed border-2 border-slate-400"
@@ -73,7 +84,9 @@ onMounted(async () => {
           :key="index"
           class="card-wrapper"
         >
-          <div class="card bg-white shadow-md rounded-lg transition transform hover:scale-105 relative overflow-hidden">
+          <div
+            class="card bg-white shadow-md rounded-lg transition transform hover:scale-105 relative overflow-hidden"
+          >
             <div class="h-24 bg-gradient-to-r from-cyan-300 to-teal-300"></div>
             <div class="p-5">
               <h2
@@ -103,7 +116,9 @@ onMounted(async () => {
         class="mt-10 mx-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20"
       >
         <div v-for="(board, index) in collabBoards" :key="index" class="card-wrapper">
-          <div class="card bg-white shadow-md rounded-lg transition transform hover:scale-105 relative overflow-hidden">
+          <div
+            class="card bg-white shadow-md rounded-lg transition transform hover:scale-105 relative overflow-hidden"
+          >
             <div class="h-24 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
             <div class="p-5">
               <h2
@@ -124,19 +139,7 @@ onMounted(async () => {
   </div>
 
   <!-- Add Board Modal -->
-  <AddBoardModal
-    v-if="showAddModal"
-    @close="closeAddModal"
-  />
-
-  <LeaveBoardModal
-    :showRemoveModal="showRemoveModal"
-    :boardId="boardId"
-    :boardName="boardName"
-    :boardType="boardType"
-    @leaveBoardCollab="leaveBoard(boardId)"
-    @closeModal="closeModal"
-  />
+  <AddBoardModal v-if="showAddModal" @close="closeAddModal" />
 </template>
 
 <style scoped>
