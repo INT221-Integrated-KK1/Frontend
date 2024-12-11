@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils.js";
-import { TaskManagement } from "@/libs/TaskManagement.js";
+import { TaskManagement } from "@/stores/TaskManagement.js";
 import Sidebar from "@/components/Sidebar.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
 import EditTaskModal from "@/components/modals/task/EditTaskModal.vue";
@@ -15,17 +15,19 @@ import BoardVisibility from "@/components/modals/board/BoardVisibility.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
 import router from "@/router";
+import LoadingPage from "./LoadingPage.vue";
 
 const readAccess = ref(false);
 const unAuthorized = localStorage.getItem('token') === null;
 
-const taskmanager = ref(new TaskManagement());
+const taskmanager = TaskManagement();
 const todo = ref([]);
 
 const taskId = ref(null);
 const EmptyStyle = "italic text-slate-400 font-semibold";
 
 const statuses = ref([]);
+const isLoading = ref(false);
 
 
 const showEditModal = ref(false);
@@ -52,9 +54,10 @@ const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
 const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 
-
 onMounted(async () => {
   try {
+    isLoading.value = true;
+
     const items = await getItems(taskUrl);
     if (items.status === 403) {
       window.alert("Access denied, you do not have permission to view this board");
@@ -63,6 +66,7 @@ onMounted(async () => {
       window.alert("Unauthorized, please login to view this board");
       router.push({ name: 'login' });
     }
+
     const statusItems = await getItems(statusUrl);
     const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     const collabItems = await getItems(collabUrl);
@@ -72,16 +76,24 @@ onMounted(async () => {
         if (collabItems[i].accessRight === "READ") {
           readAccess.value = true;
         }
-      } 
+      }
     }
+
+    for (let i = 0; i < items.length; i++) {
+      const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${items[i].id}`);
+      items[i] = { ...items[i], attachments: attachmentItem.data.length, attachmentItem: attachmentItem.data };
+    }
+
     board.value = boardItems;
     todo.value = items;
     statuses.value = statusItems;
-    taskmanager.value.setTasks(items);
-    taskmanager.value.sortTask("default");
-    
+    taskmanager.setTasks(items);
+    taskmanager.sortTask("default");
+
   } catch (error) {
     console.error("Error fetching task details:", error);
+  } finally {
+    isLoading.value = false;
   }
 
 });
@@ -89,10 +101,15 @@ onMounted(async () => {
 // ----------------------------------- add handler -----------------------------------
 
 async function handleTaskAdded(addedTasks) {
-  if (addedTasks !== null) {
+  if (addedTasks.status >= 400) {
+    showAddedError.value = true;
+    setTimeout(() => {
+      showAddedError.value = false;
+    }, 3000);
+  } else if (addedTasks !== null || addedTasks.title !== undefined) {
     addedTitle.value = addedTasks.title;
-    taskmanager.value.addTask({ ...addedTasks });
-    todo.value = taskmanager.value.getTask();
+    taskmanager.addTask({ ...addedTasks });
+    todo.value = taskmanager.getTask();
     showAdded.value = true;
     setTimeout(() => {
       showAdded.value = false;
@@ -118,8 +135,8 @@ const handleClose = () => {
 };
 
 const handleTaskDeleted = (deletedid) => {
-  taskmanager.value.deleteTask(deletedid);
-  todo.value = taskmanager.value.getTask();
+  taskmanager.deleteTask(deletedid);
+  todo.value = taskmanager.getTask();
   showDeleteModal.value = false;
   showDeleted.value = true;
   setTimeout(() => {
@@ -140,21 +157,8 @@ const handleTaskDeletedNotfound = () => {
 const closeEditModal = () => {
   showEditModal.value = false;
 };
-const idEdit = ref(0);
-async function editHandler(id) {
-  const items = await getItemById(taskUrl, id);
-  if (items !== undefined) {
-    showEditModal.value = true;
-    idEdit.value = id;
-  } else {
-    showUpdatedError.value = true;
-    setTimeout(() => {
-      showUpdatedError.value = false;
-    }, 3000);
-  }
-}
 
-const saveChanges = async (getTaskProp, id) => {
+const handleTaskEdit = async (getTaskProp, id) => {
 
   const checkinput = ref(0);
 
@@ -190,9 +194,14 @@ const saveChanges = async (getTaskProp, id) => {
 
   const existingTask = await getItemById(taskUrl, id);
   const existingStatus = await getItems(statusUrl);
-  const editedTaskStatus = await getItemById(statusUrl, editedTask.status);
 
-  if (!existingTask) {
+  if (editedTask === existingTask) {
+    closeEditModal();
+    showUpdatedError.value = true;
+    setTimeout(() => {
+      showUpdatedError.value = false;
+    }, 3000);
+  } else if (!existingTask) {
     closeEditModal();
     showUpdatedError.value = true;
     setTimeout(() => {
@@ -214,18 +223,7 @@ const saveChanges = async (getTaskProp, id) => {
         }, 3000);
         closeEditModal();
       } else {
-        const ShowEditedTask = {
-          id: id,
-          title: getTaskProp.title,
-          description: getTaskProp.description,
-          assignees: getTaskProp.assignees,
-          status: {
-            id: getTaskProp.status,
-            name: editedTaskStatus.name
-          }
-        };
-        taskmanager.value.editTask(id, { ...ShowEditedTask });
-
+        taskmanager.editTask(id, { ...item });
         closeEditModal();
         showUpdated.value = true;
         setTimeout(() => {
@@ -238,7 +236,7 @@ const saveChanges = async (getTaskProp, id) => {
       showUpdatedError.value = true;
       setTimeout(() => {
         showUpdatedError.value = false;
-      }, 3000); taskId
+      }, 3000);
     }
   }
 }
@@ -246,10 +244,10 @@ const saveChanges = async (getTaskProp, id) => {
 
 // ----------------------------------- task details handler -----------------------------------
 
-function taskDetailsHandler(id) {
-  taskId.value = id;
-  showTaskDetail.value = true;
-}
+// function taskDetailsHandler(id) {
+//   taskId.value = id;
+//   showTaskDetail.value = true;
+// }
 
 function isTaskDetailModalOpen() {
   showTaskDetail.value = false;
@@ -263,15 +261,15 @@ function handleSort() {
   const currentSortType = sortType.value;
   switch (currentSortType) {
     case "asc":
-      taskmanager.value.sortTask("asc");
+      taskmanager.sortTask("asc");
       sortType.value = "desc";
       break;
     case "desc":
-      taskmanager.value.sortTask("desc");
+      taskmanager.sortTask("desc");
       sortType.value = "default";
       break;
     default:
-      taskmanager.value.sortTask("default");
+      taskmanager.sortTask("default");
       sortType.value = "asc";
       break;
   }
@@ -284,8 +282,8 @@ const selectedStatuses = ref([]);
 const clearSelectedStatues = async () => {
   selectedStatuses.value = [];
   const items = await getItems(taskUrl);
-  taskmanager.value.setTasks(items);
-  taskmanager.value.getTask();
+  taskmanager.setTasks(items);
+  taskmanager.getTask();
 };
 
 const applyFilter = async (filter) => {
@@ -298,7 +296,7 @@ const applyFilter = async (filter) => {
       let tasksWithSelectedStatus = todo.value.filter(task => task.status.name.includes(selectedStatuses.value[i]));
       filteredTasks = [...filteredTasks, ...tasksWithSelectedStatus];
     }
-    taskmanager.value.setTasks(filteredTasks);
+    taskmanager.setTasks(filteredTasks);
   }
 };
 
@@ -319,12 +317,71 @@ const getStatusClass = (status) => {
   }
 };
 
+// ----------------------------------- attachment handler -----------------------------------
+
+async function handleFiles(addFiles, taskId, removeFiles) {
+  try {
+
+    if (removeFiles && removeFiles.length > 0) {
+      await handleRemoveFiles(taskId, removeFiles);
+    }
+
+    if (addFiles && addFiles.length > 0) {
+      await handleAddFiles(taskId, addFiles);
+    }
+
+    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${taskId}`);
+    taskmanager.editTask(taskId, { attachments: attachmentItem.data.length });
+  } catch (error) {
+    console.error("Error during file operations:", error);
+  }
+}
+
+async function handleAddFiles(taskId, files) {
+  try {
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
+
+    await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
+      method: "POST",
+      body: formData,
+    });
+
+  } catch (error) {
+    console.error("Error during file addition:", error);
+  }
+}
+
+async function handleRemoveFiles(taskId, removeFiles) {
+  for (let i = 0; i < removeFiles.length; i++) {
+    try {
+      const fileId = taskmanager
+        .getTaskById(taskId)
+        .attachmentItem.find((attachment) => attachment.fileName === removeFiles[i].name).id;
+
+      await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${fileId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+    } catch (error) {
+      console.error("Error during file removal:", error);
+    }
+  }
+}
+
+
+
 
 
 </script>
 
 <template>
-
+  <LoadingPage :isLoading="isLoading" />
   <div class="flex">
     <div>
       <Sidebar />
@@ -402,6 +459,7 @@ const getStatusClass = (status) => {
               <th class="w-20"></th>
               <th class="font-bold">Title</th>
               <th class="font-bold">Assignees</th>
+              <th class="font-bold">Attachment</th>
               <th class="font-bold">
                 <Sort @click="handleSort" />
               </th>
@@ -417,16 +475,20 @@ const getStatusClass = (status) => {
 
               <th class="font-semibold text-center">{{ index + 1 }}</th>
 
-              <router-link :to="{ name: 'taskdetail', params: { boardId: params.boardId, taskId: task.id } }">
-                <td @click="taskDetailsHandler(task.id)" class="itbkk-title cursor-pointer">
-                  <span class=" block py-2 text-center">{{ task.title }}</span>
-                </td>
-              </router-link>
 
-              <td class="itbkk-assignees" :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
+              <td class="itbkk-title text-center">
+                <router-link :to="{ name: 'taskdetail', params: { boardId: params.boardId, taskId: task.id } }">
+                  {{ task.title }}
+                </router-link>
+              </td>
+
+              <td class="itbkk-assignees text-center"
+                :class="task.assignees === null || task.assignees === '' ? EmptyStyle : ''">
                 {{ task.assignees === null || task.assignees === "" ? "Unassigned" : task.assignees
                 }}
               </td>
+
+              <td class="text-center"> {{ task.attachments > 0 ? task.attachments : '-' }}</td>
 
 
               <td class="itbkk-status itbkk-button-action" :class="getStatusClass(task.status.name).class">
@@ -442,13 +504,13 @@ const getStatusClass = (status) => {
                 </div>
                 <div v-else>
                   <router-link :to="{ name: 'editTaskModal', params: { boardId: params.boardId, taskId: task.id } }">
-                    <td class="itbkk-button-edit" @click="editHandler(task.id)">
+                    <td class="itbkk-button-edit">
                       <EditIcons :isOff="readAccess || unAuthorized" />
                     </td>
                   </router-link>
                 </div>
 
-                <div v-if="readAccess === true|| unAuthorized" class="tooltip"
+                <div v-if="readAccess === true || unAuthorized" class="tooltip"
                   data-tip="You need to be board owner or has write access to perform this action">
                   <td class="itbkk-button-delete cursor-not-allowed">
                     <!-- <DeleteOffIcons /> -->
@@ -479,12 +541,11 @@ const getStatusClass = (status) => {
   </Teleport>
 
   <Teleport to="body">
-    <EditTaskModal :showEditModal="showEditModal" :idEdit="idEdit" @close="closeEditModal()"
-      @saveChanges="saveChanges" />
+    <EditTaskModal @close="closeEditModal" @taskEdited="handleTaskEdit" @filesAdded="handleFiles" />
   </Teleport>
 
   <Teleport to="body">
-    <TaskDetail :id="taskId" v-if="showTaskDetail" @closed="isTaskDetailModalOpen" />
+    <TaskDetail @closed="isTaskDetailModalOpen" />
   </Teleport>
 
   <Teleport to="body">

@@ -1,12 +1,12 @@
-<script setup>
-import { ref, onMounted } from 'vue';
+<s
+import { onBeforeMount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
-import AddBoardModal from '@/components/modals/board/AddBoardModal.vue';
-import { getItems } from '@/libs/fetchUtils';
-import { BoardManagement } from '@/libs/BoardManagement';
+import { deleteItemById, getItems } from '@/libs/fetchUtils';
+import { BoardManagement } from '@/stores/BoardManagement';
 import LeaveBoardModal from '@/components/modals/board/LeaveBoardModal.vue';
 import AlertBox from '@/components/AlertBox.vue';
+import LoadingPage from './LoadingPage.vue';
 
 const router = useRouter();
 const boardmanager = ref(new BoardManagement());
@@ -20,6 +20,7 @@ const boardType = ref('');
 const tableType = ref('board');
 const showDeleted = ref(false);
 const showDeletedError = ref(false);
+const showEditModal = ref(false);
 const isLoading = ref(false);
 
 const openAddModal = () => {
@@ -37,6 +38,42 @@ const openDeleteModal = (id, name) => {
   boardName.value = name;
 };
 
+const openEditModal = (id, name) => {
+  showEditModal.value = true;
+  boardId.value = id;
+  boardName.value = name;
+};
+
+const closeModal = () => {
+  showRemoveModal.value = false;
+};
+
+const oid = localStorage.getItem('oid')
+
+async function leaveBoard(boardId) {
+  try {
+    const deleteCollab = await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, oid);
+    if (deleteCollab === undefined || deleteCollab === null) {
+      console.log('Error deleting collab');
+    } else {
+      boardmanager.value.deleteBoard(boardId, "collab");
+      tableType.value = "boardCollab";
+      showDeleted.value = true;
+      setTimeout(() => {
+        showDeleted.value = false;
+      }, 3000);
+    }
+  } catch (error) {
+    console.error('Error deleting collab:', error);
+    showDeletedError.value = true;
+    setTimeout(() => {
+      showDeletedError.value = false;
+    }, 3000);
+  }
+
+}
+
+
 onMounted(async () => {
   try {
     isLoading.value = true;
@@ -53,8 +90,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex">
-    <!-- Sidebar -->
+  <LoadingPage :isLoading="isLoading"/>
+  <div class="flex ">
     <div>
       <Sidebar />
     </div>
@@ -102,7 +139,7 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-
+      
       <!-- Collaborator Boards -->
       <h1 class="text-5xl text-center font-bold mt-20 mb-10">Collaborator Boards</h1>
       <div
@@ -131,12 +168,17 @@ onMounted(async () => {
             </div>
             <div class="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs shadow">
               {{ board.visibility.toUpperCase() }}
+
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  
+  <LeaveBoardModal :showRemoveModal="showRemoveModal" :showEditModal="showEditModal" :boardId="boardId"
+    :boardName="boardName" :boardType="boardType" @leaveBoardCollab="leaveBoard(boardId)"
+    @deleteBoard="deleteBoard(boardId)" @closeModal="closeModal" />
 
   <!-- Add Board Modal -->
   <AddBoardModal v-if="showAddModal" @close="closeAddModal" />

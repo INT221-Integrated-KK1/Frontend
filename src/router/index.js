@@ -7,6 +7,7 @@ import Board from "@/views/Board.vue";
 import TaskTable from "@/views/TaskTable.vue";
 import StatusTable from "@/views/StatusTable.vue";
 import CollaboratorTable from "@/views/CollaboratorTable.vue";
+import InviteCollaborator from "@/views/InviteCollaborator.vue";
 
 import TaskDetail from "@/components/modals/task/TaskDetail.vue";
 import AddTaskModal from "@/components/modals/task/AddTaskModal.vue";
@@ -36,12 +37,10 @@ const checkWriteAccess = async (to, from, next) => {
 
     const isOwner = boardItems.owner.oid === userOid;
     const hasWriteAccess = collabMembers.some(
-      (member) => member.accessRight === "WRITE" 
+      (member) => member.accessRight === "WRITE"
     );
 
     if (isOwner || hasWriteAccess) {
-      console.log("aaaa    " + isOwner, hasWriteAccess);
-      
       next();
     } else {
       window.alert(
@@ -55,6 +54,19 @@ const checkWriteAccess = async (to, from, next) => {
       "An error occurred while fetching board details. Please try again later."
     );
     router.go(-1);
+  }
+};
+
+const checkIsLogin = async (to, from, next) => {
+  const haveToken = localStorage.getItem("token");
+
+  if (!haveToken) {
+    next({
+      name: "login",
+      query: { redirect: to.fullPath },
+    });
+  } else {
+    next();
   }
 };
 
@@ -155,6 +167,14 @@ const router = createRouter({
       component: CollaboratorTable,
     },
     {
+      path: "/board/:boardId/collab/invitations/:invitationId",
+      name: "invitations",
+      component: InviteCollaborator,
+      beforeEnter: async (to, from, next) => {
+        await checkIsLogin(to, from, next);
+      },
+    },
+    {
       path: "/forbidden",
       name: "Forbidden",
       component: AccessDenied,
@@ -230,6 +250,14 @@ router.beforeEach(async (to, from, next) => {
     if (res.status === 401) {
       localStorage.clear();
       next({ name: "login" });
+    } else if (from.name === "invitations") {
+      next({
+        name: "invitations",
+        params: {
+          invitationId: from.params.invitationId,
+          boardId: from.params.invitationId,
+        },
+      });
     } else {
       localStorage.setItem("token", res.token);
       next();

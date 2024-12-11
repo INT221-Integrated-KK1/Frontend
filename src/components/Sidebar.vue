@@ -1,4 +1,5 @@
 <script setup>
+
 import { useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
 
@@ -9,6 +10,7 @@ const openSidebar = ref(true); // Controls the visibility of the sidebar
 const collapsedSidebar = ref(false); // Controls the expanded/narrow state of the sidebar
 const userName = localStorage.getItem("username") || "Guest";
 const userRole = localStorage.getItem("role") || "User";
+
 
 const toggleCollapseSidebar = () => {
   collapsedSidebar.value = !collapsedSidebar.value;
@@ -65,6 +67,7 @@ onMounted(() => {
               />
             </svg>
           </button>
+
         </div>
         <hr class="border-gray-400 mb-4" />
 

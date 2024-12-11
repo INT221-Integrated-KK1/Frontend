@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { StatusManagement } from "@/libs/StatusManagement.js";
+import { StatusManagement } from "@/stores/StatusManagement.js";
 import { getItems, getItemById, editItem } from "@/libs/fetchUtils";
 import Sidebar from "@/components/Sidebar.vue";
 import AddStatusModal from "@/components/modals/status/AddStatusModal.vue";
@@ -10,15 +10,17 @@ import AlertBox from "@/components/AlertBox.vue";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
 import EditIcons from "@/components/icons/EditIcons.vue";
 import { useRoute } from 'vue-router';
+import LoadingPage from "./LoadingPage.vue";
 
 const { params } = useRoute();
 const boardId = params.boardId;
 const readAccess = ref(false);
+const isLoading = ref(false);
 
 const unAuthorized = localStorage.getItem('token') === null;
 const board = ref({});
 const tableType = "status";
-const statusmanager = ref(new StatusManagement());
+const statusmanager = StatusManagement();
 const todo = ref([]);
 const isDefault = (status) => status.name === "No Status" || status.name === "Done";
 
@@ -26,6 +28,7 @@ const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
 const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
 onMounted(async () => {
     try {
+        isLoading.value = true;
         const items = await getItems(statusUrl);
         if (items.status === 403) {
             window.alert("Access denied, you do not have permission to view this board");
@@ -35,7 +38,7 @@ onMounted(async () => {
             router.push({ name: 'login' });
         }
         todo.value = items;
-        statusmanager.value.setStatuses(items);
+        statusmanager.setStatuses(items);
         const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
         board.value = boardItems;
         const collabItems = await getItems(collabUrl);
@@ -50,6 +53,8 @@ onMounted(async () => {
 
     } catch (error) {
         console.error("Error fetching tasks:", error);
+    } finally {
+        isLoading.value = false;
     }
 });
 
@@ -61,8 +66,8 @@ const addedTitle = ref("");
 
 const handleStatusAdded = (items) => {
     if (items !== undefined) {
-        statusmanager.value.addStatus(items);
-        todo.value = statusmanager.value.getStatus();
+        statusmanager.addStatus(items);
+        todo.value = statusmanager.getStatus();
         showAdded.value = true;
         setTimeout(() => {
             showAdded.value = false;
@@ -113,7 +118,7 @@ const updatedStatusName = ref("");
 const saveChanges = async (statusProp, id) => {
 
     updatedStatusName.value = statusProp.name.trim();
-    
+
     if (statusProp.description === "") {
         statusProp.description = null;
     }
@@ -139,7 +144,7 @@ const saveChanges = async (statusProp, id) => {
     };
 
     const existingStatus = await getItemById(statusUrl, id);
-    
+
     if (!existingStatus) {
         closeEditModal();
         showUpdatedError.value = true;
@@ -156,7 +161,7 @@ const saveChanges = async (statusProp, id) => {
                 }, 3000);
                 closeEditModal();
             } else {
-                statusmanager.value.editStatus(id, { ...editedStatus });
+                statusmanager.editStatus(id, { ...editedStatus });
                 closeEditModal();
                 showUpdated.value = true;
                 setTimeout(() => {
@@ -208,8 +213,8 @@ async function showDeleteModals(status) {
 };
 
 const handleStatusDeleted = (deletedid) => {
-    statusmanager.value.deleteStatus(deletedid);
-    todo.value = statusmanager.value.getStatus();
+    statusmanager.deleteStatus(deletedid);
+    todo.value = statusmanager.getStatus();
     deleteModal.value = false;
     showDeleted.value = true;
     setTimeout(() => {
@@ -228,6 +233,7 @@ const handleStatusDeletedNotfound = () => {
 </script>
 
 <template>
+    <LoadingPage :isLoading="isLoading" />
     <div class="flex">
         <div>
             <Sidebar />

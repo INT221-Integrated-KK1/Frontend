@@ -10,7 +10,7 @@ async function getItems(url) {
     }
     const response = await fetch(url, {
       method: "GET",
-      headers
+      headers,
     });
 
     if (response.ok) {
@@ -51,8 +51,6 @@ async function getItemById(url, id) {
   }
 }
 
-
-
 async function deleteItemById(url, id) {
   const token = localStorage.getItem("token");
   try {
@@ -62,7 +60,7 @@ async function deleteItemById(url, id) {
         Authorization: `Bearer ${token}`,
       },
     });
-     if (res.ok) {
+    if (res.ok) {
       return res.status;
     }
   } catch (error) {
@@ -83,12 +81,13 @@ async function addItem(url, newItem) {
         ...newItem,
       }),
     });
-    if (res.status === 409) {
-      return { status: 409 };
-    } else {
-      const addedItem = await res.json();
-      return addedItem;
+    let addedItem;
+    try {
+      addedItem = await res.json();
+    } catch (error) {
+      addedItem = res;
     }
+    return addedItem;
   } catch (error) {
     console.log(`error: ${error}`);
   }
@@ -107,8 +106,8 @@ async function editItem(url, id, editItem) {
         ...editItem,
       }),
     });
-      const editedItem = await res.json();
-      return editedItem;
+    const editedItem = await res.json();
+    return editedItem;
     // }
   } catch (error) {
     console.log(`error: ${error}`);
@@ -124,7 +123,7 @@ async function deleteAndTransfer(url, id, transferId) {
         Authorization: `Bearer ${token}`,
       },
     });
-    if (res.ok) {
+    if (response.ok) {
       return response.status;
     } else {
       console.error(`Error fetching items: ${response.status}`);
@@ -148,8 +147,8 @@ async function isAuthenticated(url, input) {
     if (response.status === 401) {
       localStorage.clear();
       router.push("/login");
-    } 
-    
+    }
+
     return response;
   } catch (error) {
     console.log(`error: ${error}`);

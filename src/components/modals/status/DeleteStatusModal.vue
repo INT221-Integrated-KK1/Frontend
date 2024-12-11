@@ -2,8 +2,7 @@
 import { ref, watch } from "vue";
 import { getItemById, getItems, deleteItemById, deleteAndTransfer } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
-import { StatusManagement } from "../../../libs/StatusManagement.js"
-
+import { StatusManagement } from "@/stores/StatusManagement.js";
 const route = useRoute();
 const tranferModal = ref(false);
 const confirmModal = ref(false);

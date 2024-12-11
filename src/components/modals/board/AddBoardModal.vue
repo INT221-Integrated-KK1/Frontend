@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { addItem, getItems } from '@/libs/fetchUtils';
-import { BoardManagement } from '../../../libs/BoardManagement.js';
+import { BoardManagement } from '@/stores/BoardManagement';
 import router from '@/router';
 
 // State variables
@@ -31,13 +31,20 @@ const isSaveButtonDisabled = computed(() => boardName.value.trim() === '');
 // Save the board
 async function saveBoard() {
   try {
-    // Save the board with a trimmed name
-    const newBoardName = boardName.value.trim();
-    const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: newBoardName });
+    const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput.value });
+    // boardmanager.value.addBoard(items);
+    try {
+      const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+      const personalBoards = boardItem.personalBoards;
 
-    // Fetch boards to get the newly added board ID
-    const boardItems = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
-    const personalBoards = boardItems.personalBoards;
+      for (let i = 0; i < personalBoards.length; i++) {
+        if (personalBoards[i].name === boardName.value) {
+          board.value = personalBoards[i].id;
+          break;
+        } if (boardItem.length === 1) {
+          board.value = personalBoards[0].id;
+        }
+      }
 
     for (let i = 0; i < personalBoards.length; i++) {
       if (personalBoards[i].name === newBoardName) {
