@@ -285,7 +285,7 @@ const handleStatusDeletedNotfound = () => {
             <div class="overflow-x-auto flex justify-center ">
                 <table class="table w-3/4 mt-5 border-solid border-2 rounded-m border-black">
                     <thead>
-                        <tr class="bg-orange-200 
+                        <tr class="bg-[#85E5FF] 
          border-solid border-2 border-black text-xl text-black">
                             <th class="w-20"></th>
                             <th class="font-bold">Name</th>

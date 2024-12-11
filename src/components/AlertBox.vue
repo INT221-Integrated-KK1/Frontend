@@ -17,111 +17,69 @@ const props = defineProps({
 
 <template>
   <div class="toast toast-end">
-    <!-- Login Error Alert -->
-    <div v-if="showLoginAlert" class="alert alert-error">
+    <!-- Unvalid login alert -->
+    <div v-if="showLoginAlert" class="alert alert-error bg-red-500">
       <span>Username or Password is incorrect</span>
-      <button class="text-lg font-bold" @click="$emit('close', 'showLoginAlert')">
-        ✖
-      </button>
+      <button @click="showLoginAlert = false" class="btn btn-sm btn-circle btn-outline">✖</button>
     </div>
 
-    <!-- Collaborator Added Success Alert -->
-    <div v-if="showAddedCollab" class="alert alert-success">
+    <!-- Added Collaborator alert -->
+    <div v-if="showAddedCollab" class="alert alert-success bg-green-500">
       <span>{{ addedCollabName }} is added successfully</span>
-      <button class="text-lg font-bold" @click="$emit('close', 'showAddedCollab')">
-        ✖
-      </button>
+      <button @click="showAddedCollab = false" class="btn btn-sm btn-circle btn-outline">✖</button>
     </div>
 
-    <!-- Add Alerts -->
-    <div v-if="showAdded" class="alert alert-success">
-      <span>The {{ tableType }} "{{ addedTitle }}" is added successfully</span>
-      <button class="text-lg font-bold" @click="$emit('close', 'showAdded')">✖</button>
-    </div>
-    <div v-if="showAddedError" class="alert alert-error">
-      <span>An error occurred adding the new {{ tableType }}</span>
-      <button class="text-lg font-bold" @click="$emit('close', 'showAddedError')">
-        ✖
-      </button>
-    </div>
-
-    <!-- Delete Alerts -->
-    <div v-if="showDeleted" class="alert alert-success">
+    <!-- Add Alert -->
+    <div v-if="showAdded" class="alert alert-success bg-green-500">
       <span>
-        {{
-          tableType === "boardCollab"
-            ? "Leave the collab board successfully"
-            : `The ${tableType} has been deleted`
-        }}
+        The {{ tableType }} "{{ addedTitle }}" is added successfully
       </span>
-      <button class="text-lg font-bold" @click="$emit('close', 'showDeleted')">✖</button>
-    </div>
-    <div v-if="showDeletedError" class="alert alert-error">
-      <span>An error occurred, the {{ tableType }} does not exist</span>
-      <button class="text-lg font-bold" @click="$emit('close', 'showDeletedError')">
-        ✖
-      </button>
+      <button @click="showAdded = false" class="btn btn-sm btn-circle bg-green-400 btn-outline">✖</button>
     </div>
 
-    <!-- Update Alerts -->
-    <div v-if="showUpdated" class="alert alert-success">
-      <span>The {{ tableType }} "{{ updatedTitle }}" is updated successfully</span>
-      <button class="text-lg font-bold" @click="$emit('close', 'showUpdated')">✖</button>
+    <!-- Add Error Alert -->
+    <div v-if="showAddedError" class="alert alert-error bg-red-500">
+      <span>
+        An error occurred adding the new {{ tableType }}
+      </span>
+      <button @click="showAddedError = false" class="btn btn-sm btn-circle btn-outline">✖</button>
     </div>
-    <div v-if="showUpdatedError" class="alert alert-error">
-      <span>An error has occurred, the {{ tableType }} does not exist</span>
-      <button class="text-lg font-bold" @click="$emit('close', 'showUpdatedError')">
-        ✖
-      </button>
+
+    <!-- Delete Alert -->
+    <div v-if="showDeleted" class="alert alert-success bg-green-500">
+      <span v-if="tableType === 'boardCollab'">
+        Leave the collab board successfully
+      </span>
+      <span v-else>
+        The {{ tableType }} has been deleted
+      </span>
+      <button @click="showDeleted = false" class="btn btn-sm btn-circle btn-outline">✖</button>
+    </div>
+
+    <!-- Delete Error Alert -->
+    <div v-if="showDeletedError" class="alert alert-error bg-red-500">
+      <span>
+        An error occurred, the {{ tableType }} does not exist
+      </span>
+      <button @click="showDeletedError = false" class="btn btn-sm btn-circle btn-outline">✖</button>
+    </div>
+
+    <!-- Edit Alert -->
+    <div v-if="showUpdated" class="alert alert-success bg-green-500">
+      <span>
+        The {{ tableType }} "{{ updatedTitle }}" is updated successfully
+      </span>
+      <button @click="showUpdated = false" class="btn btn-sm btn-circle btn-outline">✖</button>
+    </div>
+
+    <!-- Edit Error Alert -->
+    <div v-if="showUpdatedError" class="alert alert-error bg-red-500">
+      <span>
+        An error has occurred, the {{ tableType }} does not exist
+      </span>
+      <button @click="showUpdatedError = false" class="btn btn-sm btn-circle btn-outline">✖</button>
     </div>
   </div>
 </template>
 
-<style scoped>
-.toast {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.alert {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.alert-success {
-  background-color: #d1fae5;
-  border: 1px solid #10b981;
-  color: #10b981;
-}
-
-.alert-error {
-  background-color: #ffe4e6;
-  border: 1px solid #e11d48;
-  color: #e11d48;
-}
-
-.alert-info {
-  background-color: #bfdbfe;
-  border: 1px solid #3b82f6;
-  color: #3b82f6;
-}
-
-button {
-  background: none;
-  border: none;
-  color: inherit;
-  font-size: inherit;
-  cursor: pointer;
-}
-</style>
+<style scoped></style>
