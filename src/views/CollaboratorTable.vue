@@ -244,8 +244,6 @@ onMounted(async () => {
             }
         }
 
-        console.log("pending", pending);
-        console.log("collabMembers", collabMembers);
     } catch (error) {
         console.error("Error fetching task details:", error)
     } finally {

@@ -49,7 +49,6 @@ const deleteTask = async () => {
     const exist = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, idToUse);
     if (exist) {
       await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, idToUse);
-      console.log("Deleted task:", idToUse);
       emit("taskDeleted", idToUse);
     } else {
       emit("taskNotfound");

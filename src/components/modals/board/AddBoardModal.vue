@@ -29,7 +29,7 @@ async function saveBoard() {
         if (personalBoards[i].name === boardName.value) {
           board.value = personalBoards[i].id;
           break;
-        } if (boardItem.length === 1) {
+        } if (boardItem.length === 1  && boardItem[0].name === boardName.value) {
           board.value = personalBoards[0].id;
         }
       }
@@ -62,7 +62,7 @@ async function saveBoard() {
         class="itbkk-board-name bg-white w-full p-2 border rounded mb-2" placeholder="Enter board name" />
 
       <div class="flex justify-end space-x-4">
-        <button @click="saveBoard" :disabled="isSaveButtonDisabled"
+        <button @click="saveBoard" :disabled="isSaveButtonDisabled || checkWhiteSpace(boardName)"
           class="btn bg-green-500 hover:bg-green-700 text-white  disabled:bg-gray-300 disabled:cursor-not-allowed">
           Save
         </button>

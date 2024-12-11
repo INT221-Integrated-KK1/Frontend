@@ -24,7 +24,6 @@ async function handleAccept() {
         };
 
         const addCollab = await addItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, inputItem)
-        console.log("addCollab: ", addCollab);
 
         if (addCollab.status === 404) {
             window.alert("The user does not exist.");
@@ -39,7 +38,7 @@ async function handleAccept() {
             router.push({ name: 'task', params: { boardId: boardId } });
         }
     } catch (error) {
-        console.log(`Error handleAccept: ${error}`);
+        console.error(`Error handleAccept: ${error}`);
     }
 }
 
@@ -48,7 +47,7 @@ async function handleDecline() {
         await addItem(`${import.meta.env.VITE_BASE_URL}api/invitations/${invitationId}/decline`);
         router.push('/board');
     } catch (error) {
-        console.log(`Error handleDecline: ${error}`);
+        console.error(`Error handleDecline: ${error}`);
     }
 }
 
@@ -68,7 +67,7 @@ onMounted(async () => {
         }
 
     } catch (error) {
-        console.log(`Error fetching board items: ${error}`);
+        console.error(`Error fetching board items: ${error}`);
         window.alert("The invitation does not exist anymore.");
         router.push('/board');
     }

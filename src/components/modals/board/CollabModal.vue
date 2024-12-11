@@ -24,10 +24,7 @@ async function confirmChange() {
             };
 
             emit("inviteCollab", inputItem);
-            console.log("sending inviteCollab: ", inputItem);
             emit("closeModal")
-
-
         } catch (error) {
             console.error(`Error add collab: ${error}`);
         }

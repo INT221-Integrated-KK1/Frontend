@@ -146,7 +146,6 @@ function downloadFile(file) {
   const link = document.createElement("a");
   link.href = file.fileUrl;
   link.download = file.name || "download";
-  console.log(link);
   
   document.body.appendChild(link);
   link.click();

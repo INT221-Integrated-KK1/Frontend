@@ -57,7 +57,7 @@ const AddStatus = async () => {
             showModal.value = false;
             emit("statusAdded", items);
         } catch (error) {
-            console.log(`Error fetching data: ${error}`);
+            console.error(`Error fetching data: ${error}`);
             emit("statusAdded", undefined);
         }
     }

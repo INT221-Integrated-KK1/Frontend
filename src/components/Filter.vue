@@ -22,7 +22,6 @@ const toggleFilterDropdown = () => {
 
 const applyFilter = () => {
     emit('filter', selectedStatuses.value);
-    console.log(selectedStatuses.value);
 };
 
 const clearSelectedStatues = async () => {

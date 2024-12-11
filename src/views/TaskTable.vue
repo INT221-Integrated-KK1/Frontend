@@ -391,7 +391,7 @@ async function handleRemoveFiles(taskId, removeFiles) {
         <div class="flex">
           <!-- toggle -->
 
-            <BoardVisibility :boardId="boardId" />
+          <BoardVisibility :boardId="boardId" />
           <!-- Manage Collaborator -->
           <RouterLink :to="{ name: 'collabTable', params: { boardId: params.boardId } }">
             <div
@@ -440,9 +440,9 @@ async function handleRemoveFiles(taskId, removeFiles) {
             <tr class="bg-[#85E5FF]
          border-solid border-2 border-black text-xl text-black">
               <th class="w-20"></th>
-              <th class="font-bold">Title</th>
-              <th class="font-bold">Assignees</th>
-              <th class="font-bold">Attachment</th>
+              <th class="font-bold text-center">Title</th>
+              <th class="font-bold text-center">Assignees</th>
+              <th class="font-bold text-center">Attachment</th>
               <th class="font-bold">
                 <Sort @click="handleSort" />
               </th>

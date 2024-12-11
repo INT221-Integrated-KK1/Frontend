@@ -76,7 +76,7 @@ const AddTask = async () => {
         emit("taskAdded", items);
       }
     } catch (error) {
-      console.log(`Error fetching data: ${error}`);
+      console.error(`Error fetching data: ${error}`);
       emit("taskAdded", null);
     }
 
