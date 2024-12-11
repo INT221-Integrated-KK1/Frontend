@@ -30,7 +30,7 @@ const checkWriteAccess = async (to, from, next) => {
       boardId
     );
     const collabMembers = await getItems(
-      `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`
+      `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/collabs`
     );
 
     const isOwner = boardItems.owner.oid === userOid;

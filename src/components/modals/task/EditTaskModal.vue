@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from "vue";
-import { getItems, getItemById ,getFileImage } from "@/libs/fetchUtils.js";
+import { getItems, getItemById, getFileImage } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/stores/StatusManagement.js";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
@@ -100,7 +100,7 @@ const invalidFiles = computed(() => {
 
 
 const isHasInvalidFiles = computed(() => {
-  return invalidFiles.value.length > 0 
+  return invalidFiles.value.length > 0
 });
 
 
@@ -146,7 +146,7 @@ function downloadFile(file) {
   const link = document.createElement("a");
   link.href = file.fileUrl;
   link.download = file.name || "download";
-  
+
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -203,13 +203,13 @@ async function fetchTaskDetails(id) {
 
     initialFiles.value = files.value.map((file) => ({ name: file.name, size: file.size, type: file.type }));
 
-    const item = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, id);
+    const item = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, id);
 
     if (!item) {
       emit("taskEdited", null, null);
     }
 
-    const statusItem = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`);
+    const statusItem = await getItems(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`);
     statusmanager.value.setStatuses(statusItem);
 
     task.id = item.id;
@@ -381,18 +381,18 @@ const handleClose = () => {
                     </a>
 
                     <div class="flex items-center justify-center">
-                        <button @click.prevent="downloadFile(file)"
-                          class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100  mr-2"
-                          aria-label="Remove File">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                            <path fill="currentColor"
-                              d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11zm-6 4q-.825 0-1.412-.587T4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413T18 20z" />
-                          </svg>
-                        </button>
-                        <button @click.prevent="removeFile(index)" class="mt-2  w-8 h-8  rounded-full bg-sky-100 "
-                          aria-label="Remove File">
-                          <DeleteIcons />
-                        </button>
+                      <button @click.prevent="downloadFile(file)"
+                        class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100  mr-2"
+                        aria-label="Remove File">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                          <path fill="currentColor"
+                            d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11zm-6 4q-.825 0-1.412-.587T4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413T18 20z" />
+                        </svg>
+                      </button>
+                      <button @click.prevent="removeFile(index)" class="mt-2  w-8 h-8  rounded-full bg-sky-100 "
+                        aria-label="Remove File">
+                        <DeleteIcons />
+                      </button>
                     </div>
 
                   </div>

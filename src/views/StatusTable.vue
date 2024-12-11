@@ -24,8 +24,8 @@ const statusmanager = StatusManagement();
 const todo = ref([]);
 const isDefault = (status) => status.name === "No Status" || status.name === "Done";
 
-const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
-const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
+const statusUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`;
+const collabUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/collabs`;
 onMounted(async () => {
     try {
         isLoading.value = true;
@@ -320,7 +320,7 @@ const handleStatusDeletedNotfound = () => {
                                 </div>
                                 <div v-else>
                                     {{ status.description === null || status.description === "" ?
-                                    "No Description Provided" : status.description }}
+                                        "No Description Provided" : status.description }}
                                 </div>
                             </td>
                             <div v-if="!isDefault(status)" class="flex justify-center ">

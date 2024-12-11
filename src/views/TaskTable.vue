@@ -50,9 +50,9 @@ const { params } = useRoute();
 const boardId = params.boardId;
 const board = ref([]);
 
-const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
-const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
-const collabUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`;
+const taskUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`;
+const collabUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/collabs`;
 
 onMounted(async () => {
   try {
@@ -80,7 +80,7 @@ onMounted(async () => {
     }
 
     for (let i = 0; i < items.length; i++) {
-      const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${items[i].id}`);
+      const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}/attachment/task/${items[i].id}`);
       items[i] = { ...items[i], attachments: attachmentItem.data.length, attachmentItem: attachmentItem.data };
     }
 
@@ -319,7 +319,7 @@ async function handleFiles(addFiles, taskId, removeFiles) {
       await handleAddFiles(taskId, addFiles);
     }
 
-    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${taskId}`);
+    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}/attachment/task/${taskId}`);
     taskmanager.editTask(taskId, { attachments: attachmentItem.data.length });
   } catch (error) {
     console.error("Error during file operations:", error);
@@ -333,7 +333,7 @@ async function handleAddFiles(taskId, files) {
       formData.append("files", files[i]);
     }
 
-    await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${taskId}/attachments`, {
+    await fetch(`${import.meta.env.VITE_BASE_URL}/attachment/${taskId}/attachments`, {
       method: "POST",
       body: formData,
     });
@@ -350,7 +350,7 @@ async function handleRemoveFiles(taskId, removeFiles) {
         .getTaskById(taskId)
         .attachmentItem.find((attachment) => attachment.fileName === removeFiles[i].name).id;
 
-      await fetch(`${import.meta.env.VITE_BASE_URL}api/attachment/${fileId}`, {
+      await fetch(`${import.meta.env.VITE_BASE_URL}/attachment/${fileId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

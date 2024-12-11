@@ -12,7 +12,7 @@ const props = defineProps({
     collabItem: Object
 });
 
-const url = `${import.meta.env.VITE_BASE_BOARDS_URL}/${props.boardId}/collabs`;
+const url = `${import.meta.env.VITE_BASE_URL}/boards/${props.boardId}/collabs`;
 const emit = defineEmits(["addCollab", "editCollab", "removeCollab", "closeModal", "inviteCollab"]);
 
 async function confirmChange() {

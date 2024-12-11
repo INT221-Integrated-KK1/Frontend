@@ -16,7 +16,7 @@ const props = defineProps({
 });
 
 const boardId = params.boardId;
-const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+const statusUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`;
 
 const status = reactive({
     id: 0,

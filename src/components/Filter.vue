@@ -11,7 +11,7 @@ const emit = defineEmits(['filter', 'reset']);
 const { params } = useRoute();
 const boardId = params.boardId;
 
-const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+const statusUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`;
 onMounted(async () => {
     statuses.value = await getItems(statusUrl);
 });

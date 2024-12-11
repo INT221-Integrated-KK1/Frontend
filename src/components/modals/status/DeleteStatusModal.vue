@@ -16,8 +16,8 @@ const count = ref(0);
 const selectId = ref();
 const transfer = ref(0)
 const boardId = route.params.boardId;
-const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
-const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+const taskUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`;
+const statusUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`;
 
 const props = defineProps({
     deleteModal: Boolean,

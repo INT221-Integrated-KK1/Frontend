@@ -72,7 +72,7 @@ const handleUpdateCollab = async (oid, accessRight, statusType) => {
             status: statusType
         }
         try {
-            await fetch(`${import.meta.env.VITE_BASE_URL}api/invitations/${oid}/edit`, {
+            await fetch(`${import.meta.env.VITE_BASE_URL}/invitations/${oid}/edit`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -80,7 +80,7 @@ const handleUpdateCollab = async (oid, accessRight, statusType) => {
                 body: JSON.stringify({ ...updateInvite }),
             });
 
-            const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+            const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/invitations`);
             const item = getPendingCollab.data;
             for (let i = 0; i < item.length; i++) {
                 if (item[i].id === oid) {
@@ -103,7 +103,7 @@ const handleUpdateCollab = async (oid, accessRight, statusType) => {
             const updateAccess = {
                 accessRight: accessRight
             };
-            const collabItem = await editPatchItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs/${oid}`, updateAccess);
+            const collabItem = await editPatchItem(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/collabs/${oid}`, updateAccess);
             const collabEdit = {
                 oid: collabItem.collabsId,
                 name: collabItem.collabsName,
@@ -130,7 +130,7 @@ const handleRemoveCollab = async (id, statusType) => {
     } else if (statusType === 'PENDING') {
         try {
             const token = localStorage.getItem("token");
-            await fetch(`${import.meta.env.VITE_BASE_URL}api/invitations/${id}/cancel`, {
+            await fetch(`${import.meta.env.VITE_BASE_URL}/invitations/${id}/cancel`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -147,7 +147,7 @@ const handleRemoveCollab = async (id, statusType) => {
         }
     } else {
         try {
-            await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, id);
+            await deleteItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/collabs`, id);
             collabmanager.removeCollab(id);
             showDeleted.value = true;
             setTimeout(() => {
@@ -174,14 +174,14 @@ async function handleiInviteCollab(inputItem) {
             return;
         }
 
-        const inviteCollab = await addItem(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invite`, inputItem);
+        const inviteCollab = await addItem(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/invite`, inputItem);
 
         if (inviteCollab.status === 404) {
             window.alert("User not found or AccessRight incorrect. Please recheck.");
         } else if (inviteCollab.status === 409) {
             window.alert("The user is already a collaborator or pending collaborator of this board.");
         } else if (inviteCollab.status === 200) {
-            const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+            const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/invitations`);
             const pendingCollabs = getPendingCollab.data;
 
             pendingCollabs.forEach(item => {
@@ -211,8 +211,8 @@ onMounted(async () => {
     try {
         isLoading.value = true;
 
-        const pending = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
-        const collabMembers = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`);
+        const pending = await getItems(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/invitations`);
+        const collabMembers = await getItems(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/collabs`);
 
         if (collabMembers.status === 403) {
             window.alert("Access denied, you do not have permission to view this board");

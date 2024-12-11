@@ -5,7 +5,7 @@ import { useRoute } from "vue-router";
 
 const { params } = useRoute();
 const boardId = params.boardId;
-const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+const statusUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`;
 const showModal = ref(false);
 const name = ref("");
 const description = ref("");
@@ -17,7 +17,7 @@ const checkWhiteSpace = (title) => {
 
 const AddStatus = async () => {
     const notOwner = ref(false);
-    
+
     const trimStatusName = ref(name.value.trim());
     const trimStatusDescription = ref(description.value.trim());
 

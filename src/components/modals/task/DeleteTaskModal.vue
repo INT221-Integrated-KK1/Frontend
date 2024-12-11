@@ -34,7 +34,7 @@ watch(
 
 async function fetchTaskDetails(id) {
   try {
-    task.value = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, id);
+    task.value = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, id);
     number.value = task.value.id;
     title.value = task.value.title;
   } catch (error) {
@@ -46,9 +46,9 @@ async function fetchTaskDetails(id) {
 const deleteTask = async () => {
   try {
     const idToUse = !isNaN(taskId) ? taskId : props.idDelete;
-    const exist = await getItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, idToUse);
+    const exist = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, idToUse);
     if (exist) {
-      await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`, idToUse);
+      await deleteItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, idToUse);
       emit("taskDeleted", idToUse);
     } else {
       emit("taskNotfound");

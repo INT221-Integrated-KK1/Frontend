@@ -34,7 +34,7 @@ const oid = localStorage.getItem('oid')
 
 async function leaveBoard(boardId) {
   try {
-    const deleteCollab = await deleteItemById(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, oid);
+    const deleteCollab = await deleteItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/collabs`, oid);
     if (deleteCollab === undefined || deleteCollab === null) {
       console.log('Error deleting collab');
     } else {
@@ -137,8 +137,7 @@ onMounted(async () => {
   <router-view />
 
   <LeaveBoardModal :showRemoveModal="showRemoveModal" :showEditModal="showEditModal" :boardId="boardId"
-    :boardName="boardName" :boardType="boardType" @leaveBoardCollab="leaveBoard(boardId)"
-    @closeModal="closeModal" />
+    :boardName="boardName" :boardType="boardType" @leaveBoardCollab="leaveBoard(boardId)" @closeModal="closeModal" />
 
 </template>
 

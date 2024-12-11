@@ -16,14 +16,14 @@ const email = ref("")
 
 async function handleAccept() {
     try {
-        await addItem(`${import.meta.env.VITE_BASE_URL}api/invitations/${invitationId}/accept`);
+        await addItem(`${import.meta.env.VITE_BASE_URL}/invitations/${invitationId}/accept`);
 
         const inputItem = {
             email: email.value,
             accessRight: accessRight.value
         };
 
-        const addCollab = await addItem(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/collabs`, inputItem)
+        const addCollab = await addItem(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/collabs`, inputItem)
 
         if (addCollab.status === 404) {
             window.alert("The user does not exist.");
@@ -44,7 +44,7 @@ async function handleAccept() {
 
 async function handleDecline() {
     try {
-        await addItem(`${import.meta.env.VITE_BASE_URL}api/invitations/${invitationId}/decline`);
+        await addItem(`${import.meta.env.VITE_BASE_URL}/invitations/${invitationId}/decline`);
         router.push('/board');
     } catch (error) {
         console.error(`Error handleDecline: ${error}`);
@@ -53,7 +53,7 @@ async function handleDecline() {
 
 onMounted(async () => {
     try {
-        const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
+        const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/invitations`);
         const item = getPendingCollab.data.find(item => item.id === Number(invitationId));
 
         if (localStorage.getItem('email') !== item.email || !localStorage.getItem('email')) {

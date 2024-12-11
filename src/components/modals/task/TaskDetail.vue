@@ -35,8 +35,8 @@ async function fetchTaskDetails(id) {
   try {
 
     files.value = [];
-    const taskUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/tasks`;
-    const statusUrl = `${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`;
+    const taskUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`;
+    const statusUrl = `${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`;
 
     const item = await getItemById(taskUrl, id);
     task.value = item;
@@ -173,8 +173,7 @@ const formatToLocalTime = (dateTimeString) => {
 
               <a :href="file.fileUrl" target="_blank" :download="file.fileName"
                 class="block relative w-full h-20 overflow-hidden rounded-lg">
-                <img v-if="isImage(file)" :src="file.fileUrl" alt="File Preview"
-                  class="w-full h-full object-cover" />
+                <img v-if="isImage(file)" :src="file.fileUrl" alt="File Preview" class="w-full h-full object-cover" />
                 <div v-else class="flex items-center justify-center h-full w-full bg-sky-100">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-sky-500" viewBox="0 0 24 24">
                     <path fill="currentColor"
