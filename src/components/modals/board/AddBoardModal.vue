@@ -1,38 +1,26 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { addItem, getItems } from '@/libs/fetchUtils';
-import { BoardManagement } from '@/stores/BoardManagement';
 import router from '@/router';
 
-// State variables
 const board = ref('');
-const boardmanager = ref(new BoardManagement());
-const boardName = ref('');
-const userName = localStorage.getItem('username') || 'Guest';
-const defaultBoardName = `${userName} personal board`; // Default board name
-boardName.value = defaultBoardName; // Initialize with default name
-
-// Emit to inform parent component
+const name = localStorage.getItem('username');
+const boardName = ref(`${name} personal board`);
 const emit = defineEmits(['save-board']);
 
-// Close modal and navigate back
 const closeModal = () => {
   router.push({ name: 'board' });
 };
 
-// Check if the input contains only whitespace
 const checkWhiteSpace = (title) => {
   return /^\s*$/.test(title);
 };
-
-// Disable Save button if input is empty or whitespace
 const isSaveButtonDisabled = computed(() => boardName.value.trim() === '');
 
-// Save the board
 async function saveBoard() {
+  const boardsinput = ref(boardName.value.trim());
   try {
     const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput.value });
-    // boardmanager.value.addBoard(items);
     try {
       const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
       const personalBoards = boardItem.personalBoards;
@@ -46,20 +34,21 @@ async function saveBoard() {
         }
       }
 
-    for (let i = 0; i < personalBoards.length; i++) {
-      if (personalBoards[i].name === newBoardName) {
-        board.value = personalBoards[i].id;
-        break;
-      }
+    } catch (error) {
+      console.error("Error fetching task details:", error);
+      localStorage.clear();
+      router.push({ name: 'login' });
+    } if (items.status === 401) {
+      localStorage.clear();
+      router.push({ name: 'login' });
     }
-
-    // Navigate to the tasks page for the new board
-    router.push({ name: 'task', params: { boardId: board.value } });
   } catch (error) {
     console.error('Error saving board:', error);
-    alert('There was a problem saving the board. Please try again later.');
+    alert('There is a problem. Please try again later.');
   }
-}
+  router.push({ name: 'task', params: { boardId: board.value } });
+};
+
 </script>
 
 <template>
@@ -68,7 +57,6 @@ async function saveBoard() {
     <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
       <h2 class="text-2xl font-bold mb-5 text-green-800">New Board</h2>
 
-      <!-- Board Name Input -->
       <label for="boardName" class="block text-lg mb-2">Name</label>
       <input
         v-model="boardName"
@@ -79,7 +67,6 @@ async function saveBoard() {
         placeholder="Enter board name"
       />
 
-      <!-- Action Buttons -->
       <div class="flex justify-end space-x-4">
         <button
           @click="saveBoard"
@@ -100,19 +87,4 @@ async function saveBoard() {
   </div>
 </template>
 
-<style scoped>
-/* AddModal styles */
-.itbkk-modal-new {
-  backdrop-filter: blur(5px);
-}
-
-.itbkk-board-name {
-  font-size: 1rem;
-}
-
-.itbkk-button-ok,
-.itbkk-button-cancel {
-  font-size: 1rem;
-  font-weight: bold;
-}
-</style>
+<style scoped></style>
