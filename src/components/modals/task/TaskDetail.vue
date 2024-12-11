@@ -44,7 +44,7 @@ async function fetchTaskDetails(id) {
     const statusItem = await getItems(statusUrl);
     statusmanager.value.setStatuses(statusItem);
 
-    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}api/attachment/task/${id}`);
+    const attachmentItem = await getItems(`${import.meta.env.VITE_BASE_URL}/attachment/task/${id}`);
     if (attachmentItem.data.length > 0) {
       attachmentItem.data.forEach((item) => {
         files.value.push(item);
@@ -68,7 +68,7 @@ async function getFilePreview(file, id) {
 
       file.value[i].fileUrl = null;
       let fileName = decodeURIComponent(file.value[i].fileName);
-      const response = await getFileImage(`${import.meta.env.VITE_BASE_URL}api/attachment`, id, fileName)
+      const response = await getFileImage(`${import.meta.env.VITE_BASE_URL}/attachment`, id, fileName)
       file.value[i].fileUrl = URL.createObjectURL(response);
     }
   } catch (error) {
