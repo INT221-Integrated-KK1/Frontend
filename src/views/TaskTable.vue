@@ -395,23 +395,35 @@ async function handleRemoveFiles(taskId, removeFiles) {
       <h1 class="text-4xl overflow-x-auto text-center font-bold mt-10">{{ board.name }}</h1>
       <!-- filter -->
       <div class="flex justify-between mx-52 mt-5 items-center">
-        <div class="flex justify-items-center">
-          <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
+    <div class="flex justify-items-center">
+      <Filter @filter="applyFilter" @reset="clearSelectedStatues" />
+    </div>
+
+    <div class="flex">
+      <!-- toggle -->
+      <BoardVisibility
+        :boardId="boardId"
+        class="tooltip"
+        data-tip="You need to be board owner or have write access to perform this action"
+      />
+
+      <!-- Manage Collaborator -->
+      <RouterLink :to="{ name: 'collabTable', params: { boardId: params.boardId } }">
+        <div
+          class="btn font-bold mr-5 bg-orange-300 hover:bg-orange-400 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
+        >
+          Manage Collaborator
         </div>
+      </RouterLink>
 
-        <div class="flex">
-          <!-- toggle -->
-          <BoardVisibility :boardId="boardId" />
-
-          <!-- manage collaborator -->
-          <RouterLink :to="{ name: 'collabTable', params: { boardId: params.boardId } }">
-            <div class="itbkk-manage-collaborator mr-5 btn font-bold">Manage Collaborator</div>
-          </RouterLink>
-
-          <!-- manage status -->
-          <RouterLink :to="{ name: 'status', params: { boardId: params.boardId } }">
-            <div class="itbkk-manage-status btn font-bold mr-5">Manage Status</div>
-          </RouterLink>
+      <!-- Manage Status -->
+      <RouterLink :to="{ name: 'status', params: { boardId: params.boardId } }">
+        <div
+          class="btn font-bold mr-5 bg-pink-400 hover:bg-pink-500 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
+        >
+          Manage Status
+        </div>
+      </RouterLink>
 
           <!-- add task -->
           <div v-if="readAccess === true || unAuthorized" class="tooltip"
@@ -442,8 +454,8 @@ async function handleRemoveFiles(taskId, removeFiles) {
       <div class="overflow-x-auto flex justify-center ">
         <table class="table w-3/4 mt-5 border-solid border-2 rounded-m border-black">
           <thead>
-            <tr class="bg-orange-200 
-         border-solid border-2 border-black text-xl text-black text-center">
+            <tr class="bg-[#85E5FF]
+         border-solid border-2 border-black text-xl text-black">
               <th class="w-20"></th>
               <th class="font-bold">Title</th>
               <th class="font-bold">Assignees</th>
@@ -544,4 +556,14 @@ async function handleRemoveFiles(taskId, removeFiles) {
 
 
 
-<style scoped></style>
+<style scoped>
+/* Additional hover effects for better interactivity */
+.btn {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+</style>

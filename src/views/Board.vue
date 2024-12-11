@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
 import { deleteItemById, getItems } from '@/libs/fetchUtils';
@@ -9,10 +9,10 @@ import AlertBox from '@/components/AlertBox.vue';
 import LoadingPage from './LoadingPage.vue';
 
 const router = useRouter();
-const emit = defineEmits(['save-board-sidebar']);
 const boardmanager = ref(new BoardManagement());
 const personalBoards = ref([]);
 const collabBoards = ref([]);
+const showAddModal = ref(false);
 const showRemoveModal = ref(false);
 const boardId = ref('');
 const boardName = ref('');
@@ -27,25 +27,11 @@ const openAddModal = () => {
   router.push({ name: 'addboard' });
 };
 
-const openDeleteModal = (id, name) => {
-  boardType.value = 'personal';
-  showRemoveModal.value = true;
-  boardId.value = id;
-  boardName.value = name;
+const closeAddModal = () => {
+  showAddModal.value = false;
 };
 
-const openLeaveModal = (id, name) => {
-  boardType.value = 'collab';
-  showRemoveModal.value = true;
-  boardId.value = id;
-  boardName.value = name;
-};
 
-const openEditModal = (id, name) => {
-  showEditModal.value = true;
-  boardId.value = id;
-  boardName.value = name;
-};
 
 const closeModal = () => {
   showRemoveModal.value = false;
@@ -84,119 +70,109 @@ onMounted(async () => {
     boardmanager.value.setBoards(items);
     personalBoards.value = items.personalBoards;
     collabBoards.value = items.collabBoards;
-
-    const storeItem = boardmanager.value.getBoards();
-    console.log(storeItem);
-
   } catch (error) {
-    console.error('Error fetching personalBoards:', error);
+    console.error('Error fetching boards:', error);
   } finally {
     isLoading.value = false;
   }
 });
-
 </script>
 
 <template>
-  
-  <LoadingPage :isLoading="isLoading"/>
-
+  <LoadingPage :isLoading="isLoading" />
   <div class="flex ">
     <div>
       <Sidebar />
     </div>
 
-    <div class="w-screen bg-slate-50 ">
+    <!-- Main Content -->
+    <div class="w-screen bg-slate-50">
       <!-- Alert -->
       <AlertBox :tableType="tableType" :showDeleted="showDeleted" :showDeletedError="showDeletedError" />
 
+      <!-- Personal Boards -->
       <h1 class="text-5xl text-center font-bold mt-10">Personal Boards</h1>
-      <div class="mt-10 mx-32 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="mt-10 mx-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         <div @click="openAddModal"
-          class="itbkk-button-create rounded-xl p-4 cursor-pointer transition transform hover:scale-105  duration-300 ease-in-out text-xl font-semibold text-center flex items-center justify-center h-40 w-auto border-dashed border-2 border-slate-400">
+          class="itbkk-button-create rounded-xl p-4 cursor-pointer transition transform hover:scale-105 duration-300 ease-in-out text-xl font-semibold text-center flex items-center justify-center h-40 w-auto border-dashed border-2 border-slate-400">
           + Add New Board
         </div>
 
-        <div v-for="(board, index) in boardmanager.getBoards().personalBoards" :key="index">
-          <div
-            class="card bg-base-100 w-auto h-auto shadow-xl transition transform hover:scale-105 duration-300 ease-in-out relative">
-
-            <figure class="w-full h-20 relative">
-              <img src="@/assets/board-bg.jpg" alt="board" class="absolute inset-0 w-full h-full object-cover" />
-            </figure>
-
-            <div @click="router.push({ name: 'task', params: { boardId: board.id } })"
-              class="card-title pt-3 pl-3 relative z-10 flex">
-              <div class="font-bold text-md ">{{ board.visibility.toUpperCase() }} </div>
+        <!-- Personal Board Cards -->
+        <div v-for="(board, index) in boardmanager.getBoards().personalBoards" :key="index" class="card-wrapper">
+          <div class="card bg-white shadow-md rounded-lg transition transform hover:scale-105 relative overflow-hidden">
+            <div class="h-24 bg-gradient-to-r from-cyan-300 to-teal-300"></div>
+            <div class="p-5">
+              <h2 @click="router.push({ name: 'task', params: { boardId: board.id } })"
+                class="text-lg font-semibold cursor-pointer hover:underline mb-3">
+                {{ board.name }}
+              </h2>
             </div>
-            <div class="font-semibold overflow-auto text-base px-3 pb-3">{{ board.name }}</div>
-            <div class="absolute top-0 right-0 p-3 ">
-              <div
-                class="dropdown dropdown-right cursor-pointer backdrop-blur-md bg-white/40 rounded-full w-8 h-8 flex items-center justify-center ">
-                <div tabindex="0" role="button">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                      stroke-width="2" d="M5 17h14M5 12h14M5 7h14" />
-                  </svg>
-                </div>
-                <ul tabindex="0" class="dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-                  <li class="w-full text-base p-2 rounded-lg hover:bg-teal-600 hover:text-white"
-                    @click="openEditModal(board.id, board.name)"><a>Edit</a></li>
-                  <li class="w-full text-base p-2 rounded-lg hover:bg-red-600 hover:text-white"
-                    @click="openDeleteModal(board.id, board.name)"><a>Delete</a></li>
-                </ul>
-              </div>
+            <div class="absolute top-3 right-3 bg-orange-400 text-white px-3 py-1 rounded-full text-xs shadow">
+              {{ board.visibility.toUpperCase() }}
             </div>
           </div>
-
         </div>
-
-        <router-view />
       </div>
 
-      <div>
-        <h1 class="text-5xl text-center font-bold mt-20">Collaborator Boards</h1>
-        <div class="mt-10 mx-32 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div v-for="(board, index) in collabBoards" :key="index">
-            <div
-              class="card bg-base-100 w-auto h-auto shadow-xl transition transform hover:scale-105 duration-300 ease-in-out relative">
+      <!-- Collaborator Boards -->
+      <h1 class="text-5xl text-center font-bold mt-20 mb-10">Collaborator Boards</h1>
+      <div v-if="collabBoards.length === 0" class="text-3xl text-center text-gray-500 italic mt-10 mb-20">
+        No collaborator boards found.
+      </div>
+      <div v-else class="mt-10 mx-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+        <div v-for="(board, index) in collabBoards" :key="index" class="card-wrapper">
+          <div class="card bg-white shadow-md rounded-lg transition transform hover:scale-105 relative overflow-hidden">
+            <div class="h-24 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
+            <div class="p-5">
+              <h2 @click="router.push({ name: 'task', params: { boardId: board.id } })"
+                class="text-lg font-semibold cursor-pointer hover:underline mb-3">
+                {{ board.name }}
+              </h2>
+              <p class="text-sm text-gray-600 mt-2">Owner: {{ board.owner.name }}</p>
+            </div>
+            <div class="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs shadow">
+              {{ board.visibility.toUpperCase() }}
 
-              <figure class="w-full h-20 relative">
-                <img src="@/assets/board-bg.jpg" alt="board" class="absolute inset-0 w-full h-full object-cover" />
-              </figure>
-
-              <div @click="router.push({ name: 'task', params: { boardId: board.id } })"
-                class="card-title pt-3 pl-3 relative z-10 flex">
-                <div class="font-bold text-md ">{{ board.visibility.toUpperCase() }} </div>
-              </div>
-              <div class="font-semibold overflow-auto text-base px-3">{{ board.name }}</div>
-              <div class="font-semibold overflow-auto text-sm text-gray-600 px-3 pb-3">Owner: {{ board.owner.name }}
-              </div>
-              <div class="absolute top-0 right-0 p-3 ">
-                <div
-                  class="dropdown dropdown-right cursor-pointer backdrop-blur-md bg-white/40 rounded-full w-8 h-8 flex items-center justify-center ">
-                  <div tabindex="0" role="button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                        stroke-width="2" d="M5 17h14M5 12h14M5 7h14" />
-                    </svg>
-                  </div>
-                  <ul tabindex="0" class="dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-                    <li class="w-full text-base p-2 rounded-lg hover:bg-red-600 hover:text-white"
-                      @click="openLeaveModal(board.id, board.name, boardType)"><a>Leave</a></li>
-                  </ul>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <router-view />
   <LeaveBoardModal :showRemoveModal="showRemoveModal" :showEditModal="showEditModal" :boardId="boardId"
     :boardName="boardName" :boardType="boardType" @leaveBoardCollab="leaveBoard(boardId)"
     @deleteBoard="deleteBoard(boardId)" @closeModal="closeModal" />
 
+  <!-- Add Board Modal -->
+  <AddBoardModal v-if="showAddModal" @close="closeAddModal" />
 </template>
 
-<style scoped></style>
+<style scoped>
+.card-wrapper {
+  transition: transform 0.3s ease-in-out;
+  margin-bottom: 2rem;
+}
+
+.card-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.card {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.bg-gradient-to-r {
+  height: 6rem;
+}
+
+.mb-10,
+.mb-20 {
+  margin-bottom: 2.5rem;
+}
+</style>

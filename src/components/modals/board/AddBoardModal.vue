@@ -1,12 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { addItem, getItems } from '@/libs/fetchUtils';
-import { BoardManagement } from '@/stores/BoardManagement';
 import router from '@/router';
 
 const board = ref('');
 const name = localStorage.getItem('username');
-const boardmanager = ref(new BoardManagement());
 const boardName = ref(`${name} personal board`);
 const emit = defineEmits(['save-board']);
 
@@ -23,7 +21,6 @@ async function saveBoard() {
   const boardsinput = ref(boardName.value.trim());
   try {
     const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput.value });
-    // boardmanager.value.addBoard(items);
     try {
       const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
       const personalBoards = boardItem.personalBoards;
@@ -61,19 +58,30 @@ async function saveBoard() {
       <h2 class="text-2xl font-bold mb-5 text-green-800">New Board</h2>
 
       <label for="boardName" class="block text-lg mb-2">Name</label>
-      <input v-model="boardName" maxlength="120" type="text"
-        class="itbkk-board-name bg-white z-index w-full p-2 border rounded mb-2" placeholder="Enter board name" />
-
+      <input
+        v-model="boardName"
+        maxlength="120"
+        type="text"
+        id="boardName"
+        class="itbkk-board-name bg-white w-full p-2 border rounded mb-2"
+        placeholder="Enter board name"
+      />
 
       <div class="flex justify-end space-x-4">
-
-        <button @click="saveBoard" :disabled="checkWhiteSpace(boardName) || isSaveButtonDisabled"
-          class="itbkk-button-ok bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
+        <button
+          @click="saveBoard"
+          :disabled="checkWhiteSpace(boardName) || isSaveButtonDisabled"
+          class="itbkk-button-ok bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
           Save
         </button>
 
-        <button @click="closeModal"
-          class="itbkk-button-cancel bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+        <button
+          @click="closeModal"
+          class="itbkk-button-cancel bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   </div>
