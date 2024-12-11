@@ -12,7 +12,6 @@ const router = useRouter();
 const boardmanager = ref(new BoardManagement());
 const personalBoards = ref([]);
 const collabBoards = ref([]);
-const showAddModal = ref(false);
 const showRemoveModal = ref(false);
 const boardId = ref('');
 const boardName = ref('');
@@ -26,12 +25,6 @@ const isLoading = ref(false);
 const openAddModal = () => {
   router.push({ name: 'addboard' });
 };
-
-const closeAddModal = () => {
-  showAddModal.value = false;
-};
-
-
 
 const closeModal = () => {
   showRemoveModal.value = false;
@@ -80,12 +73,13 @@ onMounted(async () => {
 
 <template>
   <LoadingPage :isLoading="isLoading" />
+
   <div class="flex ">
+
     <div>
       <Sidebar />
     </div>
 
-    <!-- Main Content -->
     <div class="w-screen bg-slate-50">
       <!-- Alert -->
       <AlertBox :tableType="tableType" :showDeleted="showDeleted" :showDeletedError="showDeletedError" />
@@ -141,12 +135,11 @@ onMounted(async () => {
     </div>
   </div>
   <router-view />
+
   <LeaveBoardModal :showRemoveModal="showRemoveModal" :showEditModal="showEditModal" :boardId="boardId"
     :boardName="boardName" :boardType="boardType" @leaveBoardCollab="leaveBoard(boardId)"
-    @deleteBoard="deleteBoard(boardId)" @closeModal="closeModal" />
+    @closeModal="closeModal" />
 
-  <!-- Add Board Modal -->
-  <AddBoardModal v-if="showAddModal" @close="closeAddModal" />
 </template>
 
 <style scoped>

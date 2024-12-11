@@ -64,7 +64,7 @@ async function deleteItemById(url, id) {
       return res.status;
     }
   } catch (error) {
-    console.log(`error: ${error}`);
+    console.error(`error: ${error}`);
   }
 }
 
@@ -89,7 +89,7 @@ async function addItem(url, newItem) {
     }
     return addedItem;
   } catch (error) {
-    console.log(`error: ${error}`);
+    console.error(`error: ${error}`);
   }
 }
 
@@ -110,7 +110,7 @@ async function editItem(url, id, editItem) {
     return editedItem;
     // }
   } catch (error) {
-    console.log(`error: ${error}`);
+    console.error(`error: ${error}`);
   }
 }
 
@@ -129,7 +129,7 @@ async function deleteAndTransfer(url, id, transferId) {
       console.error(`Error fetching items: ${response.status}`);
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 async function isAuthenticated(url, input) {
@@ -151,7 +151,7 @@ async function isAuthenticated(url, input) {
 
     return response;
   } catch (error) {
-    console.log(`error: ${error}`);
+    console.error(`error: ${error}`);
   }
 }
 
@@ -163,7 +163,7 @@ async function addToken(url) {
     console.error("Refresh token is missing in localStorage.");
     return;
   }
-  console.log("Sending refresh token:", refreshToken);
+
   try {
     const res = await fetch(url, {
       method: "POST",
@@ -196,7 +196,7 @@ async function changeBoardVisibility(url, id, visibility) {
     });
     return res;
   } catch (error) {
-    console.log(`error: ${error}`);
+    console.error(`error: ${error}`);
   }
 }
 
@@ -219,7 +219,21 @@ const editPatchItem = async (url, editItem) => {
       return editedItem;
     }
   } catch (error) {
-    console.log(`error: ${error}`);
+    console.error(`error: ${error}`);
+  }
+};
+
+const getFileImage = async (url, id, fileName) => {
+  try {
+    const response = await fetch(`${url}/${id}/${fileName}`, {
+      method: "GET",
+    });
+    if (response.ok) {
+      const file = await response.blob();
+      return file;
+    }
+  } catch (error) {
+    console.error(`Error fetching file: ${error}`);
   }
 };
 
@@ -234,4 +248,5 @@ export {
   addToken,
   changeBoardVisibility,
   editPatchItem,
+  getFileImage,
 };

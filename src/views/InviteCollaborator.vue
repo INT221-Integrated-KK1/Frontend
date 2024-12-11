@@ -78,7 +78,7 @@ onMounted(async () => {
 
 <template>
     <div class="fixed z-10 inset-0 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen bg-teal-700">
+        <div class="flex items-center justify-center min-h-screen bg-[#85E5FF]">
             <div class="bg-white p-6 rounded shadow-lg">
                 <div class="text-center">
                     <h1 class="text-3xl font-bold pt-5">Collaborator Invitation</h1>

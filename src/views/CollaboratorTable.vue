@@ -1,19 +1,19 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { getItemById, getItems, addItem, editPatchItem, deleteItemById, editItem } from "@/libs/fetchUtils";
+import { getItemById, getItems, addItem, editPatchItem, deleteItemById } from "@/libs/fetchUtils";
 import { CollabManagement } from "@/stores/CollabManagement";
 import Sidebar from "@/components/Sidebar.vue";
 import CollabModal from "@/components/modals/board/CollabModal.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import router from "@/router";
 import LoadingPage from "./LoadingPage.vue";
+
 const readAccess = ref(false);
 
 const showModal = ref(false);
 const actionType = ref('');
 const collabItem = ref(null);
-const isPending = ref(true)
 const isLoading = ref(false);
 
 const Owner = ref(false);
@@ -24,6 +24,7 @@ const addedCollabName = ref("");
 const updatedTitle = ref("");
 const tableType = ref("Collaborator");
 const statusType = ref("PENDING");
+
 const { params } = useRoute();
 const boardId = params.boardId;
 const board = ref([]);
@@ -40,7 +41,6 @@ const openEditModal = (collab) => {
     collabItem.value = collab;
     showModal.value = true;
 };
-
 
 const openRemoveModal = (collab) => {
     statusType.value = collab.status;
@@ -66,7 +66,7 @@ function handleAddCollab(addCollab) {
 const handleUpdateCollab = async (oid, accessRight, statusType) => {
     if (Owner.value === false) {
         router.push({ name: 'Forbidden' });
-    } else if (statusType != undefined) {
+    } else if (statusType === 'PENDING') {
         const updateInvite = {
             accessRight: accessRight,
             status: statusType
@@ -127,11 +127,10 @@ const handleUpdateCollab = async (oid, accessRight, statusType) => {
 const handleRemoveCollab = async (id, statusType) => {
     if (Owner.value === false) {
         router.push({ name: 'Forbidden' });
-    } else if (statusType != undefined) {
+    } else if (statusType === 'PENDING') {
         try {
             const token = localStorage.getItem("token");
             await fetch(`${import.meta.env.VITE_BASE_URL}api/invitations/${id}/cancel`, {
-
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -182,7 +181,6 @@ async function handleiInviteCollab(inputItem) {
         } else if (inviteCollab.status === 409) {
             window.alert("The user is already a collaborator or pending collaborator of this board.");
         } else if (inviteCollab.status === 200) {
-            console.log(inviteCollab.message);
             const getPendingCollab = await getItems(`${import.meta.env.VITE_BASE_URL}api/boards/${boardId}/invitations`);
             const pendingCollabs = getPendingCollab.data;
 
@@ -208,7 +206,6 @@ async function handleiInviteCollab(inputItem) {
 const closeModal = () => {
     showModal.value = false;
 };
-
 
 onMounted(async () => {
     try {
@@ -261,6 +258,7 @@ onMounted(async () => {
 <template>
 
     <LoadingPage :isLoading="isLoading" />
+
     <div class="flex">
         <div>
             <Sidebar />
@@ -312,7 +310,7 @@ onMounted(async () => {
             <div class="flex justify-center ">
                 <table class="table w-3/4 mt-5 border-solid border-2 rounded-m border-black">
                     <thead>
-                        <tr class="bg-orange-200 
+                        <tr class="bg-[#85E5FF]
          border-solid border-2 border-black text-xl text-black">
                             <th class="font-bold text-center">No</th>
                             <th class="font-bold">Name</th>

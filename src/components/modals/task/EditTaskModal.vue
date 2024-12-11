@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from "vue";
-import { getItems, getItemById, deleteItemById } from "@/libs/fetchUtils.js";
+import { getItems, getItemById ,getFileImage } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/stores/StatusManagement.js";
 import DeleteIcons from "@/components/icons/DeleteIcons.vue";
@@ -9,10 +9,7 @@ import router from "@/router";
 const emit = defineEmits(['close', 'taskEdited', 'filesAdded']);
 const route = useRoute();
 
-
 let boardId = null;
-let taskId = null;
-
 
 const statusmanager = ref(new StatusManagement());
 
@@ -37,22 +34,10 @@ const files = ref([]);
 const removeFiles = ref([]);
 const addFiles = ref([]);
 
+const initialTask = ref("");
+const initialFiles = ref([]);
 
-onMounted(async () => {
-  boardId = route.params.boardId;
-  taskId = Number(route.params.taskId);
-});
-
-watch(
-  () => [route.name, route.params.taskId],
-  async ([newRouteName, newTaskId]) => {
-    if (newRouteName === 'editTaskModal' && newTaskId) {
-      await fetchTaskDetails(newTaskId);
-    }
-  },
-  { immediate: true }
-);
-
+// ---------------------- File Handle ----------------------
 
 const handleFiles = async (event) => {
   const selectedFiles = Array.from(event.target.files || event.dataTransfer.files);
@@ -60,7 +45,6 @@ const handleFiles = async (event) => {
     selectedFiles[i].fileUrl = URL.createObjectURL(selectedFiles[i] || selectedFiles[i].fileUrl);
   }
   files.value = [...files.value, ...selectedFiles];
-
   addFiles.value = [...selectedFiles];
 };
 
@@ -78,8 +62,8 @@ function removeFile(index) {
 const MAX_FILE_SIZE_MB = 20;
 
 const invalidFiles = computed(() => {
-  const fileNames = new Set();
-  const duplicateNames = new Set();
+  const fileNames = [];
+  const duplicateNames = [];
   const oversizedFiles = [];
   const errors = [];
 
@@ -91,10 +75,13 @@ const invalidFiles = computed(() => {
     if (file.size > 20 * 1024 * 1024) {
       oversizedFiles.push(file.name);
     }
-    if (fileNames.has(file.name)) {
-      duplicateNames.add(file.name);
+    if (fileNames.includes(file.name)) {
+      if (!duplicateNames.includes(file.name)) {
+        duplicateNames.push(file.name);
+      }
+    } else {
+      fileNames.push(file.name);
     }
-    fileNames.add(file.name);
   }
 
   if (oversizedFiles.length > 0) {
@@ -102,9 +89,9 @@ const invalidFiles = computed(() => {
       `Each file cannot be larger than ${MAX_FILE_SIZE_MB}MB. The following files are not added: ${oversizedFiles.join(", ")}`
     );
   }
-  if (duplicateNames.size > 0) {
+  if (duplicateNames.length > 0) {
     errors.push(
-      `Files with the same filename cannot be added or updated. Please delete the duplicate and add again to update. Duplicate file names: ${Array.from(duplicateNames).join(", ")}`
+      `Files with the same filename cannot be added or updated. Please delete the duplicate and add again to update. Duplicate file names: ${duplicateNames.join(", ")}`
     );
   }
 
@@ -112,16 +99,8 @@ const invalidFiles = computed(() => {
 });
 
 
-const duplicateFileNames = computed(() => {
-  const fileNameCount = {};
-  files.value.forEach((file) => {
-    fileNameCount[file.name] = (fileNameCount[file.name] || 0) + 1;
-  });
-  return new Set(Object.keys(fileNameCount).filter((name) => fileNameCount[name] > 1));
-});
-
-const isSaveDisabled = computed(() => {
-  return invalidFiles.value.length > 0 || duplicateFileNames.value.size > 0;
+const isHasInvalidFiles = computed(() => {
+  return invalidFiles.value.length > 0 
 });
 
 
@@ -141,12 +120,8 @@ async function getFilePreview(file, id) {
       file.value[i].fileUrl = null;
       let fileName = decodeURIComponent(file.value[i].name);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${fileName}`,
-        { method: "GET" }
-      );
-      const blob = await response.blob();
-      file.value[i].fileUrl = URL.createObjectURL(blob);
+      const response = await getFileImage(`${import.meta.env.VITE_BASE_URL}api/attachment`, id, fileName)
+      file.value[i].fileUrl = URL.createObjectURL(response);
     }
   } catch (error) {
     console.error("Error fetching file preview:", error);
@@ -154,11 +129,45 @@ async function getFilePreview(file, id) {
   }
 }
 
+const handleDrop = (event) => {
+  event.preventDefault();
+  handleFiles(event);
+};
 
+const handleDragOver = (event) => {
+  event.preventDefault();
+};
 
+const countOptionalCharacters = (text) => {
+  return (text ?? "").trim().length;
+};
 
-const initialTask = ref("");
-const initialFiles = ref([]);
+function downloadFile(file) {
+  const link = document.createElement("a");
+  link.href = file.fileUrl;
+  link.download = file.name || "download";
+  console.log(link);
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// ---------------------- Fetch Handle ----------------------
+
+onMounted(async () => {
+  boardId = route.params.boardId;
+});
+
+watch(
+  () => [route.name, route.params.taskId],
+  async ([newRouteName, newTaskId]) => {
+    if (newRouteName === 'editTaskModal' && newTaskId) {
+      await fetchTaskDetails(newTaskId);
+    }
+  },
+  { immediate: true }
+);
 
 async function fetchTaskDetails(id) {
   try {
@@ -248,6 +257,8 @@ const isFormModified = computed(() => {
 });
 
 
+// ---------------------- Task Handle ----------------------
+
 const taskEdited = () => {
   if (isFormModified.value) {
     emit("taskEdited", task, task.id);
@@ -262,33 +273,11 @@ const taskEdited = () => {
 
 
 const handleClose = () => {
-  taskId = null;
   removeFiles.value = [];
   files.value = [];
   emit("close");
 };
 
-const handleDrop = (event) => {
-  event.preventDefault();
-  handleFiles(event);
-};
-
-const handleDragOver = (event) => {
-  event.preventDefault();
-};
-
-const countOptionalCharacters = (text) => {
-  return (text ?? "").trim().length;
-};
-
-function downloadFile(file) {
-  const link = document.createElement("a");
-  link.href = file.fileUrl;
-  link.download = file.name || "download";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
 
 </script>
 
@@ -393,27 +382,23 @@ function downloadFile(file) {
                     </a>
 
                     <div class="flex items-center justify-center">
-                      <button @click.prevent="downloadFile(file)"
-                        class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100  mr-2"
-                        aria-label="Remove File">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                          <path fill="currentColor"
-                            d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11zm-6 4q-.825 0-1.412-.587T4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413T18 20z" />
-                        </svg>
-                      </button>
-                      <button @click.prevent="removeFile(index)" class="mt-2  w-8 h-8  rounded-full bg-sky-100 "
-                        aria-label="Remove File">
-                        <DeleteIcons />
-                      </button>
+                        <button @click.prevent="downloadFile(file)"
+                          class="mt-2 flex items-center justify-center w-8 h-8  rounded-full bg-sky-100  mr-2"
+                          aria-label="Remove File">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                              d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11zm-6 4q-.825 0-1.412-.587T4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413T18 20z" />
+                          </svg>
+                        </button>
+                        <button @click.prevent="removeFile(index)" class="mt-2  w-8 h-8  rounded-full bg-sky-100 "
+                          aria-label="Remove File">
+                          <DeleteIcons />
+                        </button>
                     </div>
 
                   </div>
                 </div>
               </div>
-
-
-
-
             </div>
 
 
@@ -423,7 +408,7 @@ function downloadFile(file) {
 
             <div class="flex justify-end mt-4 col-start-3">
               <button type="submit" class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mx-3"
-                :disabled="!isFormModified || checkWhiteSpace(task.title) || isSaveDisabled">
+                :disabled="!isFormModified || checkWhiteSpace(task.title) || isHasInvalidFiles">
                 Save
               </button>
               <router-link :to="{ name: 'task', params: { boardId: route.params.boardId } }">

@@ -55,31 +55,19 @@ async function saveBoard() {
   <div v-if="$route.name === 'addboard'"
     class="itbkk-modal-new z-40 fixed inset-0 flex items-center justify-center bg-black/[.05]">
     <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
-      <h2 class="text-2xl font-bold mb-5 text-green-800">New Board</h2>
+      <h2 class="text-2xl font-bold mb-5">New Board</h2>
 
       <label for="boardName" class="block text-lg mb-2">Name</label>
-      <input
-        v-model="boardName"
-        maxlength="120"
-        type="text"
-        id="boardName"
-        class="itbkk-board-name bg-white w-full p-2 border rounded mb-2"
-        placeholder="Enter board name"
-      />
+      <input v-model="boardName" maxlength="120" type="text" id="boardName"
+        class="itbkk-board-name bg-white w-full p-2 border rounded mb-2" placeholder="Enter board name" />
 
       <div class="flex justify-end space-x-4">
-        <button
-          @click="saveBoard"
-          :disabled="checkWhiteSpace(boardName) || isSaveButtonDisabled"
-          class="itbkk-button-ok bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
+        <button @click="saveBoard" :disabled="isSaveButtonDisabled"
+          class="btn bg-green-500 hover:bg-green-700 text-white  disabled:bg-gray-300 disabled:cursor-not-allowed">
           Save
         </button>
 
-        <button
-          @click="closeModal"
-          class="itbkk-button-cancel bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-        >
+        <button @click="closeModal" class="btn bg-red-500 hover:bg-red-700 text-white">
           Cancel
         </button>
       </div>

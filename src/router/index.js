@@ -18,9 +18,7 @@ import EditStatusModal from "@/components/modals/status/EditStatusModal.vue";
 import DeleteStatusModal from "@/components/modals/status/DeleteStatusModal.vue";
 import AddBoardModal from "@/components/modals/board/AddBoardModal.vue";
 
-import NotFound from "@/views/errors/NotFound.vue";
-import AccessDenied from "@/views/errors/AccessDenied.vue";
-import Conflict from "@/views/errors/Conflict.vue";
+import NotFound from "@/views/NotFound.vue";
 
 const checkWriteAccess = async (to, from, next) => {
   try {
@@ -175,16 +173,6 @@ const router = createRouter({
       },
     },
     {
-      path: "/forbidden",
-      name: "Forbidden",
-      component: AccessDenied,
-    },
-    {
-      path: "/conflict",
-      name: "Conflict",
-      component: Conflict,
-    },
-    {
       path: "/:catchAll(.*)",
       name: "NotFound",
       component: NotFound,
@@ -206,7 +194,7 @@ router.beforeEach(async (to, from, next) => {
         router.push({ name: "login" });
       }
     } catch (error) {
-      console.log("Refresh token validation error", error);
+      console.error("Refresh token validation error", error);
       localStorage.clear();
       router.push({ name: "login" });
     }
@@ -220,13 +208,9 @@ router.beforeEach(async (to, from, next) => {
 
       if (tokenExpire > now) {
         next();
-        console.log("Token still valid");
       } else {
-        console.log("Token expired");
-
         if (haveRefreshToken) {
           const res = await addToken(import.meta.env.VITE_BASE_TOKEN_URL);
-          console.log("res", res);
 
           if (res.status === 401) {
             localStorage.clear();
@@ -241,7 +225,7 @@ router.beforeEach(async (to, from, next) => {
         }
       }
     } catch (error) {
-      console.log("Token validation error", error);
+      console.error("Token validation error", error);
       localStorage.clear();
       next({ name: "login" });
     }

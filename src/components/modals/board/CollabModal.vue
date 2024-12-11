@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { addItem, getItemById } from '@/libs/fetchUtils';
 
 const email = ref("");
 const accessRight = ref("READ");
@@ -33,8 +32,6 @@ async function confirmChange() {
             console.error(`Error add collab: ${error}`);
         }
     } else if (props.actionType === 'edit') {
-        console.log("prop statusType: ", props.statusType);
-
         emit("editCollab", props.collabItem.oid || props.collabItem.id, props.collabItem.accessRight === "READ" ? "WRITE" : "READ", props.statusType);
         emit("closeModal")
 

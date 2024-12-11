@@ -38,7 +38,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div :class="disabled ? 'flex justify-center items-center space-x-4 mr-5 tooltip': 'flex justify-center items-center space-x-4 mr-5'"
+    <div :class="disabled ? 'flex justify-center items-center space-x-4 mr-5 tooltip' : 'flex justify-center items-center space-x-4 mr-5'"
         :data-tip="disabled ? 'You need to be board owner to perform this action' : ''">
         <input type="checkbox" class="toggle toggle-accent itbkk-board-visibility" :checked="isChecked"
             @click.prevent="toggleVisibility" :disabled="disabled" />
@@ -47,38 +47,49 @@ onMounted(async () => {
             {{ isChecked ? ' Public' : 'Private' }} </span>
     </div>
 
-
-    <div v-if="showModal && isChecked === false" class="modal modal-open itbkk-modal-alert">
-        <div class="modal-box">
-            <h3 class="font-bold text-lg">Alert: board visibility to Public</h3>
-            <p class="py-4">
-                In public, any one can view the board, task list and task detail of tasks in the board.
-            </p>
-            <p class="itbkk-message">
-                Do you want to change board visibility to public?
-            </p>
-            <div class="modal-action">
-                <button class="btn btn-outline itbkk-button-cancel" @click="cancelChange">Cancel</button>
-                <button class="btn btn-primary itbkk-button-confirm" @click="confirmChange">Confirm</button>
+    <div v-if="showModal && isChecked === false" class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
+            <div class="bg-white w-1/3 p-6 rounded shadow-lg">
+                <div class="">
+                    <h1 class="text-2xl font-bold">Alert: board visibility to Public</h1>
+                    <p class="py-2">
+                        In public, any one can view the board, task list and task detail of tasks in the board.
+                    </p>
+                    <p class="itbkk-message">
+                        Do you want to change board visibility to public?
+                    </p>
+                    <div class="modal-action">
+                        <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="cancelChange">Cancel</button>
+                        <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3"
+                            @click="confirmChange">Confirm</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div v-else-if="showModal && isChecked === true" class="modal modal-open itbkk-modal-alert">
-        <div class="modal-box">
-            <h3 class="font-bold text-lg">Alert: board visibility to Private</h3>
-            <p class="py-4">In private, only board owner can access/control board.
+    <div v-else-if="showModal && isChecked === true"
+        class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
+            <div class="bg-white w-1/3 p-6 rounded shadow-lg">
+                <div class="">
+                    <h1 class="text-2xl font-bold">Alert: board visibility to Private</h1>
+                    <p class="py-2">In private, only board owner can access/control board.
 
-            </p>
-            <p class="itbkk-message">
-                Do you want to change board visibility to private?
-            </p>
-            <div class="modal-action">
-                <button class="btn btn-outline itbkk-button-cancel" @click="cancelChange">Cancel</button>
-                <button class="btn btn-primary itbkk-button-confirm" @click="confirmChange">Confirm</button>
+                    </p>
+                    <p class="itbkk-message">
+                        Do you want to change board visibility to private?
+                    </p>
+                    <div class="modal-action">
+                        <button class="btn bg-red-500 hover:bg-red-700 text-white" @click="cancelChange">Cancel</button>
+                        <button class="btn bg-green-500 hover:bg-green-700 text-white mx-3"
+                            @click="confirmChange">Confirm</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
 </template>
 
 <style scoped></style>

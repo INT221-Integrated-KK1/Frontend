@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
-import { getItemById, getItems } from "@/libs/fetchUtils.js";
+import { getItemById, getItems, getFileImage } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 import { StatusManagement } from "@/stores/StatusManagement.js";
 const route = useRoute();
@@ -14,12 +14,10 @@ const props = defineProps({
 const task = ref(null);
 const statusmanager = ref(new StatusManagement());
 let boardId = null;
-let taskId = null;
 
 
 onMounted(async () => {
   boardId = route.params.boardId;
-  taskId = Number(route.params.taskId);
 });
 
 
@@ -32,32 +30,6 @@ watch(
   },
   { immediate: true }
 );
-
-// file handle
-
-const files = ref([]);
-const isImage = (file) => file.fileType.includes("image/");
-
-
-
-async function getFilePreview(file, id) {
-  try {
-    for (let i = 0; i < file.value.length; i++) {
-
-      file.value[i].fileUrl = null;
-      let fileName = decodeURIComponent(file.value[i].fileName);
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}api/attachment/${id}/${fileName}`,
-        { method: "GET" }
-      );
-      const blob = await response.blob();
-      file.value[i].fileUrl = URL.createObjectURL(blob);
-    }
-  } catch (error) {
-    console.error("Error fetching file preview:", error);
-    file.value = [];
-  }
-}
 
 async function fetchTaskDetails(id) {
   try {
@@ -85,13 +57,42 @@ async function fetchTaskDetails(id) {
   }
 };
 
+//  ----------------- File Preview -----------------
+
+const files = ref([]);
+const isImage = (file) => file.fileType.includes("image/");
+
+async function getFilePreview(file, id) {
+  try {
+    for (let i = 0; i < file.value.length; i++) {
+
+      file.value[i].fileUrl = null;
+      let fileName = decodeURIComponent(file.value[i].fileName);
+      const response = await getFileImage(`${import.meta.env.VITE_BASE_URL}api/attachment`, id, fileName)
+      file.value[i].fileUrl = URL.createObjectURL(response);
+    }
+  } catch (error) {
+    console.error("Error fetching file preview:", error);
+    file.value = [];
+  }
+}
+
+function downloadFile(file) {
+  const link = document.createElement("a");
+  link.href = file.fileUrl;
+  link.download = file.fileName || "download";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 const handleClose = () => {
   files.value = [];
   files.fileUrl = null;
   emit('closed');
 };
 
-
+//  ----------------- Task Details -----------------
 
 const EmptyStyle = "italic text-slate-400";
 const EmptyAssigneeText = "Unassigned";
@@ -122,14 +123,6 @@ const formatToLocalTime = (dateTimeString) => {
   });
 };
 
-function downloadFile(file) {
-  const link = document.createElement("a");
-  link.href = file.fileUrl;
-  link.download = file.fileName || "download";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
 
 </script>
 

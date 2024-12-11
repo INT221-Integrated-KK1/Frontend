@@ -16,9 +16,6 @@ const statusmanager = ref(new StatusManagement());
 
 const { params } = useRoute();
 const boardId = params.boardId;
-console.log(boardId);
-
-
 
 const emit = defineEmits(["taskAdded"]);
 const checkWhiteSpace = (title) => {
@@ -89,11 +86,9 @@ const AddTask = async () => {
 onMounted(async () => {
   try {
     const items = await getItems(`${import.meta.env.VITE_BASE_BOARDS_URL}/${boardId}/statuses`);
-    const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
+    await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
     statusmanager.value.setStatuses(items);
     status.value = items[0].id;
-    console.log(boardItems.owner.name);
-
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
