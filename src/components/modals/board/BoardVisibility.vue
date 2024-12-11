@@ -19,7 +19,7 @@ const toggleVisibility = () => {
 const confirmChange = () => {
     isChecked.value = pendingState.value;
     const visibilityState = isChecked.value ? 'public' : 'private';
-    changeBoardVisibility(import.meta.env.VITE_BASE_BOARDS_URL, props.boardId, visibilityState);
+    changeBoardVisibility(`${import.meta.env.VITE_BASE_URL}/boards`, props.boardId, visibilityState);
     showModal.value = false;
 };
 
@@ -30,7 +30,7 @@ const cancelChange = () => {
 const disabled = ref(false);
 
 onMounted(async () => {
-    const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, props.boardId);
+    const boardItems = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards`, props.boardId);
     boardItems.owner.oid === localStorage.getItem('oid') ? disabled.value = false : disabled.value = true;
     const state = boardItems.visibility === 'public' ? true : false;
     isChecked.value = state;

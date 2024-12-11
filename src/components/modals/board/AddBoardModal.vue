@@ -20,16 +20,16 @@ const isSaveButtonDisabled = computed(() => boardName.value.trim() === '');
 async function saveBoard() {
   const boardsinput = ref(boardName.value.trim());
   try {
-    const items = await addItem(import.meta.env.VITE_BASE_BOARDS_URL, { name: boardsinput.value });
+    const items = await addItem(`${import.meta.env.VITE_BASE_URL}/boards`, { name: boardsinput.value });
     try {
-      const boardItem = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+      const boardItem = await getItems(`${import.meta.env.VITE_BASE_URL}/boards`);
       const personalBoards = boardItem.personalBoards;
 
       for (let i = 0; i < personalBoards.length; i++) {
         if (personalBoards[i].name === boardName.value) {
           board.value = personalBoards[i].id;
           break;
-        } if (boardItem.length === 1  && boardItem[0].name === boardName.value) {
+        } if (boardItem.length === 1 && boardItem[0].name === boardName.value) {
           board.value = personalBoards[0].id;
         }
       }

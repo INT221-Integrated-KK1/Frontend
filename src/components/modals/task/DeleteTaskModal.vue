@@ -4,29 +4,20 @@ import { getItemById, deleteItemById } from "@/libs/fetchUtils.js";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
-const number = ref(0);
 const showModal = ref(false);
 
 const { params } = useRoute();
 const boardId = params.boardId;
-const taskId = Number(params.taskId);
 const task = ref(null);
 const title = ref("");
+const taskId = ref(0);
 const emit = defineEmits(["taskDeleted", "close", "taskNotfound"]);
 
-const props = defineProps({
-  showDeleteModal: Boolean,
-  idDelete: Number,
-});
-
 watch(
-  () => [props.showDeleteModal, route.name],
-  async ([showDeleteModal, routeName]) => {
-    if (showDeleteModal || routeName === 'deleteTask') {
-      const idToUse = !isNaN(taskId) ? taskId : props.idDelete;
-      if (idToUse) {
-        await fetchTaskDetails(idToUse);
-      }
+  () => [route.name, route.params.taskId],
+  async ([newRouteName, newTaskId]) => {
+    if (newRouteName === 'deleteTask' && newTaskId) {
+      await fetchTaskDetails(newTaskId);
     }
   },
   { immediate: true }
@@ -35,21 +26,20 @@ watch(
 async function fetchTaskDetails(id) {
   try {
     task.value = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, id);
-    number.value = task.value.id;
     title.value = task.value.title;
+    taskId.value = task.value.id;
   } catch (error) {
     console.error("Error fetching task details:", error);
     emit("taskNotfound");
   }
 };
 
-const deleteTask = async () => {
+const deleteTask = async (id) => {
   try {
-    const idToUse = !isNaN(taskId) ? taskId : props.idDelete;
-    const exist = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, idToUse);
+    const exist = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, id);
     if (exist) {
-      await deleteItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, idToUse);
-      emit("taskDeleted", idToUse);
+      await deleteItemById(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/tasks`, id);
+      emit("taskDeleted", id);
     } else {
       emit("taskNotfound");
     }
@@ -63,7 +53,7 @@ const deleteTask = async () => {
 
 <template>
   <div>
-    <div v-if="props.showDeleteModal || $route.name === 'deleteTask'"
+    <div v-if="$route.name === 'deleteTask'"
       class="itbkk-modal-task text-black fixed z-10 inset-0 overflow-y-auto">
       <div class="flex items-center justify-center min-h-screen bg-black/[.05]">
         <div class="bg-white w-1/2 p-6 rounded shadow-lg">
@@ -77,7 +67,7 @@ const deleteTask = async () => {
             <div class="text-right">
               <router-link :to="({ name: 'task', params: { boardId: params.boardId } })">
                 <button class="itbkk-button-confirm btn bg-green-500 hover:bg-green-700 text-white mr-3"
-                  @click="deleteTask()">
+                  @click="deleteTask(taskId)">
                   Confirm
                 </button>
               </router-link>

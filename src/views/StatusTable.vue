@@ -39,7 +39,7 @@ onMounted(async () => {
         }
         todo.value = items;
         statusmanager.setStatuses(items);
-        const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
+        const boardItems = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards`, boardId);
         board.value = boardItems;
         const collabItems = await getItems(collabUrl);
 

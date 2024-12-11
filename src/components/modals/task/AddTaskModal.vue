@@ -86,7 +86,7 @@ const AddTask = async () => {
 onMounted(async () => {
   try {
     const items = await getItems(`${import.meta.env.VITE_BASE_URL}/boards/${boardId}/statuses`);
-    await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
+    await getItemById(`${import.meta.env.VITE_BASE_URL}/boards`, boardId);
     statusmanager.value.setStatuses(items);
     status.value = items[0].id;
   } catch (error) {

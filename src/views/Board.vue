@@ -59,7 +59,7 @@ async function leaveBoard(boardId) {
 onMounted(async () => {
   try {
     isLoading.value = true;
-    const items = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+    const items = await getItems(`${import.meta.env.VITE_BASE_URL}/boards`);
     boardmanager.value.setBoards(items);
     personalBoards.value = items.personalBoards;
     collabBoards.value = items.collabBoards;

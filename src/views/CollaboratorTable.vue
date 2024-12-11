@@ -230,7 +230,7 @@ onMounted(async () => {
             }
         }
 
-        const boardItem = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
+        const boardItem = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards`, boardId);
         boardItem.owner.oid === localStorage.getItem('oid') ? Owner.value = true : Owner.value = false;
         board.value = boardItem;
         collabmanager.setCollabs(collabMembers);

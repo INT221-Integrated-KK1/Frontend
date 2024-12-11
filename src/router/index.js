@@ -26,7 +26,7 @@ const checkWriteAccess = async (to, from, next) => {
     const userOid = localStorage.getItem("oid");
 
     const boardItems = await getItemById(
-      import.meta.env.VITE_BASE_BOARDS_URL,
+      `${import.meta.env.VITE_BASE_URL}/boards`,
       boardId
     );
     const collabMembers = await getItems(

@@ -68,7 +68,7 @@ onMounted(async () => {
     }
 
     const statusItems = await getItems(statusUrl);
-    const boardItems = await getItemById(import.meta.env.VITE_BASE_BOARDS_URL, boardId);
+    const boardItems = await getItemById(`${import.meta.env.VITE_BASE_URL}/boards`, boardId);
     const collabItems = await getItems(collabUrl);
 
     for (let i = 0; i < collabItems.length; i++) {
@@ -502,7 +502,7 @@ async function handleRemoveFiles(taskId, removeFiles) {
                 </div>
                 <div v-else>
                   <router-link :to="{ name: 'deleteTask', params: { taskId: task.id } }">
-                    <td class="itbkk-button-delete" @click="showConfirmModals(task)">
+                    <td class="itbkk-button-delete">
                       <DeleteIcons :isOff="readAccess || unAuthorized" />
                     </td>
                   </router-link>

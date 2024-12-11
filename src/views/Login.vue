@@ -48,7 +48,7 @@ async function loginHandler() {
     if (redirectPath) {
       router.push(redirectPath);
     } else {
-      const boards = await getItems(import.meta.env.VITE_BASE_BOARDS_URL);
+      const boards = await getItems(`${import.meta.env.VITE_BASE_URL}/boards`);
       if (boards.length !== 1) {
         router.push({ name: "board" });
       } else if (boards.length === 1) {
@@ -133,8 +133,8 @@ function showPassword() {
           </div>
 
           <button :class="inputForm.userName === '' || inputForm.password === ''
-              ? 'btn btn-disabled w-full disabled'
-              : 'btn bg-blue-500 w-full text-white font-semibold hover:bg-blue-600 transition'
+            ? 'btn btn-disabled w-full disabled'
+            : 'btn bg-blue-500 w-full text-white font-semibold hover:bg-blue-600 transition'
             " @click="loginHandler">
             Sign In
           </button>
